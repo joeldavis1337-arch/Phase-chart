@@ -203,7 +203,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.2';
+  return '1.2.3';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -1048,24 +1048,17 @@ function runDiagnosis(){
     const bAxial=B.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
 
     // ── ANGULAR MISALIGNMENT — axial phase across coupling ──────────
-    // Prioritize inboard-to-inboard pairing (coupling end to coupling end)
-    // This is the most diagnostic comparison for angular misalignment
-    // Also include outboard pairings as secondary check
-    const aIB=A.meas.filter(m=>m.pos==='AX_IB');
-    const bIB=B.meas.filter(m=>m.pos==='AX_IB');
-    const aOB=A.meas.filter(m=>m.pos==='AX_OB');
-    const bOB=B.meas.filter(m=>m.pos==='AX_OB');
+    // Valid cross-coupling pairs: DE vs DE, and NDE vs NDE.
+    // Never mix DE on one machine with NDE on the other — those sensors
+    // are on opposite ends of two different machines.
+    // normalizeAxialPhase() corrects for sensor orientation before comparison.
+    const aDE=A.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
+    const bDE=B.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
+    const aNDE=A.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
+    const bNDE=B.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
     const axPairs=[];
-    // Inboard-inboard pairs first (highest diagnostic value)
-    aIB.forEach(a=>bIB.forEach(b=>{
-      if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'IB-IB'});
-    }));
-    // If no IB-IB pairs, fall back to all axials
-    if(axPairs.length===0){
-      aAxial.forEach(a=>bAxial.forEach(b=>{
-        if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'any'});
-      }));
-    }
+    aDE.forEach(a=>bDE.forEach(b=>axPairs.push({a,b})));
+    aNDE.forEach(a=>bNDE.forEach(b=>axPairs.push({a,b})));
 
     let axOut=0,axIn=0;
     axPairs.forEach(({a,b})=>{
