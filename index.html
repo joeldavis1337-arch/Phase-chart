@@ -313,7 +313,7 @@ function renderSidebar(){
 function measHTML(nid,m,u,coupSide){
   coupSide=coupSide||'R';
   const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
-  const phaseVal=parseInt(m.phase)||0;
+  const phaseVal=Math.round(parseFloat(m.phase)||0);
   const isAxial=m.pos==='AX_OB'||m.pos==='AX_IB';
   const axDir=m.axDir||'out';
   const isVertLayout=document.getElementById('layout').value==='V';
@@ -398,7 +398,7 @@ function handleAmpInput(el){
 }
 function handlePhaseInput(el){
   const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
-  let val=parseInt(el.value);
+  let val=Math.round(parseFloat(el.value));
   if(isNaN(val))val=0;
   if(val>180)val=180;
   if(val<-180)val=-180;
@@ -676,7 +676,7 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
   ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
   ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
-  const phDisp=(parseInt(phase)||0);
+  const phDisp=Math.round(parseFloat(phase)||0);
   ctx.font='9px Roboto,sans-serif';ctx.fillText(phDisp+'°',cx,cy+r*0.42);
   ctx.font='bold 10px Roboto,sans-serif';ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle=tc.tx;
   ctx.fillText(label,cx+r+3,cy-r*0.3);
@@ -695,7 +695,7 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
     ctx.textAlign='left';
     ctx.fillText(tag,cx+r+3,cy+r*0.72);
   }
-  const rad=((parseInt(phase)||0)-90)*Math.PI/180;
+  const rad=((Math.round(parseFloat(phase)||0))-90)*Math.PI/180;
   const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
   const ax2=cx+Math.cos(rad)*(r+ARM),ay2=cy+Math.sin(rad)*(r+ARM);
   ctx.strokeStyle=tc.ln;ctx.lineWidth=1.8;ctx.lineCap='round';
@@ -906,7 +906,7 @@ function desktopPrint(){
       <td style="text-align:center">${dirLabel(m,n)}</td>
       <td style="text-align:center">${m.ref?'✓':''}</td>
       <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td>
-      <td style="text-align:right">${parseInt(m.phase)||0}°</td>
+      <td style="text-align:right">${Math.round(parseFloat(m.phase)||0)}°</td>
     </tr>`;
   }));
 
@@ -980,7 +980,7 @@ function desktopPrint(){
 // If a sensor faces INBOARD (toward coupling), its phase is inverted
 // by adding 180° (mod 360) to put it in the same reference frame.
 function normalizeAxialPhase(phase, axDir){
-  const p = parseInt(phase)||0;
+  const p = Math.round(parseFloat(phase)||0);
   if(axDir === 'in'){
     // Flip: add 180, then wrap to -180..180
     let flipped = p + 180;
@@ -1035,7 +1035,7 @@ function runDiagnosis(){
     const lbl=A.name+' → '+B.name;
 
     // All measurements with any data entered
-    const hasVal=(m)=>parseFloat(m.amp)>0||parseInt(m.phase)!==0;
+    const hasVal=(m)=>parseFloat(m.amp)>0||Math.round(parseFloat(m.phase)||0)!==0;
 
     const aVert =A.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
     const bVert =B.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
@@ -1294,7 +1294,7 @@ function runDiagnosis(){
   // Runs automatically based on the shape selected for each node
   nodes.forEach(function(node){
     var shape=node.shape;
-    var hasVal=function(m){return parseFloat(m.amp)>0||parseInt(m.phase)!==0;};
+    var hasVal=function(m){return parseFloat(m.amp)>0||Math.round(parseFloat(m.phase)||0)!==0;};
     var uKey=document.getElementById('amp-unit').value;
     var ampThresh={'mils':0.15,'in/s':0.08,'mm/s':2.0,'G':0.1,'µm':20}[uKey]||0.08;
     var highAmp={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
@@ -1309,8 +1309,8 @@ function runDiagnosis(){
     var maxRad=Math.max(maxV,maxH);
 
     // Phase consistency check — are readings stable or erratic?
-    var vPhases=vM.map(function(m){return parseInt(m.phase)||0;});
-    var hPhases=hM.map(function(m){return parseInt(m.phase)||0;});
+    var vPhases=vM.map(function(m){return Math.round(parseFloat(m.phase)||0);});
+    var hPhases=hM.map(function(m){return Math.round(parseFloat(m.phase)||0);});
     var phaseSpreadV=vPhases.length>1?phaseDiff(vPhases[0],vPhases[vPhases.length-1]):0;
     var phaseSpreadH=hPhases.length>1?phaseDiff(hPhases[0],hPhases[hPhases.length-1]):0;
     var erraticPhase=(phaseSpreadV>45||phaseSpreadH>45);
@@ -1466,7 +1466,7 @@ function runDiagnosis(){
   // Any axial or radial bubble with data but no severity = healthy = green
   nodes.forEach(function(node){
     node.meas.forEach(function(m){
-      var hasData=parseFloat(m.amp)>0||parseInt(m.phase)!==0;
+      var hasData=parseFloat(m.amp)>0||Math.round(parseFloat(m.phase)||0)!==0;
       if(hasData&&!bubbleSeverity[m.id]){
         bubbleSeverity[m.id]='ok';
       }
@@ -1550,11 +1550,16 @@ function loadFromHistory(id){
       const entries=histLoad();
       const entry=entries.find(e=>e.id===id);
       if(!entry)return;
-      // Restore nodes
+      // Restore nodes via deep clone
       nodes=JSON.parse(JSON.stringify(entry.nodes));
-      // Find max ids to avoid collisions
-      nid=Math.max(...nodes.map(n=>n.id),0)+1;
-      mid=Math.max(...nodes.flatMap(n=>n.meas.map(m=>m.id)),0)+1;
+      // Safely recalculate max ids to avoid collisions
+      let maxNid=0,maxMid=0;
+      nodes.forEach(n=>{
+        if(n.id>maxNid)maxNid=n.id;
+        n.meas.forEach(m=>{if(m.id>maxMid)maxMid=m.id;});
+      });
+      nid=maxNid+1;
+      mid=maxMid+1;
       // Restore topbar fields
       if(entry.meta){
         document.getElementById('chart-title').value=entry.meta.chartTitle||'';
@@ -1630,8 +1635,9 @@ function closeConfirm(){
   document.getElementById('confirm-modal').classList.remove('show');
 }
 function doConfirm(){
+  const cb=_confirmCallback;
   closeConfirm();
-  if(_confirmCallback) _confirmCallback();
+  if(cb) cb();
 }
 
 function boot(){
