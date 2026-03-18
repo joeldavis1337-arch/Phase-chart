@@ -105,6 +105,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 .confirm-ok{background:var(--tx);color:var(--bg);font-weight:700}
 .confirm-cancel-btn{background:var(--bg2);color:var(--tx)}
 /* ── Share / print modal ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
 .modal-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
@@ -231,7 +232,7 @@ function pal(ci){return PALETTE[ci%PALETTE.length];}
 
 // ── Data ─────────────────────────────────────────────────
 let nodes=[
-  {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',meas:[
+  {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',coupSide:'R',meas:[
     {id:5,pos:'HORIZ_NDE',label:'H1',amp:0,phase:0,ref:false},
     {id:6,pos:'HORIZ_DE', label:'H2',amp:0,phase:0,ref:false},
     {id:3,pos:'VERT_NDE', label:'V1',amp:0,phase:0,ref:false},
@@ -239,13 +240,13 @@ let nodes=[
     {id:1,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
     {id:2,pos:'AX_IB',    label:'A2',amp:0,phase:0,ref:false,axDir:'out'},
   ]},
-  {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',meas:[
+  {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',coupSide:'L',meas:[
     {id:11,pos:'HORIZ_NDE',label:'H3',amp:0,phase:0,ref:false},
     {id:12,pos:'HORIZ_DE', label:'H4',amp:0,phase:0,ref:false},
     {id:9, pos:'VERT_NDE', label:'V3',amp:0,phase:0,ref:false},
     {id:10,pos:'VERT_DE',  label:'V4',amp:0,phase:0,ref:false},
-    {id:7, pos:'AX_OB',    label:'A3',amp:0,phase:0,ref:false,axDir:'out'},
-    {id:8, pos:'AX_IB',    label:'A4',amp:0,phase:0,ref:false,axDir:'out'},
+    {id:7, pos:'AX_OB',    label:'A3',amp:0,phase:0,ref:false,axDir:'in'},
+    {id:8, pos:'AX_IB',    label:'A4',amp:0,phase:0,ref:false,axDir:'in'},
   ]},
 ];
 let nid=3,mid=20;
@@ -283,6 +284,14 @@ function renderSidebar(){
           style="flex:1;font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:4px;padding:4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;min-height:32px;-webkit-appearance:none"
           onchange="upN(${n.id},'rpm',this.value)">
       </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <span class="lbl" style="min-width:80px">Coupling side</span>
+        <div class="ax-dir-toggle">
+          <button class="ax-dir-btn${(n.coupSide||'R')==='L'?' active':''}" onclick="upN(${n.id},'coupSide','L');renderSidebar();redraw()">⬅ Left</button>
+          <button class="ax-dir-btn${(n.coupSide||'R')==='R'?' active':''}" onclick="upN(${n.id},'coupSide','R');renderSidebar();redraw()">Right ➡</button>
+        </div>
+      </div>
+      <div class="ax-dir-hint">${(n.coupSide||'R')==='R'?'Coupling is on the right side of this component':'Coupling is on the left side of this component'}</div>
       <h3 style="margin-top:4px">Measurement points</h3>
       <div id="meas-${n.id}"></div>
       <button class="add-m" onclick="addMeas(${n.id})">+ measurement point</button>`;
@@ -291,7 +300,7 @@ function renderSidebar(){
     n.meas.forEach(m=>{
       const md=document.createElement('div');
       md.className='mrow';
-      md.innerHTML=measHTML(n.id,m,u);
+      md.innerHTML=measHTML(n.id,m,u,n.coupSide||'R');
       mEl.appendChild(md);
     });
   });
@@ -301,16 +310,21 @@ function renderSidebar(){
   el.appendChild(ab);
 }
 
-function measHTML(nid,m,u){
+function measHTML(nid,m,u,coupSide){
+  coupSide=coupSide||'R';
   const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
   const phaseVal=parseInt(m.phase)||0;
   const isAxial=m.pos==='AX_OB'||m.pos==='AX_IB';
   const axDir=m.axDir||'out';
   const isVertLayout=document.getElementById('layout').value==='V';
 
-  // Axial sensor orientation toggle labels
-  const btnInLabel  = isVertLayout ? '⬇ Downward' : '⬅ Inboard';
-  const btnOutLabel = isVertLayout ? '⬆ Upward'   : 'Outboard ➡';
+  // Arrow direction for inboard depends on which side the coupling is on:
+  // Coupling on RIGHT → inboard points right (➡), outboard points left (⬅)
+  // Coupling on LEFT  → inboard points left (⬅), outboard points right (➡)
+  const inArrow  = coupSide==='R' ? 'Inboard ➡' : '⬅ Inboard';
+  const outArrow = coupSide==='R' ? '⬅ Outboard' : 'Outboard ➡';
+  const btnInLabel  = isVertLayout ? '⬇ Downward' : inArrow;
+  const btnOutLabel = isVertLayout ? '⬆ Upward'   : outArrow;
   const hintIn  = isVertLayout
     ? 'Sensor face points downward (toward base / driven end)'
     : 'Sensor face points toward the coupling';
@@ -393,7 +407,9 @@ function handlePhaseInput(el){
   runDiagnosis();
 }
 function addNode(){
-  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',meas:[
+  // Smart default: first node coupling on right, all subsequent on left
+  const cs=nodes.length===0?'R':'L';
+  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',coupSide:cs,meas:[
     {id:mid++,pos:'HORIZ_NDE',label:'H',amp:0,phase:0,ref:false},
     {id:mid++,pos:'VERT_NDE', label:'V',amp:0,phase:0,ref:false},
     {id:mid++,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
@@ -545,7 +561,8 @@ function drawVertical(){
   }
 
   nodes.forEach(function(node,ni){
-    var p=pal(node.ci);
+    const coupSide=node.coupSide||'R';
+    function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,coupSide);}
     var cellTop=VPAD+60+ni*(CELLH+CG);
     var boxTop=cellTop+AXH;
     var boxBot=boxTop+BH;
@@ -668,8 +685,8 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir){
   if(axDir==='in'||axDir==='out'){
     const isVL=document.getElementById('layout').value==='V';
     const tag = axDir==='in'
-      ? (isVL ? '⬇ Down' : '⬅ IN')
-      : (isVL ? '⬆ Up'   : 'OUT ➡');
+      ? (isVL ? '⬇ Down' : 'IN ➡')
+      : (isVL ? '⬆ Up'   : '⬅ OUT');
     ctx.font='bold 8px Roboto,sans-serif';
     ctx.fillStyle=axDir==='in'?'#f59e0b':tc.tx3;
     ctx.textAlign='left';
@@ -713,8 +730,8 @@ function renderChart(ctx,W,H,tc){
   const isV=document.getElementById('layout').value==='V';
   ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
 
-  function bubble(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir);}
   function dash(x1,y1,x2,y2){ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+  function bubble(m,bx,by,cs){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,cs||'R');}
 
   if(!isV){
     const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
@@ -731,7 +748,7 @@ function renderChart(ctx,W,H,tc){
     ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.fillText('VERTICAL',W/2,VPAD+TAH+14);ctx.fillText('HORIZONTAL',W/2,yNB+HAH+20);
     ctx.font='bold 12px Roboto,sans-serif';ctx.textAlign='right';ctx.fillText('AXIAL',HPAD-6,yM+4);ctx.textAlign='left';ctx.fillText('AXIAL',W-HPAD+6,yM+4);
     nodes.forEach((node,ni)=>{
-      const p=pal(node.ci);const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
+      const p=pal(node.ci);const cs=node.coupSide||'R';const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
       const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
       const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE'),hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
       if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
@@ -742,10 +759,10 @@ function renderChart(ctx,W,H,tc){
       ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=p.fill;
       if(axL.length){ctx.textAlign='left';ctx.fillText(axL.map(m=>m.label).join('/'),xNL+5,yNT+NH-5);}
       if(axR.length){ctx.textAlign='right';ctx.fillText(axR.map(m=>m.label).join('/'),xNR-5,yNT+14);}
-      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNT-VAH/2-RPH-RPG-4;dash(bx,by+BSLOT,xC,yNT);bubble(m,bx,by);});
-      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNB+HAH/2+4;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by);});
-      axL.forEach((m,i)=>{const sh=axL.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+AZW/2;dash(xNL,yM,bx+BSLOT,by);bubble(m,bx,by);});
-      axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by);});
+      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNT-VAH/2-RPH-RPG-4;dash(bx,by+BSLOT,xC,yNT);bubble(m,bx,by,cs);});
+      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNB+HAH/2+4;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
+      axL.forEach((m,i)=>{const sh=axL.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+AZW/2;dash(xNL,yM,bx+BSLOT,by);bubble(m,bx,by,cs);});
+      axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by,cs);});
     });
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
     ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
@@ -759,7 +776,7 @@ function renderChart(ctx,W,H,tc){
     ctx.save();ctx.translate(HPAD-18,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('VERTICAL',0,0);ctx.restore();
     ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
     nodes.forEach((node,ni)=>{
-      const p=pal(node.ci);const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
+      const p=pal(node.ci);const cs=node.coupSide||'R';const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
       const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
       const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE'),hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
       if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
@@ -767,10 +784,10 @@ function renderChart(ctx,W,H,tc){
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
       ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.fillText(node.name,xC,yNT+18);
       drawShapeIcon(ctx,node.shape,xC,yNT+NH*.65,24,p.fill);
-      axL.forEach((m,i)=>{const sp=(axL.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+AZH/2;dash(xC,yNT,bx,by+BSLOT);bubble(m,bx,by);});
-      axR.forEach((m,i)=>{const sp=(axR.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+nCH-AZH/2;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by);});
-      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xNL-VZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNL,yCx,bx+BSLOT,by);bubble(m,bx,by);});
-      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xNR+HZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNR,yCx,bx-BSLOT,by);bubble(m,bx,by);});
+      axL.forEach((m,i)=>{const sp=(axL.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+AZH/2;dash(xC,yNT,bx,by+BSLOT);bubble(m,bx,by,cs);});
+      axR.forEach((m,i)=>{const sp=(axR.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+nCH-AZH/2;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
+      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xNL-VZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNL,yCx,bx+BSLOT,by);bubble(m,bx,by,cs);});
+      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xNR+HZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNR,yCx,bx-BSLOT,by);bubble(m,bx,by,cs);});
     });
     // Version / date stamp bottom center
     const vstamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
@@ -866,11 +883,13 @@ function desktopPrint(){
     'HORIZ_NDE':'Horizontal Non-Drive End (NDE)',
     'HORIZ_DE': 'Horizontal Drive End (DE)',
   };
-  const dirLabel=(m)=>{
+  const dirLabel=(m,n)=>{
     const isV=document.getElementById('layout').value==='V';
     if(m.pos==='AX_IB'||m.pos==='AX_OB'){
-      if(m.axDir==='in') return isV?'⬇ Downward':'⬅ Inboard';
-      return isV?'⬆ Upward':'Outboard ➡';
+      const cs=(n&&n.coupSide)||'R';
+      if(isV) return m.axDir==='in'?'⬇ Downward':'⬆ Upward';
+      if(m.axDir==='in') return cs==='R'?'Inboard ➡':'⬅ Inboard';
+      return cs==='R'?'⬅ Outboard':'Outboard ➡';
     }
     return '';
   };
@@ -881,7 +900,7 @@ function desktopPrint(){
       <td>${n.name}</td>
       <td><strong>${m.label}</strong></td>
       <td>${posLabel(m)}</td>
-      <td style="text-align:center">${dirLabel(m)}</td>
+      <td style="text-align:center">${dirLabel(m,n)}</td>
       <td style="text-align:center">${m.ref?'✓':''}</td>
       <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td>
       <td style="text-align:right">${parseInt(m.phase)||0}°</td>
@@ -890,31 +909,19 @@ function desktopPrint(){
 
   const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
 
-  // Calculate how many table rows we have so we can reserve space for them.
-  // Landscape page at .8cm margins ≈ 530px usable height at 96dpi.
-  // Each row ≈ 22px, header ≈ 26px, section title ≈ 28px, footer ≈ 22px, page1 padding ≈ 40px.
-  const totalRows = nodes.reduce((acc, n) => acc + n.meas.length, 0);
-  const tableHeight = 26 + (totalRows * 22) + 28 + 22 + 40; // header + rows + title + footer + padding
-  const usablePage = 530; // landscape page usable height in px
-  const chartMaxH = Math.max(180, usablePage - tableHeight);
-
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,sans-serif;color:#111;background:#fff}
-    .page1{width:100%;padding:12px 20px 0}
-    .page1 h1{font-size:15px;font-weight:700;margin-bottom:6px}
-    .page1 img{max-width:100%;max-height:${chartMaxH}px;width:auto;display:block;margin-bottom:8px}
-    .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:8px 0 4px;padding:0 20px}
+    .page{width:100%;padding:20px}
+    h1{font-size:16px;font-weight:700;margin-bottom:6px}
+    .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
+    .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
+    img{max-width:100%;max-height:calc(100vh - 80px);width:auto;display:block}
     table{border-collapse:collapse;width:100%;font-size:11px}
-    td,th{border:1px solid #ddd;padding:4px 7px}
+    td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
-    .tbl-wrap{padding:0 20px}
-    .footer{font-size:9px;color:#aaa;text-align:right;padding:4px 20px 8px}
-    .page2{width:100%;padding:20px}
-    .page2 h1{font-size:16px;font-weight:700;margin-bottom:4px}
-    .page2 .subtitle{font-size:11px;color:#666;margin-bottom:16px;line-height:1.5}
-    .diag-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
+    .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
     @media print{
       @page{size:landscape;margin:.8cm}
       body{margin:0}
@@ -923,29 +930,33 @@ function desktopPrint(){
   </style>
   </head><body>
 
-  <!-- PAGE 1: Chart + Measurement Table -->
-  <div class="page1">
+  <!-- PAGE 1: Chart -->
+  <div class="page">
     <h1>${title}</h1>
     <img src="${imgData}" id="chartimg">
+    <div class="footer">${stamp}</div>
   </div>
-  <div class="section-title">Measurement Data</div>
-  <div class="tbl-wrap">
+
+  <!-- PAGE 2: Measurement Data Table -->
+  <div class="page page-break">
+    <h1>${title} — Measurement Data</h1>
+    <div class="section-title">Measurement Points</div>
     <table>
       <thead><tr>
-        <th>Component</th><th>Point</th><th>Position</th><th>Location / Orientation</th><th>Ref</th><th>Amp (${u.label})</th><th>Phase (°)</th>
+        <th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp (${u.label})</th><th>Phase (°)</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    <div class="footer">${stamp}</div>
   </div>
-  <div class="footer">${stamp}</div>
 
-  <!-- PAGE 2: Diagnosis -->
-  <div class="page2 page-break">
+  <!-- PAGE 3: Diagnosis -->
+  <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
     <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
-    <div class="diag-section-title">Findings</div>
+    <div class="section-title">Findings</div>
     ${diagRows||'<div style="font-size:12px;color:#888;padding:8px 0">No diagnosis findings — enter measurement data to generate results.</div>'}
-    <div class="footer" style="padding:12px 0 0">${stamp}</div>
+    <div class="footer">${stamp}</div>
   </div>
 
   <script>
