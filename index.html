@@ -1,22 +1,1278 @@
-Title:
-Cross-Channel Phase Analysis
-RPM:
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cross-Channel Phase Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+html,body{height:100%;width:100%;overflow:hidden}
+body{font-family:'Roboto',sans-serif;font-size:14px;-webkit-text-size-adjust:100%;transition:background .2s,color .2s}
+body.light{--bg:#f0eeea;--bg2:#e8e6e1;--bg3:#fff;--bd:#ccc;--bd2:#bbb;--tx:#111;--tx2:#555;--tx3:#888;--tx4:#aaa;--cvbg:#fff;--inbg:#fff}
+body.dark {--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--bd:#444;--bd2:#555;--tx:#eee;--tx2:#aaa;--tx3:#666;--tx4:#444;--cvbg:#1e1e1e;--inbg:#2e2e2e}
+body{background:var(--bg);color:var(--tx)}
+.app{display:flex;flex-direction:column;height:100%;height:-webkit-fill-available}
+.topbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
+.topbar label{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.topbar input[type=text],.topbar input[type=number]{font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px}
+.topbar select{font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 24px 5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;background-repeat:no-repeat;background-position:right 7px center}
+body.light .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.dark  .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+.btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:36px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:inline-flex;align-items:center;gap:5px}
+.btn:active{opacity:.6}
+.tab-bar{display:flex;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd)}
+.tab-bar button{flex:1;padding:11px 0;font-size:15px;background:none;border:none;cursor:pointer;color:var(--tx3);border-bottom:3px solid transparent;font-family:'Roboto',sans-serif;touch-action:manipulation;user-select:none;-webkit-appearance:none}
+.tab-bar button.active{color:var(--tx);border-bottom-color:var(--tx);font-weight:700}
+.body-wrap{display:flex;flex:1;overflow:hidden;min-height:0}
+.sidebar{width:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 60px;display:flex;flex-direction:column;gap:8px;background:var(--bg2);flex-shrink:0}
+.chart-area{flex:1;overflow:hidden;background:var(--cvbg);position:relative}
+.chart-viewport{position:absolute;top:0;left:0;transform-origin:top left}
+.sidebar.hidden,.chart-area.hidden{display:none}
+h3{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin:4px 0 2px}
+.node-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.nc-hdr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.nc-sw{width:13px;height:13px;border-radius:50%;flex-shrink:0}
+input.nc-name{font-size:16px;font-weight:700;flex:1;min-width:80px;background:transparent;border:none;outline:none;color:var(--tx);border-bottom:1px solid transparent;font-family:'Roboto',sans-serif;padding:2px 0;-webkit-appearance:none}
+input.nc-name:focus{border-bottom-color:var(--bd2)}
+.rm{background:none;border:none;cursor:pointer;color:var(--tx3);font-size:22px;line-height:1;padding:4px 6px;touch-action:manipulation;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;user-select:none}
+.rm:active{color:var(--tx)}
+.row{display:flex;align-items:center;gap:6px;font-size:12px}
+.lbl{color:var(--tx2);min-width:54px;font-size:11px}
+input[type=range]{flex:1;height:28px;cursor:pointer;-webkit-appearance:none;appearance:none;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--bd);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:var(--tx);border-radius:50%;margin-top:-11px;border:2px solid var(--bg3)}
+.val{min-width:56px;text-align:right;font-size:11px;color:var(--tx)}
+.mrow{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 8px;display:flex;flex-direction:column;gap:5px}
+.mhdr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.mhdr input.mlabel{width:30px;font-size:16px;font-weight:700;background:transparent;border:none;border-bottom:1px solid var(--bd);outline:none;text-align:center;color:var(--tx);font-family:'Roboto',sans-serif;padding:2px 0;-webkit-appearance:none;min-height:28px}
+.nc-sel{font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:4px;padding:4px 24px 4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;background-repeat:no-repeat;background-position:right 6px center}
+body.light .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+.ref-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);padding:2px 0}
+.ref-row input[type=checkbox]{width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:var(--tx)}
+.add-m{background:none;border:1px dashed var(--bd2);border-radius:5px;padding:8px;font-size:13px;color:var(--tx3);cursor:pointer;text-align:center;width:100%;min-height:38px;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none}
+.add-m:active{background:var(--bg3)}
+.add-node{background:none;border:1px dashed var(--bd2);border-radius:8px;padding:10px;font-size:14px;color:var(--tx3);cursor:pointer;text-align:center;min-height:42px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:block}
+.add-node:active{background:var(--bg3)}
 
-Units:
-      mils
-      in/s
-      mm/s
-      G's
-      µm
-    
-Layout:
-      Horizontal
-      Vertical
-    
-🌙 Dark 🖨 Print / Share Date:
+/* ── Diagnosis panel ── */
+.diag-panel{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
+.diag-title{font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
+.diag-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border-left:4px solid #ccc}
+.diag-item.ok    {background:#f0fdf4;border-left-color:#22c55e}
+.diag-item.warn  {background:#fffbeb;border-left-color:#f59e0b}
+.diag-item.fault {background:#fef2f2;border-left-color:#ef4444}
+.diag-item.info  {background:#eff6ff;border-left-color:#3b82f6}
+body.dark .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
+body.dark .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
+body.dark .diag-item.fault {background:#291414;border-left-color:#ef4444}
+body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
+.diag-label{font-size:13px;font-weight:700;color:var(--tx)}
+.diag-desc {font-size:11px;color:var(--tx2);line-height:1.5}
+.diag-empty{font-size:12px;color:var(--tx3);text-align:center;padding:8px 0}
 
-Components
-Chart
-Diagnosis
-COMPONENTS & MEASUREMENTS
+/* Bubble color overrides rendered on canvas — handled in JS */
 
+/* Share / print modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.modal-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
+.modal-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
+.modal-actions{display:flex;flex-direction:column;gap:10px}
+.modal-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:15px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.modal-btn:active{opacity:.6}
+.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
+</style>
+</head>
+<body class="light">
+<div class="app">
+  <div class="topbar">
+    <label>Title: <input type="text" id="chart-title" value="Cross-Channel Phase Analysis" style="width:138px" oninput="redraw()"></label>
+    <label>RPM: <input type="number" id="global-rpm" placeholder="1780" style="width:68px" inputmode="numeric" oninput="redraw()"></label>
+    <label>Units: <select id="amp-unit" onchange="onUnitChange()">
+      <option value="mils">mils</option>
+      <option value="in/s" selected>in/s</option>
+      <option value="mm/s">mm/s</option>
+      <option value="G">G's</option>
+      <option value="µm">µm</option>
+    </select></label>
+    <label>Layout: <select id="layout" onchange="redraw()">
+      <option value="H">Horizontal</option>
+      <option value="V">Vertical</option>
+    </select></label>
+    <button class="btn" id="dm-btn" onclick="toggleDark()">🌙 Dark</button>
+    <button class="btn" id="print-btn">🖨 Print / Share</button>
+    <label>Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
+  </div>
+  <div class="tab-bar">
+    <button id="tab-components" class="active" onclick="showTab('components')">Components</button>
+    <button id="tab-chart" onclick="showTab('chart')">Chart</button>
+    <button id="tab-diag" onclick="showTab('diag')">Diagnosis</button>
+  </div>
+  <div class="body-wrap">
+    <div class="sidebar" id="panel-components">
+      <h3>Components &amp; Measurements</h3>
+      <div id="node-list"></div>
+    </div>
+    <div class="chart-area hidden" id="panel-chart">
+      <div class="chart-viewport" id="chart-viewport">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+    <div class="sidebar hidden" id="panel-diag">
+      <h3>Possible Diagnosis</h3>
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Based on Emerson/CSI cross-channel phase analysis principles. Always confirm with additional data.</div>
+      <div id="diag-results"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Share/Print modal -->
+<div class="modal-overlay" id="share-modal">
+  <div class="modal-sheet">
+    <h2>Print / Share Chart</h2>
+    <p>Choose how you'd like to export your chart.</p>
+    <div class="modal-actions">
+      <button class="modal-btn" id="share-image-btn">📤 Share Image (iPhone / iPad)</button>
+      <button class="modal-btn" id="download-image-btn">⬇️ Save Image to Device</button>
+      <button class="modal-btn" id="desktop-print-btn">🖨 Print (Desktop / Mac)</button>
+    </div>
+    <button class="modal-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── Version / Date ───────────────────────────────────────
+function getTodayStr(){
+  const d=new Date();
+  return (d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0')+'/'+d.getFullYear();
+}
+function getDocDate(){
+  const v=document.getElementById('doc-date');
+  return (v&&v.value.trim())||getTodayStr();
+}
+function getDocVersion(){
+  return '1.1.0';
+}
+
+// ── Theme ─────────────────────────────────────────────────
+let darkMode=false;
+function toggleDark(){
+  darkMode=!darkMode;
+  document.body.className=darkMode?'dark':'light';
+  document.getElementById('dm-btn').textContent=darkMode?'☀️ Light':'🌙 Dark';
+  redraw();
+}
+
+// ── Units ─────────────────────────────────────────────────
+const UNITS={
+  'mils':{label:'mils',max:20,  dec:2,step:0.01},
+  'in/s':{label:'in/s',max:2,   dec:3,step:0.001},
+  'mm/s':{label:'mm/s',max:50,  dec:2,step:0.1},
+  'G':   {label:"G's", max:10,  dec:3,step:0.001},
+  'µm':  {label:'µm',  max:500, dec:1,step:0.5},
+};
+function getUnit(){return UNITS[document.getElementById('amp-unit').value]||UNITS['mils'];}
+function onUnitChange(){renderSidebar();redraw();}
+
+const PALETTE=[{fill:'#1a6bbf'},{fill:'#1a9e75'},{fill:'#c94040'},{fill:'#7a7adc'},{fill:'#c97a1a'},{fill:'#555555'}];
+const SHAPES=['Motor','Gearbox','Fan','Pump','Turbine','Compressor','Blower','Coupling','Bearing','Shaft'];
+function pal(ci){return PALETTE[ci%PALETTE.length];}
+
+// ── Data ─────────────────────────────────────────────────
+let nodes=[
+  {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',meas:[
+    {id:1,pos:'AX_OB',label:'A',amp:0,phase:0,ref:false},
+    {id:2,pos:'AX_IB',label:'B',amp:0,phase:0,ref:false},
+    {id:3,pos:'VERT',label:'V1',amp:0,phase:0,ref:false},
+    {id:4,pos:'VERT',label:'V2',amp:0,phase:0,ref:false},
+    {id:5,pos:'HORIZ',label:'H1',amp:0,phase:0,ref:false},
+    {id:6,pos:'HORIZ',label:'H2',amp:0,phase:0,ref:false},
+  ]},
+  {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',meas:[
+    {id:7,pos:'AX_IB',label:'C',amp:0,phase:0,ref:false},
+    {id:8,pos:'AX_OB',label:'D',amp:0,phase:0,ref:false},
+    {id:9,pos:'VERT',label:'V1',amp:0,phase:0,ref:false},
+    {id:10,pos:'VERT',label:'V2',amp:0,phase:0,ref:false},
+    {id:11,pos:'HORIZ',label:'H1',amp:0,phase:0,ref:false},
+    {id:12,pos:'HORIZ',label:'H2',amp:0,phase:0,ref:false},
+  ]},
+];
+let nid=3,mid=20;
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ── Sidebar ───────────────────────────────────────────────
+function renderSidebar(){
+  const u=getUnit();
+  const el=document.getElementById('node-list');
+  if(!el)return;
+  el.innerHTML='';
+  nodes.forEach(n=>{
+    const p=pal(n.ci);
+    const card=document.createElement('div');
+    card.className='node-card';
+    card.innerHTML=`
+      <div class="nc-hdr">
+        <div class="nc-sw" style="background:${p.fill}"></div>
+        <input class="nc-name" value="${esc(n.name)}" onchange="upN(${n.id},'name',this.value)">
+        <button class="rm" onclick="removeNode(${n.id})">×</button>
+      </div>
+      <div class="row">
+        <span class="lbl">Shape</span>
+        <select class="nc-sel" style="flex:1" onchange="upN(${n.id},'shape',this.value)">
+          ${SHAPES.map(s=>`<option${s===n.shape?' selected':''}>${s}</option>`).join('')}
+        </select>
+        <select class="nc-sel" style="width:82px" onchange="upN(${n.id},'ci',+this.value)">
+          ${PALETTE.map((pp,i)=>`<option value="${i}"${i===n.ci?' selected':''}>${['Blue','Green','Red','Purple','Orange','Grey'][i]}</option>`).join('')}
+        </select>
+      </div>
+      <div class="row">
+        <span class="lbl">RPM</span>
+        <input type="text" inputmode="numeric" value="${esc(n.rpm)}" placeholder="override"
+          style="flex:1;font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:4px;padding:4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;min-height:32px;-webkit-appearance:none"
+          onchange="upN(${n.id},'rpm',this.value)">
+      </div>
+      <h3 style="margin-top:4px">Measurement points</h3>
+      <div id="meas-${n.id}"></div>
+      <button class="add-m" onclick="addMeas(${n.id})">+ measurement point</button>`;
+    el.appendChild(card);
+    const mEl=card.querySelector('#meas-'+n.id);
+    n.meas.forEach(m=>{
+      const md=document.createElement('div');
+      md.className='mrow';
+      md.innerHTML=measHTML(n.id,m,u);
+      mEl.appendChild(md);
+    });
+  });
+  const ab=document.createElement('button');
+  ab.className='add-node';ab.textContent='+ Add component';
+  ab.addEventListener('click',addNode);
+  el.appendChild(ab);
+}
+
+function measHTML(nid,m,u){
+  const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
+  const phaseVal=parseInt(m.phase)||0;
+  const posOpts=[
+    {v:'AX_OB',l:'Axial Outboard (free end)'},
+    {v:'AX_IB',l:'Axial Inboard (coupling end)'},
+    {v:'VERT',l:'Vertical (above)'},
+    {v:'HORIZ',l:'Horizontal (below)'},
+  ];
+  const numStyle=`font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;width:100%;text-align:center`;
+  return `
+    <div class="mhdr">
+      <input class="mlabel" value="${esc(m.label)}" onchange="upM(${nid},${m.id},'label',this.value)">
+      <select class="nc-sel" style="flex:1" onchange="upM(${nid},${m.id},'pos',this.value)">
+        ${posOpts.map(o=>`<option value="${o.v}"${o.v===m.pos?' selected':''}>${o.l}</option>`).join('')}
+      </select>
+      <button class="rm" onclick="rmMeas(${nid},${m.id})">×</button>
+    </div>
+    <div class="ref-row">
+      <input type="checkbox" id="ref-${m.id}" ${m.ref?'checked':''} onchange="upM(${nid},${m.id},'ref',this.checked)">
+      <label for="ref-${m.id}" style="cursor:pointer">Reference sensor</label>
+    </div>
+    <div class="row">
+      <span class="lbl">Amp (${u.label})</span>
+      <input type="number" inputmode="decimal" placeholder="0" value="${ampVal||''}"
+        min="0" max="${u.max}" step="${u.step}"
+        style="${numStyle}"
+        data-nid="${nid}" data-mid="${m.id}"
+        onchange="handleAmpInput(this)"
+        oninput="handleAmpInput(this)">
+    </div>
+    <div class="row">
+      <span class="lbl">Phase (-180° to 180°)</span>
+      <input type="number" inputmode="numeric" placeholder="0" value="${phaseVal||''}"
+        min="-180" max="180" step="1"
+        style="${numStyle}"
+        data-nid="${nid}" data-mid="${m.id}"
+        onchange="handlePhaseInput(this)"
+        oninput="handlePhaseInput(this)">
+    </div>`;
+}
+
+function handleAmpInput(el){
+  const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
+  const u=getUnit();
+  let val=parseFloat(el.value);
+  if(isNaN(val)||val<0)val=0;
+  if(val>u.max)val=u.max;
+  const n=nodes.find(x=>x.id===nid2);
+  if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.amp=val;}
+  runDiagnosis();
+}
+function handlePhaseInput(el){
+  const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
+  let val=parseInt(el.value);
+  if(isNaN(val))val=0;
+  if(val>180)val=180;
+  if(val<-180)val=-180;
+  const n=nodes.find(x=>x.id===nid2);
+  if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.phase=val;}
+  runDiagnosis();
+}
+function addNode(){
+  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',meas:[
+    {id:mid++,pos:'AX_OB',label:'A',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'AX_IB',label:'B',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'VERT',label:'V',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'HORIZ',label:'H',amp:0,phase:0,ref:false},
+  ]});
+  renderSidebar();redraw();
+}
+function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
+function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();redraw();}
+function addMeas(nid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas.push({id:mid++,pos:'VERT',label:'P',amp:0,phase:0,ref:false});renderSidebar();redraw();}
+function rmMeas(nid2,mid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();redraw();}
+function upM(nid2,mid2,k,v){const n=nodes.find(x=>x.id===nid2);if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m[k]=v;}redraw();}
+
+// ── Tabs ──────────────────────────────────────────────────
+function showTab(tab){
+  const panels={components:'panel-components',chart:'panel-chart',diag:'panel-diag'};
+  const tabs={components:'tab-components',chart:'tab-chart',diag:'tab-diag'};
+  Object.values(panels).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
+  Object.values(tabs).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+  const panel=document.getElementById(panels[tab]);
+  const tabEl=document.getElementById(tabs[tab]);
+  if(panel)panel.classList.remove('hidden');
+  if(tabEl)tabEl.classList.add('active');
+  if(tab==='chart'){runDiagnosis();requestAnimationFrame(redraw);}
+  if(tab==='diag')runDiagnosis();
+}
+
+// ── Canvas constants ──────────────────────────────────────
+const BR=26,ARM=18,BSLOT=BR+ARM+8,NW=140,NH=72,HPAD=88,VPAD=62,CG=50;
+const DPR=window.devicePixelRatio||1;
+
+function getTC(){
+  return darkMode
+    ?{bg:'#1e1e1e',tx:'#eeeeee',tx2:'#aaaaaa',tx3:'#666666',bub:'#2a2a2a',bstr:'#cccccc',ln:'#cccccc',cp1:'#444',cp2:'#555',dash:'#444',foot:'#555'}
+    :{bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
+}
+
+function applyFitScale(W,H){
+  const c=document.getElementById('panel-chart');
+  if(!c)return;
+  const cw=c.clientWidth||window.innerWidth,ch=c.clientHeight||window.innerHeight;
+  const s=Math.min(cw/W,ch/H,1);
+  const vp=document.getElementById('chart-viewport');
+  vp.style.transform=`scale(${s})`;
+  vp.style.left=Math.max(0,(cw-W*s)/2)+'px';
+  vp.style.top=Math.max(0,(ch-H*s)/2)+'px';
+}
+
+function setupCanvas(w,h){
+  const cv=document.getElementById('chart');
+  cv.width=Math.round(w*DPR);cv.height=Math.round(h*DPR);
+  cv.style.width=w+'px';cv.style.height=h+'px';
+  const ctx=cv.getContext('2d');ctx.scale(DPR,DPR);return ctx;
+}
+
+// Build a full-res offscreen canvas for export (always crisp, uses DPR)
+function buildExportCanvas(){
+  const N=nodes.length;if(!N)return null;
+  const tc=getTC();
+  const {W,H}=getChartDims();
+  const off=document.createElement('canvas');
+  off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
+  const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
+  renderChart(ctx,W,H,tc);
+  return off;
+}
+
+function redraw(){
+  const c=document.getElementById('panel-chart');
+  if(!c||c.classList.contains('hidden'))return;
+  if(!nodes.length){drawEmpty();return;}
+  if(document.getElementById('layout').value==='V'){
+    drawVertical();
+  } else {
+    const {W,H}=getChartDims();
+    const tc=getTC();
+    const ctx=setupCanvas(W,H);
+    renderChart(ctx,W,H,tc);
+    applyFitScale(W,H);
+  }
+}
+
+function drawVertical(){
+  if(!nodes.length){drawEmpty();return;}
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const u=getUnit();
+  const tc=getTC();
+  const N=nodes.length;
+
+  // HARDCODED portrait box: 72 wide, 140 tall
+  var BW=72, BH=140;
+  var AXH=BSLOT*2+8;
+  var VZW=BSLOT*2+6;
+  var HZW=BSLOT*2+6;
+  var CELLH=AXH+BH+AXH;
+  var CW=HPAD*2+VZW+BW+HZW+100;
+  var CH=VPAD*2+60+N*CELLH+(N-1)*CG+60;
+
+  var ctx=setupCanvas(CW,CH);
+  ctx.fillStyle=tc.bg; ctx.fillRect(0,0,CW,CH);
+
+  var XC=HPAD+VZW+BW/2;
+  var XL=XC-BW/2;
+  var XR=XC+BW/2;
+
+  ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;
+  ctx.textAlign='center';ctx.fillText('AXIAL (TOP)',XC,VPAD+10);
+  ctx.textAlign='center';ctx.fillText('AXIAL (BOTTOM)',XC,CH-14);
+  ctx.save();ctx.translate(HPAD-22,CH/2);ctx.rotate(-Math.PI/2);ctx.fillText('VERTICAL',0,0);ctx.restore();
+  ctx.save();ctx.translate(CW-22,CH/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
+
+  var lgx=HPAD-22,lgy=VPAD+32;
+  ctx.save();
+  ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+  ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+  ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText('Amplitude',lgx,lgy-BR*0.42);ctx.fillText('Phase',lgx,lgy+BR*0.42);
+  ctx.textBaseline='alphabetic';ctx.restore();
+  ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='left';
+  ctx.fillText(title,lgx+BR+8,lgy+4);
+
+  function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id);}
+  function dsh(x1,y1,x2,y2){
+    ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;
+    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  nodes.forEach(function(node,ni){
+    var p=pal(node.ci);
+    var cellTop=VPAD+60+ni*(CELLH+CG);
+    var boxTop=cellTop+AXH;
+    var boxBot=boxTop+BH;
+    var boxMid=boxTop+BH/2;
+    var rpm=node.rpm||grpm;
+
+    var axIB=node.meas.filter(function(m){return m.pos==='AX_IB';});
+    var axOB=node.meas.filter(function(m){return m.pos==='AX_OB';});
+    var vM=node.meas.filter(function(m){return m.pos==='VERT';});
+    var hM=node.meas.filter(function(m){return m.pos==='HORIZ';});
+
+    // Coupling
+    if(ni<N-1){
+      var nextBoxTop=VPAD+60+(ni+1)*(CELLH+CG)+AXH;
+      var gapMid=(boxBot+nextBoxTop)/2;
+      ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(XC,boxBot+2);ctx.lineTo(XC,nextBoxTop-2);ctx.stroke();
+      ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.roundRect(XC-20,gapMid-7,40,14,4);ctx.fill();ctx.stroke();
+      ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(XC-13,gapMid-11,26,22,3);ctx.fill();ctx.stroke();
+    }
+
+    // RPM
+    ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';
+    ctx.fillText('RPM '+(rpm||'____'),XR+HZW/2+8,boxMid-4);
+
+    // PORTRAIT BOX — 72 wide x 140 tall
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(XL,boxTop,72,140,5);ctx.fill();ctx.stroke();
+    ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';
+    ctx.fillText(node.name,XC,boxTop+18);
+    drawShapeIcon(ctx,node.shape,XC,boxTop+90,24,p.fill);
+    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='left';
+    if(axIB.length) ctx.fillText(axIB.map(function(m){return m.label;}).join('/'),XL+3,boxTop+130);
+    if(axOB.length) ctx.fillText(axOB.map(function(m){return m.label;}).join('/'),XL+3,boxBot-4);
+
+    // AXIAL INBOARD top
+    axIB.forEach(function(m,i){
+      var span=(axIB.length-1)*(BSLOT*2+4);
+      var bx=XC-span/2+i*(BSLOT*2+4);
+      var by=cellTop+AXH/2;
+      dsh(XC,boxTop,bx,by+BSLOT);bub(m,bx,by);
+    });
+
+    // AXIAL OUTBOARD bottom
+    axOB.forEach(function(m,i){
+      var span=(axOB.length-1)*(BSLOT*2+4);
+      var bx=XC-span/2+i*(BSLOT*2+4);
+      var by=cellTop+CELLH-AXH/2;
+      dsh(XC,boxBot,bx,by-BSLOT);bub(m,bx,by);
+    });
+
+    // VERTICAL left
+    vM.forEach(function(m,i){
+      var span=(vM.length-1)*(BSLOT*2+4);
+      var bx=XL-VZW/2;
+      var by=boxMid-span/2+i*(BSLOT*2+4);
+      dsh(XL,boxMid,bx+BSLOT,by);bub(m,bx,by);
+    });
+
+    // HORIZONTAL right
+    hM.forEach(function(m,i){
+      var span=(hM.length-1)*(BSLOT*2+4);
+      var bx=XR+HZW/2;
+      var by=boxMid-span/2+i*(BSLOT*2+4);
+      dsh(XR,boxMid,bx-BSLOT,by);bub(m,bx,by);
+    });
+  });
+
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
+  ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees | Vertical Equipment Train',HPAD,CH-4);
+  var stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-4);
+  applyFitScale(CW,CH);
+}
+
+function drawEmpty(){
+  const tc=getTC();
+  const ctx=setupCanvas(300,160);
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,300,160);
+  ctx.font='13px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';
+  ctx.fillText('Add components to begin',150,80);
+  applyFitScale(300,160);
+}
+
+function getChartDims(){
+  const N=nodes.length||1;
+  const isV=document.getElementById('layout').value==='V';
+  if(!isV){
+    const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
+    const W=HPAD*2+N*NCW+(N-1)*CG;
+    const yNT=VPAD+TAH+NTS;
+    return {W,H:yNT+NH+HAH+28+VPAD/2};
+  } else {
+    const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
+    return {W:HPAD*2+VZW+NW+HZW+20,H:VPAD*2+N*nCH+(N-1)*CG+40};
+  }
+}
+
+function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId){
+  const u=getUnit(),r=BR;
+  ctx.save();
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.fillStyle=tc.bub;ctx.fill();
+  const sevColor=measId&&bubbleSeverity[measId]?bubbleSeverity[measId]:null;
+  const outlineColor=sevColor==='fault'?'#ef4444':sevColor==='warn'?'#f59e0b':sevColor==='ok'?'#22c55e':tc.bstr;
+  const outlineWidth=sevColor?2.5:isRef?2:1.3;
+  if(isRef){ctx.setLineDash([4,3]);}else{ctx.setLineDash([]);}
+  ctx.strokeStyle=outlineColor;ctx.lineWidth=outlineWidth;
+  ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+  ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
+  const phDisp=(parseInt(phase)||0);
+  ctx.font='9px Roboto,sans-serif';ctx.fillText(phDisp+'°',cx,cy+r*0.42);
+  ctx.font='bold 10px Roboto,sans-serif';ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle=tc.tx;
+  ctx.fillText(label,cx+r+3,cy-r*0.3);
+  if(isRef){ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.fillText('REF',cx+r+3,cy+r*0.35);}
+  const rad=((parseInt(phase)||0)-90)*Math.PI/180;
+  const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+  const ax2=cx+Math.cos(rad)*(r+ARM),ay2=cy+Math.sin(rad)*(r+ARM);
+  ctx.strokeStyle=tc.ln;ctx.lineWidth=1.8;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+  const al=5,aa=0.45;
+  ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+  ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
+  ctx.restore();
+}
+
+function drawShapeIcon(ctx,shape,cx,cy,size,color){
+  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1.3;ctx.fillStyle='none';
+  const s=size*0.5;
+  switch(shape){
+    case 'Motor':ctx.beginPath();ctx.roundRect(cx-s,cy-s*.6,s*2,s*1.2,3);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.35,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx-s*1.4,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+s,cy);ctx.lineTo(cx+s*1.4,cy);ctx.stroke();break;
+    case 'Gearbox':
+      function gear(gx,gy,r,t){const tr=r*1.38;ctx.beginPath();for(let i=0;i<t;i++){const a1=i*Math.PI*2/t-.18,a2=i*Math.PI*2/t+.18,a3=(i+.5)*Math.PI*2/t-.12,a4=(i+.5)*Math.PI*2/t+.12;if(i===0)ctx.moveTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));else ctx.lineTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a1),gy+tr*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a2),gy+tr*Math.sin(a2));ctx.lineTo(gx+r*Math.cos(a3),gy+r*Math.sin(a3));ctx.lineTo(gx+r*Math.cos(a4),gy+r*Math.sin(a4));}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(gx,gy,r*.35,0,Math.PI*2);ctx.stroke();}
+      gear(cx-s*.38,cy,s*.5,7);gear(cx+s*.48,cy,s*.35,5);break;
+    case 'Fan':case 'Blower':ctx.beginPath();ctx.arc(cx,cy,s*.22,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.56,s*.17,s*.37,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}break;
+    case 'Pump':ctx.beginPath();ctx.arc(cx,cy,s*.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.25,0,Math.PI*2);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+s*.7,cy);ctx.lineTo(cx+s,cy);ctx.stroke();ctx.lineWidth=1.3;for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.25);ctx.quadraticCurveTo(s*.27,s*.37,s*.27,s*.66);ctx.stroke();ctx.restore();}break;
+    case 'Turbine':ctx.beginPath();ctx.arc(cx,cy,s*.67,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.21,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(0,s*.21);ctx.quadraticCurveTo(s*.31,s*.31,s*.17,s*.61);ctx.stroke();ctx.restore();}break;
+    case 'Compressor':ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.66);ctx.lineTo(0,s*.29);ctx.moveTo(-s*.11,s*.43);ctx.lineTo(0,s*.29);ctx.lineTo(s*.11,s*.43);ctx.stroke();ctx.restore();}break;
+    case 'Coupling':ctx.beginPath();ctx.roundRect(cx-s,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.beginPath();ctx.roundRect(cx+s*.3,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(cx-s*.3,cy);ctx.lineTo(cx+s*.3,cy);ctx.stroke();break;
+    case 'Bearing':ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.33,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.arc(cx+Math.cos(a)*s*.51,cy+Math.sin(a)*s*.51,s*.13,0,Math.PI*2);ctx.stroke();}break;
+    default:ctx.beginPath();ctx.roundRect(cx-s,cy-s*.17,s*2,s*.34,3);ctx.stroke();ctx.beginPath();ctx.arc(cx-s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx+s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function renderChart(ctx,W,H,tc){
+  const N=nodes.length;if(!N)return;
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const u=getUnit();
+  const isV=document.getElementById('layout').value==='V';
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+
+  function bubble(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id);}
+  function dash(x1,y1,x2,y2){ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+
+  if(!isV){
+    const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
+    const yNT=VPAD+TAH+NTS,yM=yNT+NH/2,yNB=yNT+NH;
+    // legend
+    const lgx=HPAD-24,lgy=VPAD+18;
+    ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+    ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Amplitude',lgx,lgy-BR*.42);ctx.fillText('Phase',lgx,lgy+BR*.42);ctx.textBaseline='alphabetic';
+    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='left';ctx.fillText(title,lgx+BR+10,lgy+5);
+    ctx.font='13px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+grpm,W/2,VPAD+14);
+    const rw=ctx.measureText('RPM  '+grpm).width+20;ctx.strokeStyle=tc.tx2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-rw/2+30,VPAD+17);ctx.lineTo(W/2+rw/2,VPAD+17);ctx.stroke();
+    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.fillText('VERTICAL',W/2,VPAD+TAH+14);ctx.fillText('HORIZONTAL',W/2,yNB+HAH+20);
+    ctx.font='bold 12px Roboto,sans-serif';ctx.textAlign='right';ctx.fillText('AXIAL',HPAD-6,yM+4);ctx.textAlign='left';ctx.fillText('AXIAL',W-HPAD+6,yM+4);
+    nodes.forEach((node,ni)=>{
+      const p=pal(node.ci);const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
+      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
+      const vM=node.meas.filter(m=>m.pos==='VERT'),hM=node.meas.filter(m=>m.pos==='HORIZ');
+      if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
+      const yR=yNT-RPG-RPH;ctx.font='12px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+(rpm||'____'),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
+      ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
+      ctx.font='bold 14px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.fillText(node.name,xC,yNT+20);
+      drawShapeIcon(ctx,node.shape,xC,yNT+NH*.66,26,p.fill);
+      ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=p.fill;
+      if(axL.length){ctx.textAlign='left';ctx.fillText(axL.map(m=>m.label).join('/'),xNL+5,yNT+NH-5);}
+      if(axR.length){ctx.textAlign='right';ctx.fillText(axR.map(m=>m.label).join('/'),xNR-5,yNT+14);}
+      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNT-VAH/2-RPH-RPG-4;dash(bx,by+BSLOT,xC,yNT);bubble(m,bx,by);});
+      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNB+HAH/2+4;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by);});
+      axL.forEach((m,i)=>{const sh=axL.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+AZW/2;dash(xNL,yM,bx+BSLOT,by);bubble(m,bx,by);});
+      axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by);});
+    });
+    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
+    ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+    const ver='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-8);
+  } else {
+    const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
+    const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
+    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.fillText(title,W/2,VPAD-22);
+    ctx.font='bold 12px Roboto,sans-serif';ctx.fillText('AXIAL',xC,VPAD-6);ctx.fillText('AXIAL',xC,H-VPAD/3+8);
+    ctx.save();ctx.translate(HPAD-18,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('VERTICAL',0,0);ctx.restore();
+    ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
+    nodes.forEach((node,ni)=>{
+      const p=pal(node.ci);const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
+      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
+      const vM=node.meas.filter(m=>m.pos==='VERT'),hM=node.meas.filter(m=>m.pos==='HORIZ');
+      if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
+      ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('RPM '+(rpm||'____'),xNR+HZW+4,yCx-4);
+      ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
+      ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.fillText(node.name,xC,yNT+18);
+      drawShapeIcon(ctx,node.shape,xC,yNT+NH*.65,24,p.fill);
+      axL.forEach((m,i)=>{const sp=(axL.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+AZH/2;dash(xC,yNT,bx,by+BSLOT);bubble(m,bx,by);});
+      axR.forEach((m,i)=>{const sp=(axR.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+nCH-AZH/2;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by);});
+      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xNL-VZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNL,yCx,bx+BSLOT,by);bubble(m,bx,by);});
+      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xNR+HZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNR,yCx,bx-BSLOT,by);bubble(m,bx,by);});
+    });
+    // Version / date stamp bottom center
+    const vstamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textAlign='center';ctx.fillText(vstamp,W/2,H-8);
+  }
+}
+
+// ── Share / Print modal ───────────────────────────────────
+function openModal(){
+  document.getElementById('share-modal').classList.add('show');
+}
+function closeModal(){
+  document.getElementById('share-modal').classList.remove('show');
+}
+
+// Returns a PNG data URL from the full-res export canvas
+function getExportDataURL(){
+  const off=buildExportCanvas();
+  return off ? off.toDataURL('image/png') : null;
+}
+
+// iOS share: use Web Share API with a File blob — shows native share sheet
+async function shareImage(){
+  closeModal();
+  const off=buildExportCanvas();
+  if(!off){alert('Add components first.');return;}
+  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
+  off.toBlob(async(blob)=>{
+    if(!blob)return;
+    const file=new File([blob],title.replace(/\s+/g,'_')+'.png',{type:'image/png'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({files:[file],title:title,text:'Cross-Channel Phase Analysis Chart'});
+      } catch(e){
+        if(e.name!=='AbortError') saveImageFallback(off,title);
+      }
+    } else {
+      saveImageFallback(off,title);
+    }
+  },'image/png');
+}
+
+// Fallback: trigger <a download> — works on Android, Desktop, modern iOS (Files app)
+function saveImageFallback(off,title){
+  const a=document.createElement('a');
+  a.href=off.toDataURL('image/png');
+  a.download=(title||'chart').replace(/\s+/g,'_')+'.png';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function downloadImage(){
+  closeModal();
+  const off=buildExportCanvas();
+  if(!off){alert('Add components first.');return;}
+  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
+  saveImageFallback(off,title);
+}
+
+// Desktop print: data URL in new tab, auto-print
+function desktopPrint(){
+  closeModal();
+  const off=buildExportCanvas();
+  if(!off){alert('Add components first.');return;}
+  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
+  const u=getUnit();
+  const imgData=off.toDataURL('image/png');
+  const pl={'AX_IB':'Axial Inboard','AX_OB':'Axial Outboard','VERT':'Vertical','HORIZ':'Horizontal'};
+  let rows='';
+  nodes.forEach(n=>n.meas.forEach(m=>{
+    rows+=`<tr><td>${n.name}</td><td>${m.label}</td><td>${pl[m.pos]||m.pos}</td><td>${m.ref?'Yes':''}</td><td>${(parseFloat(m.amp)||0).toFixed(u.dec)}</td><td>${parseInt(m.phase)||0}</td></tr>`;
+  }));
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+  <style>body{margin:16px;font-family:Arial,sans-serif}h2{font-size:15px;margin-bottom:10px}img{max-width:100%;display:block;margin-bottom:14px}table{border-collapse:collapse;width:100%;font-size:11px}td,th{border:1px solid #ccc;padding:4px 8px}th{background:#f5f5f5}@media print{@page{size:landscape;margin:.8cm}body{margin:0}}</style>
+  </head><body><h2>${title}</h2><img src="${imgData}">
+  <table><thead><tr><th>Component</th><th>Point</th><th>Position</th><th>Ref</th><th>Amp (${u.label})</th><th>Phase (°)</th></tr></thead><tbody>${rows}</tbody></table>
+  <script>var i=document.querySelector('img');i.onload=function(){window.print();};if(i.complete)window.print();<\/script>
+  </body></html>`;
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+  else{alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');}
+}
+
+// ── Diagnosis Engine ─────────────────────────────────────
+function phaseDiff(a,b){
+  let d=Math.abs((parseFloat(a)||0)-(parseFloat(b)||0));
+  if(d>180)d=360-d;
+  return d;
+}
+function isInPhase(d,tol){return d<=tol;}
+function isOutOfPhase(d,tol){return d>=(180-tol);}
+
+let bubbleSeverity={};
+let diagResults=[];
+
+function setSev(id,sev){
+  // Only upgrade severity, never downgrade (fault > warn > ok)
+  const rank={ok:1,warn:2,fault:3};
+  if(!bubbleSeverity[id]||rank[sev]>rank[bubbleSeverity[id]]){
+    bubbleSeverity[id]=sev;
+  }
+}
+
+function runDiagnosis(){
+  bubbleSeverity={};
+  diagResults=[];
+  const results=diagResults;
+  const TOL=30;
+
+  const isVertTrain=document.getElementById('layout').value==='V';
+
+  if(nodes.length<2){
+    results.push({type:'info',label:'Need at least 2 components',desc:'Add a driver and driven component connected across a coupling to run cross-channel phase diagnosis.'});
+    renderDiagResults(results);redraw();return;
+  }
+
+  // Vertical train header note
+  if(isVertTrain){
+    results.push({type:'info',
+      label:'ℹ Vertical Equipment Train — Modified Fault Physics',
+      desc:'Vertical mount detected. Key differences: (1) Gravity acts along the shaft axis — axial readings are more sensitive to unbalance and looseness. (2) The upper bearing carries less load than on horizontal machines, increasing susceptibility to bearing looseness. (3) Soft foot manifests as axial rocking rather than radial. (4) Misalignment phase patterns remain the same across the coupling, but angular misalignment may be harder to detect if the coupling allows axial float. (5) Radial directions (V and H sensors) are both perpendicular to the shaft — interpret accordingly.'});
+  }
+
+  for(let i=0;i<nodes.length-1;i++){
+    const A=nodes[i],B=nodes[i+1];
+    const lbl=A.name+' → '+B.name;
+
+    // All measurements with any data entered
+    const hasVal=(m)=>parseFloat(m.amp)>0||parseInt(m.phase)!==0;
+
+    const aVert =A.meas.filter(m=>m.pos==='VERT');
+    const bVert =B.meas.filter(m=>m.pos==='VERT');
+    const aHoriz=A.meas.filter(m=>m.pos==='HORIZ');
+    const bHoriz=B.meas.filter(m=>m.pos==='HORIZ');
+
+    // For axial: compare ANY axial on driver side vs ANY axial on driven side
+    // This handles all labeling conventions (AX_L, AX_R)
+    const aAxial=A.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
+    const bAxial=B.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
+
+    // ── ANGULAR MISALIGNMENT — axial phase across coupling ──────────
+    // Prioritize inboard-to-inboard pairing (coupling end to coupling end)
+    // This is the most diagnostic comparison for angular misalignment
+    // Also include outboard pairings as secondary check
+    const aIB=A.meas.filter(m=>m.pos==='AX_IB');
+    const bIB=B.meas.filter(m=>m.pos==='AX_IB');
+    const aOB=A.meas.filter(m=>m.pos==='AX_OB');
+    const bOB=B.meas.filter(m=>m.pos==='AX_OB');
+    const axPairs=[];
+    // Inboard-inboard pairs first (highest diagnostic value)
+    aIB.forEach(a=>bIB.forEach(b=>{
+      if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'IB-IB'});
+    }));
+    // If no IB-IB pairs, fall back to all axials
+    if(axPairs.length===0){
+      aAxial.forEach(a=>bAxial.forEach(b=>{
+        if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'any'});
+      }));
+    }
+
+    let axOut=0,axIn=0;
+    axPairs.forEach(({a,b})=>{
+      const d=phaseDiff(a.phase,b.phase);
+      if(isOutOfPhase(d,TOL)){axOut++;setSev(a.id,'fault');setSev(b.id,'fault');}
+      else if(isInPhase(d,TOL)){axIn++;setSev(a.id,'ok');setSev(b.id,'ok');}
+      else{setSev(a.id,'warn');setSev(b.id,'warn');}
+    });
+
+    if(axPairs.length>0){
+      if(axOut>0){
+        results.push({type:'fault',
+          label:'⚠ Angular Misalignment — '+lbl,
+          desc:'Axial phase angles across the coupling are ~180° out of phase (±'+TOL+'°). Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'. Elevated axial amplitudes confirm this fault.'});
+      } else if(axIn===axPairs.length){
+        results.push({type:'ok',
+          label:'✓ Axial Phase Normal — '+lbl,
+          desc:'Axial phase across '+lbl+' is in phase (±'+TOL+'°). No angular misalignment indicated.'});
+      } else {
+        results.push({type:'warn',
+          label:'⚡ Axial Phase Marginal — '+lbl,
+          desc:'Axial phase across '+lbl+' is neither fully in phase nor 180° out. Monitor for developing angular misalignment. Could also indicate coupling wear or thermal growth.'});
+      }
+    }
+
+    // ── OFFSET MISALIGNMENT — radial phase across coupling ──────────
+    // Pair by index: first V on driver with first V on driven, etc.
+    // This prevents cross-pairing (e.g. a soft-foot-affected reading pairing
+    // with a healthy reading on the other machine and falsely flagging misalignment)
+    const radPairs=[];
+    const vLen=Math.min(aVert.length,bVert.length);
+    for(let vi=0;vi<vLen;vi++){
+      const av=aVert[vi],bv=bVert[vi];
+      if(hasVal(av)||hasVal(bv)) radPairs.push({a:av,b:bv,dir:'Vertical'});
+    }
+    const hLen=Math.min(aHoriz.length,bHoriz.length);
+    for(let hi=0;hi<hLen;hi++){
+      const ah=aHoriz[hi],bh=bHoriz[hi];
+      if(hasVal(ah)||hasVal(bh)) radPairs.push({a:ah,b:bh,dir:'Horizontal'});
+    }
+
+    let radOut=0,radIn=0,radWarn=0;
+    radPairs.forEach(({a,b})=>{
+      const d=phaseDiff(a.phase,b.phase);
+      if(isOutOfPhase(d,TOL)){radOut++;setSev(a.id,'fault');setSev(b.id,'fault');}
+      else if(isInPhase(d,TOL)){radIn++;if(!bubbleSeverity[a.id])setSev(a.id,'ok');if(!bubbleSeverity[b.id])setSev(b.id,'ok');}
+      else{radWarn++;if(!bubbleSeverity[a.id]||bubbleSeverity[a.id]==='ok')setSev(a.id,'warn');if(!bubbleSeverity[b.id]||bubbleSeverity[b.id]==='ok')setSev(b.id,'warn');}
+    });
+
+    if(radPairs.length>0){
+      if(radOut>0&&radOut>=radIn){
+        results.push({type:'fault',
+          label:'⚠ Offset (Parallel) Misalignment — '+lbl,
+          desc:'Radial phase angles across '+lbl+' coupling are ~180° out of phase (±'+TOL+'°). Strong indicator of offset/parallel misalignment. Verify with 1× amplitude and spectrum data.'});
+      } else if(radWarn>0&&radOut===0&&radWarn>=radPairs.length/2){
+        // Only flag if MAJORITY of radial pairs are in the warn zone
+        // A single pair with a slightly off reading shouldn't flag the whole train
+        results.push({type:'warn',
+          label:'⚡ Possible Radial Issue — '+lbl,
+          desc:'Multiple radial phase readings across '+lbl+' show partial phase shift ('+radWarn+' of '+radPairs.length+' pairs). May indicate developing offset misalignment, soft foot, or resonance. Monitor closely.'});
+      } else if(radIn===radPairs.length&&radPairs.length>0){
+        results.push({type:'ok',
+          label:'✓ Radial Phase Normal — '+lbl,
+          desc:'Radial phase across '+lbl+' is in phase (±'+TOL+'°). No offset misalignment indicated from phase data.'});
+      }
+    }
+
+    // ── COMBINED MISALIGNMENT ───────────────────────────────────────
+    if(axOut>0&&radOut>0){
+      results.push({type:'fault',
+        label:'⚠ Combined Misalignment — '+lbl,
+        desc:'Both axial AND radial phase indicate misalignment across '+lbl+'. Combined angular and offset misalignment accelerates coupling and bearing failure. Realignment required.'});
+    }
+
+    // ── BENT SHAFT / SOFT FOOT — 180° between bearing locations same machine ─
+    const bentFlagged=new Set();
+    [A,B].forEach(node=>{
+      if(bentFlagged.has(node.id))return;
+      const v=node.meas.filter(m=>m.pos==='VERT'&&hasVal(m));
+      const h=node.meas.filter(m=>m.pos==='HORIZ'&&hasVal(m));
+      let flagged=false;
+      if(v.length>=2){
+        for(let x=0;x<v.length-1;x++){
+          for(let y=x+1;y<v.length;y++){
+            const d=phaseDiff(v[x].phase,v[y].phase);
+            if(isOutOfPhase(d,TOL)&&!flagged){
+              setSev(v[x].id,'warn');setSev(v[y].id,'warn');
+              results.push({type:'warn',
+                label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
+                desc:'Vertical phase readings at different bearing locations on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Classic signature of soft foot (machine rocking on base), bent shaft, or structural looseness. Loosen one foot bolt at a time — if vibration changes, that is the problem foot.'});
+              flagged=true;bentFlagged.add(node.id);
+            }
+          }
+        }
+      }
+      if(!flagged&&h.length>=2){
+        for(let x=0;x<h.length-1;x++){
+          for(let y=x+1;y<h.length;y++){
+            const d=phaseDiff(h[x].phase,h[y].phase);
+            if(isOutOfPhase(d,TOL)){
+              setSev(h[x].id,'warn');setSev(h[y].id,'warn');
+              results.push({type:'warn',
+                label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
+                desc:'Horizontal phase readings at different bearing locations on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Possible soft foot, bent shaft, or rocking in horizontal plane. Check hold-down bolts and base integrity.'});
+              bentFlagged.add(node.id);
+            }
+          }
+        }
+      }
+    });
+
+    // ── AXIAL OUTBOARD vs INBOARD SAME MACHINE — Bent Shaft (Axial) ─────
+    // If OB and IB axials on the same machine are ~180° out of phase,
+    // this indicates a bent shaft causing the shaft to twist axially,
+    // OR severe internal looseness / bearing failure allowing axial rocking
+    [A,B].forEach(node=>{
+      const ob=node.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
+      const ib=node.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
+      if(ob.length>0&&ib.length>0){
+        ob.forEach(obm=>{
+          ib.forEach(ibm=>{
+            const d=phaseDiff(obm.phase,ibm.phase);
+            if(isOutOfPhase(d,TOL)){
+              setSev(obm.id,'fault');setSev(ibm.id,'fault');
+              results.push({type:'fault',
+                label:'⚠ Axial Phase Reversal — '+node.name,
+                desc:'Outboard axial ('+obm.label+': '+obm.phase+'°) and inboard axial ('+ibm.label+': '+ibm.phase+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
+            } else if(d>60&&d<120){
+              // ~90° axial OB vs IB = unusual, warrants attention
+              setSev(obm.id,'warn');setSev(ibm.id,'warn');
+              results.push({type:'warn',
+                label:'⚡ Unusual Axial Phase Relationship — '+node.name,
+                desc:'Outboard ('+obm.label+') and inboard ('+ibm.label+') axial readings on '+node.name+' are ~90° out of phase (diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+            }
+          });
+        });
+      }
+    });
+
+    // ── V vs H SAME MACHINE — physics check ─────────────────────────
+    // V and H sensors are 90° apart physically so ~90° phase difference is NORMAL
+    // ~0° or ~180° V vs H on same machine = abnormal (looseness, soft foot, structural)
+    // ~90° V vs H with unequal amplitudes = possible resonance (directional)
+    [A,B].forEach(node=>{
+      const v=node.meas.filter(m=>m.pos==='VERT'&&parseFloat(m.amp)>0);
+      const h=node.meas.filter(m=>m.pos==='HORIZ'&&parseFloat(m.amp)>0);
+      if(v.length>0&&h.length>0){
+        const vA=parseFloat(v[0].amp),hA=parseFloat(h[0].amp);
+        const ampRatio=Math.min(vA,hA)/Math.max(vA,hA);
+        const pd=phaseDiff(v[0].phase,h[0].phase);
+        // V and H sensors are physically 90° apart
+        // BOTH +90° and -90° (=270°) are normal depending on sensor orientation
+        // phaseDiff returns 0-180, so we check if it's close to 90°
+        // We also account for sign convention: treat the difference as normal
+        // if it falls within 60-120° band (±30° around 90°)
+        // Only flag if CLEARLY near 0° (in phase) or 180° (anti-phase)
+        const isNormal90=(pd>=55&&pd<=125); // ~90° normal band, generous ±35°
+        const isAbnormal0=(pd<25);           // clearly in phase = structural issue
+        const isAbnormal180=(pd>155);        // clearly anti-phase = structural issue
+
+        if(isAbnormal0||isAbnormal180){
+          // V and H clearly in phase or anti-phase — structural issue
+          setSev(v[0].id,'warn');setSev(h[0].id,'warn');
+          results.push({type:'warn',
+            label:'⚡ Abnormal V/H Phase Relationship — '+node.name,
+            desc:'Vertical and horizontal readings on '+node.name+' are '+(pd<25?'nearly in phase (':' ~180° out of phase (')+Math.round(pd)+'°). Expected ~90° due to sensor placement. This pattern can indicate structural looseness, soft foot, or resonance. Verify sensor orientation and check base integrity.'});
+        } else if(isNormal90&&ampRatio<0.4){
+          // ~90° apart but very different amplitudes = directional/resonance
+          results.push({type:'warn',
+            label:'⚡ Possible Directional Resonance — '+node.name,
+            desc:'V/H phase on '+node.name+' is ~90° (normal) but amplitudes differ significantly (ratio: '+ampRatio.toFixed(2)+'). This directional amplitude difference with normal phase suggests a resonance in one direction or anisotropic stiffness. Check natural frequencies.'});
+        }
+        // ~90° with similar amplitudes = healthy — no flag needed
+      }
+    });
+  }
+
+  // ── IMBALANCE — V vs V or H vs H in phase across same machine ─────
+  // Real imbalance check: compare same-direction readings at different
+  // bearing locations on the same machine — they should be in phase for imbalance
+  // Do NOT compare V vs H (those are always ~90° apart — that is normal physics)
+  nodes.forEach(node=>{
+    const v=node.meas.filter(m=>m.pos==='VERT'&&parseFloat(m.amp)>0);
+    const h=node.meas.filter(m=>m.pos==='HORIZ'&&parseFloat(m.amp)>0);
+    // Need readings in same direction at multiple bearing locations
+    // If we have V readings at 2+ locations, compare them
+    let imbalanceFound=false;
+    if(v.length>=2){
+      const pd=phaseDiff(v[0].phase,v[1].phase);
+      const vA0=parseFloat(v[0].amp),vA1=parseFloat(v[1].amp);
+      const ampRatio=Math.min(vA0,vA1)/Math.max(vA0,vA1);
+      if(isInPhase(pd,TOL)&&ampRatio>0.5&&vA0>0&&vA1>0){
+        imbalanceFound=true;
+      }
+    }
+    if(!imbalanceFound&&h.length>=2){
+      const pd=phaseDiff(h[0].phase,h[1].phase);
+      const hA0=parseFloat(h[0].amp),hA1=parseFloat(h[1].amp);
+      const ampRatio=Math.min(hA0,hA1)/Math.max(hA0,hA1);
+      if(isInPhase(pd,TOL)&&ampRatio>0.5&&hA0>0&&hA1>0){
+        imbalanceFound=true;
+      }
+    }
+    // Only flag imbalance if amplitudes are meaningfully elevated
+    // Thresholds by unit: in/s=0.25, mils=3.0, G=0.3, mm/s=6.0, µm=75
+    const uKey=document.getElementById('amp-unit').value;
+    const imbThresh={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
+    const anyElevated=v.some(m=>parseFloat(m.amp)>imbThresh)||h.some(m=>parseFloat(m.amp)>imbThresh);
+    if(imbalanceFound&&anyElevated){
+      results.push({type:'warn',
+        label:'⚡ Possible Imbalance — '+node.name,
+        desc:'Same-direction (V or H) phase readings at different bearing locations on '+node.name+' are in phase with comparable amplitudes and elevated levels. Consistent with mass imbalance generating a uniform rotating force. Confirm with elevated 1× radial amplitudes in spectrum data.'});
+    }
+  });
+
+  // ── COMPONENT-SPECIFIC DIAGNOSIS ─────────────────────────────────────
+  // Runs automatically based on the shape selected for each node
+  nodes.forEach(function(node){
+    var shape=node.shape;
+    var hasVal=function(m){return parseFloat(m.amp)>0||parseInt(m.phase)!==0;};
+    var uKey=document.getElementById('amp-unit').value;
+    var ampThresh={'mils':0.15,'in/s':0.08,'mm/s':2.0,'G':0.1,'µm':20}[uKey]||0.08;
+    var highAmp={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
+
+    var vM=node.meas.filter(function(m){return m.pos==='VERT'&&parseFloat(m.amp)>0;});
+    var hM=node.meas.filter(function(m){return m.pos==='HORIZ'&&parseFloat(m.amp)>0;});
+    var axAll=node.meas.filter(function(m){return (m.pos==='AX_IB'||m.pos==='AX_OB')&&parseFloat(m.amp)>0;});
+
+    var maxV=vM.length?Math.max.apply(null,vM.map(function(m){return parseFloat(m.amp);})):0;
+    var maxH=hM.length?Math.max.apply(null,hM.map(function(m){return parseFloat(m.amp);})):0;
+    var maxAx=axAll.length?Math.max.apply(null,axAll.map(function(m){return parseFloat(m.amp);})):0;
+    var maxRad=Math.max(maxV,maxH);
+
+    // Phase consistency check — are readings stable or erratic?
+    var vPhases=vM.map(function(m){return parseInt(m.phase)||0;});
+    var hPhases=hM.map(function(m){return parseInt(m.phase)||0;});
+    var phaseSpreadV=vPhases.length>1?phaseDiff(vPhases[0],vPhases[vPhases.length-1]):0;
+    var phaseSpreadH=hPhases.length>1?phaseDiff(hPhases[0],hPhases[hPhases.length-1]):0;
+    var erraticPhase=(phaseSpreadV>45||phaseSpreadH>45);
+
+    // ── PUMP ──────────────────────────────────────────────────────────
+    if(shape==='Pump'){
+      // Cavitation: elevated axial + erratic/unstable phase + high radial
+      if(maxAx>ampThresh&&erraticPhase&&maxRad>ampThresh){
+        results.push({type:'warn',
+          label:'⚡ Possible Cavitation — '+node.name,
+          desc:'Elevated axial amplitude ('+maxAx.toFixed(3)+') combined with inconsistent phase readings across bearing locations on '+node.name+' may indicate cavitation. Cavitation generates broadband noise and unstable 1× phase. Check suction pressure, NPSH margin, and inlet conditions. Phase instability is a key cavitation indicator vs pure imbalance.'});
+      }
+      // Recirculation: high axial relative to radial, phase relatively stable
+      if(maxAx>highAmp&&maxAx>maxRad*1.8&&!erraticPhase){
+        results.push({type:'warn',
+          label:'⚡ Possible Recirculation / Suction Recirculation — '+node.name,
+          desc:'Axial amplitude on '+node.name+' ('+maxAx.toFixed(3)+') significantly exceeds radial ('+maxRad.toFixed(3)+') with stable phase. This axial-dominant pattern on a pump can indicate internal recirculation at off-BEP operation, worn wear rings, or a partially closed discharge valve. Verify operating point vs pump curve.'});
+      }
+      // Impeller wear/unbalance: V and H in phase, elevated, gradual
+      if(maxRad>highAmp&&vM.length>0&&hM.length>0){
+        var vhDiff=phaseDiff(vM[0].phase,hM[0].phase);
+        if(isInPhase(vhDiff,TOL)&&maxAx<maxRad*0.5){
+          results.push({type:'warn',
+            label:'⚡ Possible Impeller Wear / Hydraulic Imbalance — '+node.name,
+            desc:'Elevated radial amplitude on '+node.name+' with V and H in phase and low axial suggests hydraulic imbalance from impeller wear, erosion, or buildup. Unlike mass imbalance, hydraulic imbalance is load-dependent — check if amplitude changes with flow rate.'});
+        }
+      }
+    }
+
+    // ── FAN / BLOWER ──────────────────────────────────────────────────
+    if(shape==='Fan'||shape==='Blower'){
+      // Aerodynamic imbalance: high radial, erratic phase, load-dependent
+      if(maxRad>highAmp&&erraticPhase){
+        results.push({type:'warn',
+          label:'⚡ Possible Aerodynamic Imbalance — '+node.name,
+          desc:'Elevated radial amplitude with inconsistent phase readings on '+node.name+' is characteristic of aerodynamic imbalance — caused by uneven airflow, fouled or bent blades, or operation in turbulent flow. Unlike mass imbalance, aerodynamic imbalance phase is often unstable and amplitude varies with load/speed. Inspect blades for buildup, erosion, or damage.'});
+      }
+      // Blade resonance: high radial, very consistent phase, specific direction
+      if(maxRad>highAmp&&!erraticPhase&&Math.abs(maxV-maxH)>maxRad*0.5){
+        results.push({type:'warn',
+          label:'⚡ Possible Blade/Structural Resonance — '+node.name,
+          desc:'Strongly directional vibration on '+node.name+' (V: '+maxV.toFixed(3)+', H: '+maxH.toFixed(3)+') with stable phase suggests resonance in one direction. Fan/blower blade natural frequencies can be excited at running speed or blade pass frequency. Check if amplitude changes with speed changes (resonance will peak at a specific RPM).'});
+      }
+      // Soft foot / structural looseness: phase erratic on just one bearing
+      if(erraticPhase&&maxRad<highAmp&&maxRad>ampThresh){
+        results.push({type:'warn',
+          label:'⚡ Possible Structural Looseness / Soft Foot — '+node.name,
+          desc:'Moderate amplitude with erratic phase on '+node.name+' suggests structural looseness rather than a rotor fault. Fan/blower bases are prone to soft foot and frame distortion. Check all mounting bolts, base plate flatness, and duct connections for looseness.'});
+      }
+    }
+
+    // ── GEARBOX ───────────────────────────────────────────────────────
+    if(shape==='Gearbox'){
+      // Gear eccentricity: high radial in one direction, stable phase
+      if(maxRad>highAmp&&!erraticPhase&&Math.abs(maxV-maxH)>maxRad*0.4){
+        results.push({type:'warn',
+          label:'⚡ Possible Gear Eccentricity / Pitch Line Runout — '+node.name,
+          desc:'Directional radial vibration on '+node.name+' (V: '+maxV.toFixed(3)+', H: '+maxH.toFixed(3)+') with stable phase suggests gear eccentricity or pitch line runout. This generates a strong 1× component at the gear shaft frequency with a fixed phase reference. Confirm with spectrum data showing elevated 1× at gear mesh sidebands.'});
+      }
+      // High axial on gearbox: helical gear thrust or misalignment
+      if(maxAx>maxRad*0.8&&maxAx>ampThresh){
+        results.push({type:'warn',
+          label:'⚡ Elevated Axial — '+node.name+' (Gearbox)',
+          desc:'Axial amplitude on '+node.name+' ('+maxAx.toFixed(3)+') approaching or exceeding radial levels. On helical gearboxes this can indicate gear misalignment, excessive thrust load, or worn thrust bearings. On spur gear boxes, elevated axial is less expected and may indicate shaft misalignment or loose bearing housing. Check gear mesh contact pattern and bearing end play.'});
+      }
+      // Gear looseness: erratic phase, moderate amplitude
+      if(erraticPhase&&maxRad>ampThresh){
+        results.push({type:'warn',
+          label:'⚡ Possible Gear Looseness / Backlash — '+node.name,
+          desc:'Erratic phase readings on '+node.name+' with moderate amplitude may indicate excessive gear backlash, loose gear on shaft, or worn gear teeth causing impact-type excitation. Phase instability at 1× is common with loose components. Inspect gear mesh backlash and shaft/gear keyway fits.'});
+      }
+    }
+
+    // ── TURBINE ───────────────────────────────────────────────────────
+    if(shape==='Turbine'){
+      // Blade rub: sudden or large phase shift, elevated radial
+      if(erraticPhase&&maxRad>highAmp){
+        results.push({type:'fault',
+          label:'⚠ Possible Blade Rub — '+node.name,
+          desc:'Elevated radial amplitude combined with inconsistent phase on '+node.name+' is a warning sign for blade/seal rub. Rub generates a strong 1× response that can suddenly shift phase by 90–180°. This is a potentially damaging condition — monitor closely, reduce load if possible, and inspect clearances at next opportunity. Phase shift direction can indicate rub location.'});
+      }
+      // Rotor bow: phase changes with temperature (can only check amplitude pattern)
+      if(maxRad>highAmp&&!erraticPhase&&maxAx<maxRad*0.3){
+        results.push({type:'warn',
+          label:'⚡ Possible Rotor Bow — '+node.name,
+          desc:'Elevated radial amplitude with stable phase and low axial on '+node.name+' may indicate rotor bow — especially if amplitude was lower at startup and increased as the machine warmed up. Rotor bow produces a 1× vibration that is thermally sensitive and phase-stable once thermal equilibrium is reached. Compare cold vs hot phase readings if available.'});
+      }
+      // Steam/fluid whirl: unstable phase, not load-dependent
+      if(erraticPhase&&maxRad>ampThresh&&maxAx<maxRad*0.5){
+        results.push({type:'warn',
+          label:'⚡ Possible Fluid Whirl / Instability — '+node.name,
+          desc:'Erratic radial phase with low axial on '+node.name+' may indicate fluid whirl or rotor instability — a sub-synchronous phenomenon that can appear at 1× under certain conditions. Fluid whirl is typically speed-dependent and will change character at different operating speeds. Check bearing clearances and oil film stability.'});
+      }
+    }
+
+    // ── COMPRESSOR ────────────────────────────────────────────────────
+    if(shape==='Compressor'){
+      // Surge: very erratic phase, high axial
+      if(erraticPhase&&maxAx>highAmp){
+        results.push({type:'fault',
+          label:'⚠ Possible Surge / Rotating Stall — '+node.name,
+          desc:'Highly erratic phase combined with elevated axial amplitude on '+node.name+' is consistent with compressor surge or rotating stall. Surge is a potentially destructive condition causing violent flow reversal. Axial phase becomes unpredictable during surge events. Check operating point vs surge line, inlet conditions, and anti-surge controls immediately.'});
+      }
+      // Rotor instability: moderate erratic, radial dominant
+      if(erraticPhase&&maxRad>highAmp&&maxAx<maxRad*0.6){
+        results.push({type:'warn',
+          label:'⚡ Possible Rotor Instability — '+node.name,
+          desc:'Erratic radial phase with elevated radial amplitude on '+node.name+' suggests rotor instability — possibly aerodynamic cross-coupling, oil whirl, or labyrinth seal excitation. Compressor rotor instability is speed and load dependent. Monitor phase stability across load changes. Check bearing clearances and seal condition.'});
+      }
+      // Fouling/unbalance: high radial, stable phase, gradual onset
+      if(maxRad>highAmp&&!erraticPhase&&maxAx<maxRad*0.4){
+        results.push({type:'warn',
+          label:'⚡ Possible Fouling / Mass Imbalance — '+node.name,
+          desc:'Elevated stable radial amplitude with low axial on '+node.name+' is consistent with blade fouling (deposit buildup causing mass imbalance) or mechanical unbalance. Compressor fouling is gradual — if amplitude has increased over time with stable phase, fouling is likely. Online or offline wash may restore balance. Confirm with historical trend data.'});
+      }
+    }
+
+    // ── BEARING (general) ─────────────────────────────────────────────
+    if(shape==='Bearing'){
+      if(maxRad>highAmp&&erraticPhase){
+        results.push({type:'warn',
+          label:'⚡ Possible Bearing Defect — '+node.name,
+          desc:'Elevated amplitude with erratic phase at '+node.name+' bearing location suggests a developing bearing defect. While bearing defects typically show sub/super-synchronous frequencies, a failing bearing can also affect 1× phase stability through looseness and increased clearance. Inspect bearing condition and lubrication.'});
+      }
+    }
+  });
+
+  // ── VERTICAL TRAIN SPECIFIC CHECKS ───────────────────────────────────
+  // Vertical train specific checks
+  if(isVertTrain){
+    // On vertical machines, high axial relative to radial = concern
+    // Suppress if angular misalignment already diagnosed (axial elevation is expected then)
+    var angularAlreadyFlagged=results.some(function(r){
+      return r.label&&r.label.indexOf('Angular Misalignment')>-1;
+    });
+    nodes.forEach(function(node){
+      var ax=node.meas.filter(function(m){return (m.pos==='AX_IB'||m.pos==='AX_OB')&&parseFloat(m.amp)>0;});
+      var rad=node.meas.filter(function(m){return (m.pos==='VERT'||m.pos==='HORIZ')&&parseFloat(m.amp)>0;});
+      if(ax.length>0&&rad.length>0&&!angularAlreadyFlagged){
+        var uKey=document.getElementById('amp-unit').value;
+        var thresh={'mils':2.0,'in/s':0.15,'mm/s':4.0,'G':0.2,'µm':50}[uKey]||0.15;
+        var maxAx=Math.max.apply(null,ax.map(function(m){return parseFloat(m.amp);}));
+        var maxRad=Math.max.apply(null,rad.map(function(m){return parseFloat(m.amp);}));
+        if(maxAx>thresh&&maxAx>maxRad*1.5){
+          results.push({type:'warn',
+            label:'⚡ Elevated Axial Relative to Radial — '+node.name+' (Vertical Train)',
+            desc:'On a vertically mounted machine, axial amplitude significantly exceeding radial (axial: '+maxAx.toFixed(3)+', radial: '+maxRad.toFixed(3)+') suggests mass imbalance (gravity-excited), looseness in the axial direction, or a worn thrust bearing. This pattern is more significant on vertical machines than horizontal.'});
+        }
+      }
+    });
+  }
+
+  // Any axial or radial bubble with data but no severity = healthy = green
+  nodes.forEach(function(node){
+    node.meas.forEach(function(m){
+      var hasData=parseFloat(m.amp)>0||parseInt(m.phase)!==0;
+      if(hasData&&!bubbleSeverity[m.id]){
+        bubbleSeverity[m.id]='ok';
+      }
+    });
+  });
+
+  if(results.filter(function(r){return r.type!=='info';}).length===0){
+    results.push({type:'info',
+      label:'Enter measurement data to begin',
+      desc:'Input amplitude and phase values for your measurement points at 1× running speed. Axial readings across the coupling are most important for misalignment diagnosis.'});
+  }
+
+  renderDiagResults(results);
+  redraw();
+}
+
+function renderDiagResults(results){
+  const el=document.getElementById('diag-results');
+  if(!el)return;
+  el.innerHTML='';
+  results.forEach(r=>{
+    const div=document.createElement('div');
+    div.className='diag-item '+r.type;
+    div.innerHTML=`<div class="diag-label">${r.label}</div><div class="diag-desc">${r.desc}</div>`;
+    el.appendChild(div);
+  });
+  const disc=document.createElement('div');
+  disc.style.cssText='font-size:10px;color:var(--tx3);margin-top:8px;line-height:1.5;border-top:1px solid var(--bd);padding-top:8px';
+  disc.textContent='Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.';
+  el.appendChild(disc);
+}
+
+// ── Boot ──────────────────────────────────────────────────
+function boot(){
+  // Prevent scroll wheel / trackpad from changing number input values
+  // This is a critical fix — scrolling while a number field is focused
+  // would silently change entered phase/amplitude values
+  document.addEventListener('wheel',function(e){
+    if(document.activeElement&&document.activeElement.type==='number'){
+      document.activeElement.blur();
+    }
+  },{passive:true});
+  document.addEventListener('touchmove',function(e){
+    if(document.activeElement&&document.activeElement.type==='number'){
+      document.activeElement.blur();
+    }
+  },{passive:true});
+  document.getElementById('print-btn').addEventListener('click',openModal);
+  document.getElementById('share-image-btn').addEventListener('click',shareImage);
+  document.getElementById('download-image-btn').addEventListener('click',downloadImage);
+  document.getElementById('desktop-print-btn').addEventListener('click',desktopPrint);
+  // Close modal on overlay tap
+  document.getElementById('share-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  window.addEventListener('resize',()=>{
+    if(!document.getElementById('panel-chart').classList.contains('hidden'))requestAnimationFrame(redraw);
+  });
+  renderSidebar();
+}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
+else{boot();}
+</script>
+</body>
+</html>
