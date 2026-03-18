@@ -50,7 +50,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;heigh
 body.light .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23aaa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 .ref-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2);padding:2px 0}
-.ref-row input[type=checkbox]{width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:var(--tx)}
+.ref-row input[type=checkbox]{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
+.ref-check{width:22px;height:22px;border-radius:5px;border:2px solid var(--bd2);background:var(--inbg);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:rgba(0,0,0,0)}
+.ref-check.checked{background:#1a6bbf;border-color:#1a6bbf}
+.ref-check.checked::after{content:'';display:block;width:5px;height:10px;border:2.5px solid #fff;border-top:none;border-left:none;transform:rotate(45deg) translateY(-1px)}
 .add-m{background:none;border:1px dashed var(--bd2);border-radius:5px;padding:8px;font-size:13px;color:var(--tx3);cursor:pointer;text-align:center;width:100%;min-height:38px;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none}
 .add-m:active{background:var(--bg3)}
 .add-node{background:none;border:1px dashed var(--bd2);border-radius:8px;padding:10px;font-size:14px;color:var(--tx3);cursor:pointer;text-align:center;min-height:42px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:block}
@@ -154,7 +157,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.1.0';
+  return '1.2.0';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -184,20 +187,20 @@ function pal(ci){return PALETTE[ci%PALETTE.length];}
 // ── Data ─────────────────────────────────────────────────
 let nodes=[
   {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',meas:[
-    {id:1,pos:'AX_OB',label:'A',amp:0,phase:0,ref:false},
-    {id:2,pos:'AX_IB',label:'B',amp:0,phase:0,ref:false},
-    {id:3,pos:'VERT',label:'V1',amp:0,phase:0,ref:false},
-    {id:4,pos:'VERT',label:'V2',amp:0,phase:0,ref:false},
-    {id:5,pos:'HORIZ',label:'H1',amp:0,phase:0,ref:false},
-    {id:6,pos:'HORIZ',label:'H2',amp:0,phase:0,ref:false},
+    {id:1,pos:'AX_NDE',label:'A',amp:0,phase:0,ref:false},
+    {id:2,pos:'AX_DE', label:'B',amp:0,phase:0,ref:false},
+    {id:3,pos:'VERT_NDE',label:'V1',amp:0,phase:0,ref:false},
+    {id:4,pos:'VERT_DE', label:'V2',amp:0,phase:0,ref:false},
+    {id:5,pos:'HORIZ_NDE',label:'H1',amp:0,phase:0,ref:false},
+    {id:6,pos:'HORIZ_DE', label:'H2',amp:0,phase:0,ref:false},
   ]},
   {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',meas:[
-    {id:7,pos:'AX_IB',label:'C',amp:0,phase:0,ref:false},
-    {id:8,pos:'AX_OB',label:'D',amp:0,phase:0,ref:false},
-    {id:9,pos:'VERT',label:'V1',amp:0,phase:0,ref:false},
-    {id:10,pos:'VERT',label:'V2',amp:0,phase:0,ref:false},
-    {id:11,pos:'HORIZ',label:'H1',amp:0,phase:0,ref:false},
-    {id:12,pos:'HORIZ',label:'H2',amp:0,phase:0,ref:false},
+    {id:7, pos:'AX_DE', label:'C',amp:0,phase:0,ref:false},
+    {id:8, pos:'AX_NDE',label:'D',amp:0,phase:0,ref:false},
+    {id:9, pos:'VERT_NDE', label:'V1',amp:0,phase:0,ref:false},
+    {id:10,pos:'VERT_DE', label:'V2',amp:0,phase:0,ref:false},
+    {id:11,pos:'HORIZ_NDE',label:'H1',amp:0,phase:0,ref:false},
+    {id:12,pos:'HORIZ_DE', label:'H2',amp:0,phase:0,ref:false},
   ]},
 ];
 let nid=3,mid=20;
@@ -257,10 +260,12 @@ function measHTML(nid,m,u){
   const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
   const phaseVal=parseInt(m.phase)||0;
   const posOpts=[
-    {v:'AX_OB',l:'Axial Outboard (free end)'},
-    {v:'AX_IB',l:'Axial Inboard (coupling end)'},
-    {v:'VERT',l:'Vertical (above)'},
-    {v:'HORIZ',l:'Horizontal (below)'},
+    {v:'AX_DE',  l:'Axial — Drive End (DE)'},
+    {v:'AX_NDE', l:'Axial — Non-Drive End (NDE)'},
+    {v:'VERT_DE', l:'Vertical — Drive End (DE)'},
+    {v:'VERT_NDE',l:'Vertical — Non-Drive End (NDE)'},
+    {v:'HORIZ_DE', l:'Horizontal — Drive End (DE)'},
+    {v:'HORIZ_NDE',l:'Horizontal — Non-Drive End (NDE)'},
   ];
   const numStyle=`font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;width:100%;text-align:center`;
   return `
@@ -273,7 +278,8 @@ function measHTML(nid,m,u){
     </div>
     <div class="ref-row">
       <input type="checkbox" id="ref-${m.id}" ${m.ref?'checked':''} onchange="upM(${nid},${m.id},'ref',this.checked)">
-      <label for="ref-${m.id}" style="cursor:pointer">Reference sensor</label>
+      <div class="ref-check${m.ref?' checked':''}" onclick="toggleRef(${nid},${m.id},this)" role="checkbox" aria-checked="${m.ref?'true':'false'}" tabindex="0"></div>
+      <label onclick="toggleRef(${nid},${m.id},this.previousElementSibling)" style="cursor:pointer">Reference sensor</label>
     </div>
     <div class="row">
       <span class="lbl">Amp (${u.label})</span>
@@ -317,18 +323,26 @@ function handlePhaseInput(el){
 }
 function addNode(){
   nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',meas:[
-    {id:mid++,pos:'AX_OB',label:'A',amp:0,phase:0,ref:false},
-    {id:mid++,pos:'AX_IB',label:'B',amp:0,phase:0,ref:false},
-    {id:mid++,pos:'VERT',label:'V',amp:0,phase:0,ref:false},
-    {id:mid++,pos:'HORIZ',label:'H',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'AX_NDE',label:'A',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'AX_DE',label:'B',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'VERT_DE',label:'V',amp:0,phase:0,ref:false},
+    {id:mid++,pos:'HORIZ_DE',label:'H',amp:0,phase:0,ref:false},
   ]});
   renderSidebar();redraw();
 }
 function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
 function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();redraw();}
-function addMeas(nid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas.push({id:mid++,pos:'VERT',label:'P',amp:0,phase:0,ref:false});renderSidebar();redraw();}
+function addMeas(nid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas.push({id:mid++,pos:'VERT_DE',label:'P',amp:0,phase:0,ref:false});renderSidebar();redraw();}
 function rmMeas(nid2,mid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();redraw();}
 function upM(nid2,mid2,k,v){const n=nodes.find(x=>x.id===nid2);if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m[k]=v;}redraw();}
+function toggleRef(nid2,mid2,el){
+  const n=nodes.find(x=>x.id===nid2);if(!n)return;
+  const m=n.meas.find(x=>x.id===mid2);if(!m)return;
+  m.ref=!m.ref;
+  el.classList.toggle('checked',m.ref);
+  el.setAttribute('aria-checked',m.ref?'true':'false');
+  redraw();
+}
 
 // ── Tabs ──────────────────────────────────────────────────
 function showTab(tab){
@@ -455,10 +469,10 @@ function drawVertical(){
     var boxMid=boxTop+BH/2;
     var rpm=node.rpm||grpm;
 
-    var axIB=node.meas.filter(function(m){return m.pos==='AX_IB';});
-    var axOB=node.meas.filter(function(m){return m.pos==='AX_OB';});
-    var vM=node.meas.filter(function(m){return m.pos==='VERT';});
-    var hM=node.meas.filter(function(m){return m.pos==='HORIZ';});
+    var axDE=node.meas.filter(function(m){return m.pos==='AX_DE';});
+    var axNDE=node.meas.filter(function(m){return m.pos==='AX_NDE';});
+    var vM=node.meas.filter(function(m){return m.pos==='VERT_DE'||m.pos==='VERT_NDE';});
+    var hM=node.meas.filter(function(m){return m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE';});
 
     // Coupling
     if(ni<N-1){
@@ -482,20 +496,20 @@ function drawVertical(){
     ctx.fillText(node.name,XC,boxTop+18);
     drawShapeIcon(ctx,node.shape,XC,boxTop+90,24,p.fill);
     ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='left';
-    if(axIB.length) ctx.fillText(axIB.map(function(m){return m.label;}).join('/'),XL+3,boxTop+130);
-    if(axOB.length) ctx.fillText(axOB.map(function(m){return m.label;}).join('/'),XL+3,boxBot-4);
+    if(axDE.length) ctx.fillText(axDE.map(function(m){return m.label;}).join('/'),XL+3,boxTop+130);
+    if(axNDE.length) ctx.fillText(axNDE.map(function(m){return m.label;}).join('/'),XL+3,boxBot-4);
 
-    // AXIAL INBOARD top
-    axIB.forEach(function(m,i){
-      var span=(axIB.length-1)*(BSLOT*2+4);
+    // AXIAL DE top
+    axDE.forEach(function(m,i){
+      var span=(axDE.length-1)*(BSLOT*2+4);
       var bx=XC-span/2+i*(BSLOT*2+4);
       var by=cellTop+AXH/2;
       dsh(XC,boxTop,bx,by+BSLOT);bub(m,bx,by);
     });
 
-    // AXIAL OUTBOARD bottom
-    axOB.forEach(function(m,i){
-      var span=(axOB.length-1)*(BSLOT*2+4);
+    // AXIAL NDE bottom
+    axNDE.forEach(function(m,i){
+      var span=(axNDE.length-1)*(BSLOT*2+4);
       var bx=XC-span/2+i*(BSLOT*2+4);
       var by=cellTop+CELLH-AXH/2;
       dsh(XC,boxBot,bx,by-BSLOT);bub(m,bx,by);
@@ -624,8 +638,8 @@ function renderChart(ctx,W,H,tc){
     ctx.font='bold 12px Roboto,sans-serif';ctx.textAlign='right';ctx.fillText('AXIAL',HPAD-6,yM+4);ctx.textAlign='left';ctx.fillText('AXIAL',W-HPAD+6,yM+4);
     nodes.forEach((node,ni)=>{
       const p=pal(node.ci);const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
-      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
-      const vM=node.meas.filter(m=>m.pos==='VERT'),hM=node.meas.filter(m=>m.pos==='HORIZ');
+      const axL=node.meas.filter(m=>m.pos==='AX_NDE'),axR=node.meas.filter(m=>m.pos==='AX_DE');
+      const vM=node.meas.filter(m=>m.pos==='VERT_DE'||m.pos==='VERT_NDE'),hM=node.meas.filter(m=>m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE');
       if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
       const yR=yNT-RPG-RPH;ctx.font='12px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+(rpm||'____'),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
@@ -652,8 +666,8 @@ function renderChart(ctx,W,H,tc){
     ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
     nodes.forEach((node,ni)=>{
       const p=pal(node.ci);const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
-      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
-      const vM=node.meas.filter(m=>m.pos==='VERT'),hM=node.meas.filter(m=>m.pos==='HORIZ');
+      const axL=node.meas.filter(m=>m.pos==='AX_DE'),axR=node.meas.filter(m=>m.pos==='AX_NDE');
+      const vM=node.meas.filter(m=>m.pos==='VERT_DE'||m.pos==='VERT_NDE'),hM=node.meas.filter(m=>m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE');
       if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
       ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('RPM '+(rpm||'____'),xNR+HZW+4,yCx-4);
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
@@ -729,7 +743,7 @@ function desktopPrint(){
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
   const imgData=off.toDataURL('image/png');
-  const pl={'AX_IB':'Axial Inboard','AX_OB':'Axial Outboard','VERT':'Vertical','HORIZ':'Horizontal'};
+  const pl={'AX_DE':'Axial Drive End','AX_NDE':'Axial Non-Drive End','VERT_DE':'Vertical Drive End','VERT_NDE':'Vertical Non-Drive End','HORIZ_DE':'Horizontal Drive End','HORIZ_NDE':'Horizontal Non-Drive End'};
   let rows='';
   nodes.forEach(n=>n.meas.forEach(m=>{
     rows+=`<tr><td>${n.name}</td><td>${m.label}</td><td>${pl[m.pos]||m.pos}</td><td>${m.ref?'Yes':''}</td><td>${(parseFloat(m.amp)||0).toFixed(u.dec)}</td><td>${parseInt(m.phase)||0}</td></tr>`;
@@ -792,35 +806,48 @@ function runDiagnosis(){
     // All measurements with any data entered
     const hasVal=(m)=>parseFloat(m.amp)>0||parseInt(m.phase)!==0;
 
-    const aVert =A.meas.filter(m=>m.pos==='VERT');
-    const bVert =B.meas.filter(m=>m.pos==='VERT');
-    const aHoriz=A.meas.filter(m=>m.pos==='HORIZ');
-    const bHoriz=B.meas.filter(m=>m.pos==='HORIZ');
+    const aVert =A.meas.filter(m=>m.pos==='VERT_DE'||m.pos==='VERT_NDE');
+    const bVert =B.meas.filter(m=>m.pos==='VERT_DE'||m.pos==='VERT_NDE');
+    const aHoriz=A.meas.filter(m=>m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE');
+    const bHoriz=B.meas.filter(m=>m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE');
 
-    // For axial: compare ANY axial on driver side vs ANY axial on driven side
-    // This handles all labeling conventions (AX_L, AX_R)
-    const aAxial=A.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
-    const bAxial=B.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
+    // For axial: compare coupling-side (DE) axials across the coupling — most diagnostic
+    const aAxial=A.meas.filter(m=>m.pos==='AX_DE'||m.pos==='AX_NDE');
+    const bAxial=B.meas.filter(m=>m.pos==='AX_DE'||m.pos==='AX_NDE');
 
-    // ── ANGULAR MISALIGNMENT — axial phase across coupling ──────────
-    // Prioritize inboard-to-inboard pairing (coupling end to coupling end)
-    // This is the most diagnostic comparison for angular misalignment
-    // Also include outboard pairings as secondary check
-    const aIB=A.meas.filter(m=>m.pos==='AX_IB');
-    const bIB=B.meas.filter(m=>m.pos==='AX_IB');
-    const aOB=A.meas.filter(m=>m.pos==='AX_OB');
-    const bOB=B.meas.filter(m=>m.pos==='AX_OB');
-    const axPairs=[];
-    // Inboard-inboard pairs first (highest diagnostic value)
-    aIB.forEach(a=>bIB.forEach(b=>{
-      if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'IB-IB'});
+    // ── ANGULAR MISALIGNMENT — axial phase across the coupling ──────────
+    //
+    // Train layout:  [NDE]===Machine A===[DE] ~~coupling~~ [DE]===Machine B===[NDE]
+    //
+    // PRIMARY check:  A.AX_DE  ↔ B.AX_DE  (both coupling faces — strongest signal)
+    // SECONDARY check: A.AX_NDE ↔ B.AX_NDE (both free ends — should agree with primary)
+    // WITHIN-MACHINE checks handled separately below (DE vs NDE same shaft)
+    //
+    // For angular misalignment: coupling-face axials go ~180° out of phase.
+    // Free-end axials will also go out of phase but with slightly less amplitude.
+    // Both checks together give high confidence.
+
+    const aDE_ax=A.meas.filter(m=>m.pos==='AX_DE');
+    const bDE_ax=B.meas.filter(m=>m.pos==='AX_DE');
+    const aNDE_ax=A.meas.filter(m=>m.pos==='AX_NDE');
+    const bNDE_ax=B.meas.filter(m=>m.pos==='AX_NDE');
+
+    // Build coupling-face pairs (DE↔DE) — primary
+    const deDePairs=[];
+    aDE_ax.forEach(a=>bDE_ax.forEach(b=>{
+      if(hasVal(a)||hasVal(b)) deDePairs.push({a,b});
     }));
-    // If no IB-IB pairs, fall back to all axials
-    if(axPairs.length===0){
-      aAxial.forEach(a=>bAxial.forEach(b=>{
-        if(hasVal(a)||hasVal(b)) axPairs.push({a,b,type:'any'});
-      }));
-    }
+
+    // Build free-end pairs (NDE↔NDE) — secondary
+    const ndeNdePairs=[];
+    aNDE_ax.forEach(a=>bNDE_ax.forEach(b=>{
+      if(hasVal(a)||hasVal(b)) ndeNdePairs.push({a,b});
+    }));
+
+    // If no DE-DE pairs exist, fall back to any axial combination
+    const axPairs=deDePairs.length>0 ? deDePairs :
+      (ndeNdePairs.length>0 ? ndeNdePairs :
+        (()=>{const p=[];aAxial.forEach(a=>bAxial.forEach(b=>{if(hasVal(a)||hasVal(b))p.push({a,b});}));return p;})());
 
     let axOut=0,axIn=0;
     axPairs.forEach(({a,b})=>{
@@ -830,21 +857,63 @@ function runDiagnosis(){
       else{setSev(a.id,'warn');setSev(b.id,'warn');}
     });
 
+    // Also evaluate secondary NDE↔NDE pairs if primary DE↔DE already evaluated
+    if(deDePairs.length>0&&ndeNdePairs.length>0){
+      ndeNdePairs.forEach(({a,b})=>{
+        const d=phaseDiff(a.phase,b.phase);
+        if(isOutOfPhase(d,TOL)){setSev(a.id,'fault');setSev(b.id,'fault');}
+        else if(isInPhase(d,TOL)){if(!bubbleSeverity[a.id])setSev(a.id,'ok');if(!bubbleSeverity[b.id])setSev(b.id,'ok');}
+        else{if(!bubbleSeverity[a.id]||bubbleSeverity[a.id]==='ok')setSev(a.id,'warn');if(!bubbleSeverity[b.id]||bubbleSeverity[b.id]==='ok')setSev(b.id,'warn');}
+      });
+    }
+
     if(axPairs.length>0){
+      const pairDesc=deDePairs.length>0?'Drive End (coupling face) axial':'Axial';
       if(axOut>0){
         results.push({type:'fault',
           label:'⚠ Angular Misalignment — '+lbl,
-          desc:'Axial phase angles across the coupling are ~180° out of phase (±'+TOL+'°). Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'. Elevated axial amplitudes confirm this fault.'});
+          desc:pairDesc+' phase angles across the coupling are ~180° out of phase (±'+TOL+'°). Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'. Elevated axial amplitudes confirm this fault.'});
       } else if(axIn===axPairs.length){
         results.push({type:'ok',
           label:'✓ Axial Phase Normal — '+lbl,
-          desc:'Axial phase across '+lbl+' is in phase (±'+TOL+'°). No angular misalignment indicated.'});
+          desc:pairDesc+' phase across '+lbl+' is in phase (±'+TOL+'°). No angular misalignment indicated.'});
       } else {
         results.push({type:'warn',
           label:'⚡ Axial Phase Marginal — '+lbl,
-          desc:'Axial phase across '+lbl+' is neither fully in phase nor 180° out. Monitor for developing angular misalignment. Could also indicate coupling wear or thermal growth.'});
+          desc:pairDesc+' phase across '+lbl+' is neither fully in phase nor 180° out. Monitor for developing angular misalignment. Could also indicate coupling wear or thermal growth.'});
       }
     }
+
+    // ── WITHIN-MACHINE AXIAL: DE vs NDE same shaft ──────────────────
+    // On a healthy machine both axial locations should be in phase.
+    // ~180° out = shaft rocking/bowing axially (bent shaft or bearing failure).
+    // This runs for BOTH A and B inside the coupling loop so it fires once per pair.
+    [A,B].forEach(node=>{
+      const de=node.meas.filter(m=>m.pos==='AX_DE'&&hasVal(m));
+      const nde=node.meas.filter(m=>m.pos==='AX_NDE'&&hasVal(m));
+      if(de.length>0&&nde.length>0){
+        de.forEach(dem=>{
+          nde.forEach(ndem=>{
+            const d=phaseDiff(dem.phase,ndem.phase);
+            if(isOutOfPhase(d,TOL)){
+              setSev(dem.id,'fault');setSev(ndem.id,'fault');
+              results.push({type:'fault',
+                label:'⚠ Axial Phase Reversal (DE vs NDE) — '+node.name,
+                desc:'Drive End axial ('+dem.label+': '+dem.phase+'°) and Non-Drive End axial ('+ndem.label+': '+ndem.phase+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Both axial points on the same shaft should be in phase. This reversal indicates axial shaft flexing — consistent with a bent/bowed shaft, severe bearing looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
+            } else if(d>60&&d<120){
+              setSev(dem.id,'warn');setSev(ndem.id,'warn');
+              results.push({type:'warn',
+                label:'⚡ Unusual Axial Phase Relationship (DE vs NDE) — '+node.name,
+                desc:'Drive End ('+dem.label+') and Non-Drive End ('+ndem.label+') axial readings on '+node.name+' are ~90° out of phase (diff: '+Math.round(d)+'°). Both axial points on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+            } else if(isInPhase(d,TOL)){
+              // Healthy — both axial in phase on same machine
+              if(!bubbleSeverity[dem.id])setSev(dem.id,'ok');
+              if(!bubbleSeverity[ndem.id])setSev(ndem.id,'ok');
+            }
+          });
+        });
+      }
+    });
 
     // ── OFFSET MISALIGNMENT — radial phase across coupling ──────────
     // Pair by index: first V on driver with first V on driven, etc.
@@ -899,8 +968,8 @@ function runDiagnosis(){
     const bentFlagged=new Set();
     [A,B].forEach(node=>{
       if(bentFlagged.has(node.id))return;
-      const v=node.meas.filter(m=>m.pos==='VERT'&&hasVal(m));
-      const h=node.meas.filter(m=>m.pos==='HORIZ'&&hasVal(m));
+      const v=node.meas.filter(m=>(m.pos==='VERT_DE'||m.pos==='VERT_NDE')&&hasVal(m));
+      const h=node.meas.filter(m=>(m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE')&&hasVal(m));
       let flagged=false;
       if(v.length>=2){
         for(let x=0;x<v.length-1;x++){
@@ -932,41 +1001,13 @@ function runDiagnosis(){
       }
     });
 
-    // ── AXIAL OUTBOARD vs INBOARD SAME MACHINE — Bent Shaft (Axial) ─────
-    // If OB and IB axials on the same machine are ~180° out of phase,
-    // this indicates a bent shaft causing the shaft to twist axially,
-    // OR severe internal looseness / bearing failure allowing axial rocking
-    [A,B].forEach(node=>{
-      const ob=node.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
-      const ib=node.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
-      if(ob.length>0&&ib.length>0){
-        ob.forEach(obm=>{
-          ib.forEach(ibm=>{
-            const d=phaseDiff(obm.phase,ibm.phase);
-            if(isOutOfPhase(d,TOL)){
-              setSev(obm.id,'fault');setSev(ibm.id,'fault');
-              results.push({type:'fault',
-                label:'⚠ Axial Phase Reversal — '+node.name,
-                desc:'Outboard axial ('+obm.label+': '+obm.phase+'°) and inboard axial ('+ibm.label+': '+ibm.phase+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
-            } else if(d>60&&d<120){
-              // ~90° axial OB vs IB = unusual, warrants attention
-              setSev(obm.id,'warn');setSev(ibm.id,'warn');
-              results.push({type:'warn',
-                label:'⚡ Unusual Axial Phase Relationship — '+node.name,
-                desc:'Outboard ('+obm.label+') and inboard ('+ibm.label+') axial readings on '+node.name+' are ~90° out of phase (diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
-            }
-          });
-        });
-      }
-    });
-
     // ── V vs H SAME MACHINE — physics check ─────────────────────────
     // V and H sensors are 90° apart physically so ~90° phase difference is NORMAL
     // ~0° or ~180° V vs H on same machine = abnormal (looseness, soft foot, structural)
     // ~90° V vs H with unequal amplitudes = possible resonance (directional)
     [A,B].forEach(node=>{
-      const v=node.meas.filter(m=>m.pos==='VERT'&&parseFloat(m.amp)>0);
-      const h=node.meas.filter(m=>m.pos==='HORIZ'&&parseFloat(m.amp)>0);
+      const v=node.meas.filter(m=>(m.pos==='VERT_DE'||m.pos==='VERT_NDE')&&parseFloat(m.amp)>0);
+      const h=node.meas.filter(m=>(m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE')&&parseFloat(m.amp)>0);
       if(v.length>0&&h.length>0){
         const vA=parseFloat(v[0].amp),hA=parseFloat(h[0].amp);
         const ampRatio=Math.min(vA,hA)/Math.max(vA,hA);
@@ -1003,8 +1044,8 @@ function runDiagnosis(){
   // bearing locations on the same machine — they should be in phase for imbalance
   // Do NOT compare V vs H (those are always ~90° apart — that is normal physics)
   nodes.forEach(node=>{
-    const v=node.meas.filter(m=>m.pos==='VERT'&&parseFloat(m.amp)>0);
-    const h=node.meas.filter(m=>m.pos==='HORIZ'&&parseFloat(m.amp)>0);
+    const v=node.meas.filter(m=>(m.pos==='VERT_DE'||m.pos==='VERT_NDE')&&parseFloat(m.amp)>0);
+    const h=node.meas.filter(m=>(m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE')&&parseFloat(m.amp)>0);
     // Need readings in same direction at multiple bearing locations
     // If we have V readings at 2+ locations, compare them
     let imbalanceFound=false;
@@ -1045,9 +1086,9 @@ function runDiagnosis(){
     var ampThresh={'mils':0.15,'in/s':0.08,'mm/s':2.0,'G':0.1,'µm':20}[uKey]||0.08;
     var highAmp={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
 
-    var vM=node.meas.filter(function(m){return m.pos==='VERT'&&parseFloat(m.amp)>0;});
-    var hM=node.meas.filter(function(m){return m.pos==='HORIZ'&&parseFloat(m.amp)>0;});
-    var axAll=node.meas.filter(function(m){return (m.pos==='AX_IB'||m.pos==='AX_OB')&&parseFloat(m.amp)>0;});
+    var vM=node.meas.filter(function(m){return (m.pos==='VERT_DE'||m.pos==='VERT_NDE')&&parseFloat(m.amp)>0;});
+    var hM=node.meas.filter(function(m){return (m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE')&&parseFloat(m.amp)>0;});
+    var axAll=node.meas.filter(function(m){return (m.pos==='AX_DE'||m.pos==='AX_NDE')&&parseFloat(m.amp)>0;});
 
     var maxV=vM.length?Math.max.apply(null,vM.map(function(m){return parseFloat(m.amp);})):0;
     var maxH=hM.length?Math.max.apply(null,hM.map(function(m){return parseFloat(m.amp);})):0;
@@ -1193,8 +1234,8 @@ function runDiagnosis(){
       return r.label&&r.label.indexOf('Angular Misalignment')>-1;
     });
     nodes.forEach(function(node){
-      var ax=node.meas.filter(function(m){return (m.pos==='AX_IB'||m.pos==='AX_OB')&&parseFloat(m.amp)>0;});
-      var rad=node.meas.filter(function(m){return (m.pos==='VERT'||m.pos==='HORIZ')&&parseFloat(m.amp)>0;});
+      var ax=node.meas.filter(function(m){return (m.pos==='AX_DE'||m.pos==='AX_NDE')&&parseFloat(m.amp)>0;});
+      var rad=node.meas.filter(function(m){return (m.pos==='VERT_DE'||m.pos==='VERT_NDE'||m.pos==='HORIZ_DE'||m.pos==='HORIZ_NDE')&&parseFloat(m.amp)>0;});
       if(ax.length>0&&rad.length>0&&!angularAlreadyFlagged){
         var uKey=document.getElementById('amp-unit').value;
         var thresh={'mils':2.0,'in/s':0.15,'mm/s':4.0,'G':0.2,'µm':50}[uKey]||0.15;
