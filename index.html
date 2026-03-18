@@ -662,7 +662,7 @@ function getChartDims(){
   }
 }
 
-function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir){
+function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
   const u=getUnit(),r=BR;
   ctx.save();
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
@@ -684,9 +684,12 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir){
   // Sensor orientation indicator — small tag below label, layout-aware
   if(axDir==='in'||axDir==='out'){
     const isVL=document.getElementById('layout').value==='V';
+    const cs=coupSide||'R';
+    // Arrow points toward coupling for inboard, away for outboard
+    // Direction flips based on which side of the coupling the component is on
     const tag = axDir==='in'
-      ? (isVL ? '⬇ Down' : 'IN ➡')
-      : (isVL ? '⬆ Up'   : '⬅ OUT');
+      ? (isVL ? '⬇ Down' : (cs==='R' ? 'Inboard ➡' : '⬅ Inboard'))
+      : (isVL ? '⬆ Up'   : (cs==='R' ? '⬅ Outboard' : 'Outboard ➡'));
     ctx.font='bold 8px Roboto,sans-serif';
     ctx.fillStyle=axDir==='in'?'#f59e0b':tc.tx3;
     ctx.textAlign='left';
