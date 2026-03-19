@@ -422,7 +422,7 @@ function addNode(){
   renderSidebar();redraw();
 }
 function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
-function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();redraw();}
+function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();runDiagnosis();}
 // Returns the label prefix for a given position type
 function posPrefix(pos){
   if(pos==='HORIZ_NDE'||pos==='HORIZ_DE') return 'H';
@@ -825,15 +825,8 @@ function renderChart(ctx,W,H,tc){
       // coupSide='L': coupling on left → DE(IB) left, NDE(OB) right
       const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
       const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
-      // Sort V and H so NDE is on the free-end side, DE on coupling side
-      // coupSide='R': NDE left→first, DE right→last
-      // coupSide='L': DE left→first, NDE right→last
-      const vRaw=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
-      const hRaw=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
-      const vSort=(a,b)=>cs==='R'?(a.pos==='VERT_NDE'?-1:1):(a.pos==='VERT_DE'?-1:1);
-      const hSort=(a,b)=>cs==='R'?(a.pos==='HORIZ_NDE'?-1:1):(a.pos==='HORIZ_DE'?-1:1);
-      const vM=[...vRaw].sort(vSort);
-      const hM=[...hRaw].sort(hSort);
+      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
+      const hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
       if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
       const yR=yNT-RPG-RPH;ctx.font='12px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+(rpm||'____'),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
@@ -862,12 +855,8 @@ function renderChart(ctx,W,H,tc){
       const p=pal(node.ci);const cs=node.coupSide||'R';const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
       const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
       const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
-      const vRaw=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
-      const hRaw=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
-      const vSort=(a,b)=>cs==='R'?(a.pos==='VERT_NDE'?-1:1):(a.pos==='VERT_DE'?-1:1);
-      const hSort=(a,b)=>cs==='R'?(a.pos==='HORIZ_NDE'?-1:1):(a.pos==='HORIZ_DE'?-1:1);
-      const vM=[...vRaw].sort(vSort);
-      const hM=[...hRaw].sort(hSort);
+      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
+      const hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
       if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
       ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('RPM '+(rpm||'____'),xNR+HZW+4,yCx-4);
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
