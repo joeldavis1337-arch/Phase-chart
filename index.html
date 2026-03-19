@@ -203,7 +203,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.3';
+  return '1.2.4';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -245,8 +245,8 @@ let nodes=[
     {id:12,pos:'HORIZ_DE', label:'H4',amp:0,phase:0,ref:false},
     {id:9, pos:'VERT_NDE', label:'V3',amp:0,phase:0,ref:false},
     {id:10,pos:'VERT_DE',  label:'V4',amp:0,phase:0,ref:false},
-    {id:7, pos:'AX_OB',    label:'A3',amp:0,phase:0,ref:false,axDir:'in'},
-    {id:8, pos:'AX_IB',    label:'A4',amp:0,phase:0,ref:false,axDir:'in'},
+    {id:7, pos:'AX_IB',    label:'A3',amp:0,phase:0,ref:false,axDir:'out'},
+    {id:8, pos:'AX_OB',    label:'A4',amp:0,phase:0,ref:false,axDir:'out'},
   ]},
 ];
 let nid=3,mid=20;
@@ -419,16 +419,80 @@ function addNode(){
 }
 function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
 function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();redraw();}
+// Returns the label prefix for a given position type
+function posPrefix(pos){
+  if(pos==='HORIZ_NDE'||pos==='HORIZ_DE') return 'H';
+  if(pos==='VERT_NDE'||pos==='VERT_DE')   return 'V';
+  if(pos==='AX_IB'||pos==='AX_OB')        return 'A';
+  return 'P';
+}
+// Returns the next available label for a given prefix on a node
+function nextLabel(n, prefix){
+  let maxNum=0;
+  n.meas.forEach(m=>{
+    const match=(m.label||'').match(/^([A-Za-z]+)(\d+)$/);
+    if(match&&match[1]===prefix){
+      const num=parseInt(match[2]);
+      if(num>maxNum)maxNum=num;
+    }
+  });
+  return prefix+(maxNum+1);
+}
+// Returns the best default position type to add next on a node
+function nextDefaultPos(n){
+  const has=pos=>n.meas.some(m=>m.pos===pos);
+  const hasH=has('HORIZ_NDE')||has('HORIZ_DE');
+  const hasV=has('VERT_NDE')||has('VERT_DE');
+  const hasA=has('AX_IB')||has('AX_OB');
+  // Fill in missing pair partner first
+  if(has('HORIZ_NDE')&&!has('HORIZ_DE')) return 'HORIZ_DE';
+  if(has('HORIZ_DE')&&!has('HORIZ_NDE')) return 'HORIZ_NDE';
+  if(has('VERT_NDE')&&!has('VERT_DE'))   return 'VERT_DE';
+  if(has('VERT_DE')&&!has('VERT_NDE'))   return 'VERT_NDE';
+  if(has('AX_IB')&&!has('AX_OB'))        return 'AX_OB';
+  if(has('AX_OB')&&!has('AX_IB'))        return 'AX_IB';
+  // If an entire type is missing, add it
+  if(!hasH) return 'HORIZ_NDE';
+  if(!hasV) return 'VERT_NDE';
+  if(!hasA) return 'AX_IB';
+  // All types present — default to HORIZ_NDE (most commonly added extra)
+  return 'HORIZ_NDE';
+}
 function addMeas(nid2){
   const n=nodes.find(x=>x.id===nid2);
   if(n){
-    const newM={id:mid++,pos:'VERT_NDE',label:'P',amp:0,phase:0,ref:false};
+    const pos=nextDefaultPos(n);
+    const prefix=posPrefix(pos);
+    const label=nextLabel(n,prefix);
+    const newM={id:mid++,pos,label,amp:0,phase:0,ref:false};
+    if(pos==='AX_IB'||pos==='AX_OB') newM.axDir='out';
     n.meas.push(newM);
   }
   renderSidebar();redraw();
 }
 function rmMeas(nid2,mid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();redraw();}
-function upM(nid2,mid2,k,v){const n=nodes.find(x=>x.id===nid2);if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m[k]=v;}redraw();}
+function upM(nid2,mid2,k,v){
+  const n=nodes.find(x=>x.id===nid2);
+  if(n){
+    const m=n.meas.find(x=>x.id===mid2);
+    if(m){
+      m[k]=v;
+      // When position type changes, auto-update label to match new type's prefix + next number
+      if(k==='pos'){
+        const prefix=posPrefix(v);
+        // Only auto-update if current label doesn't already match this prefix
+        const curMatch=(m.label||'').match(/^([A-Za-z]+)(\d+)$/);
+        if(!curMatch||curMatch[1]!==prefix){
+          m.label=nextLabel(n,prefix);
+        }
+        // Add axDir default if switching to axial
+        if((v==='AX_IB'||v==='AX_OB')&&!m.axDir) m.axDir='out';
+      }
+    }
+  }
+  renderSidebar();
+  runDiagnosis();
+}
 
 // ── Tabs ──────────────────────────────────────────────────
 function showTab(tab){
@@ -752,8 +816,20 @@ function renderChart(ctx,W,H,tc){
     ctx.font='bold 12px Roboto,sans-serif';ctx.textAlign='right';ctx.fillText('AXIAL',HPAD-6,yM+4);ctx.textAlign='left';ctx.fillText('AXIAL',W-HPAD+6,yM+4);
     nodes.forEach((node,ni)=>{
       const p=pal(node.ci);const cs=node.coupSide||'R';const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
-      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
-      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE'),hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
+      // axL = sensors on the left (outer/free end), axR = sensors on right (coupling end)
+      // coupSide='R': coupling on right → DE(IB) right, NDE(OB) left
+      // coupSide='L': coupling on left → DE(IB) left, NDE(OB) right
+      const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
+      const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
+      // Sort V and H so NDE is on the free-end side, DE on coupling side
+      // coupSide='R': NDE left→first, DE right→last
+      // coupSide='L': DE left→first, NDE right→last
+      const vRaw=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
+      const hRaw=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
+      const vSort=(a,b)=>cs==='R'?(a.pos==='VERT_NDE'?-1:1):(a.pos==='VERT_DE'?-1:1);
+      const hSort=(a,b)=>cs==='R'?(a.pos==='HORIZ_NDE'?-1:1):(a.pos==='HORIZ_DE'?-1:1);
+      const vM=[...vRaw].sort(vSort);
+      const hM=[...hRaw].sort(hSort);
       if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
       const yR=yNT-RPG-RPH;ctx.font='12px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+(rpm||'____'),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
@@ -780,8 +856,14 @@ function renderChart(ctx,W,H,tc){
     ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
     nodes.forEach((node,ni)=>{
       const p=pal(node.ci);const cs=node.coupSide||'R';const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
-      const axL=node.meas.filter(m=>m.pos==='AX_OB'),axR=node.meas.filter(m=>m.pos==='AX_IB');
-      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE'),hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
+      const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
+      const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
+      const vRaw=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
+      const hRaw=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
+      const vSort=(a,b)=>cs==='R'?(a.pos==='VERT_NDE'?-1:1):(a.pos==='VERT_DE'?-1:1);
+      const hSort=(a,b)=>cs==='R'?(a.pos==='HORIZ_NDE'?-1:1):(a.pos==='HORIZ_DE'?-1:1);
+      const vM=[...vRaw].sort(vSort);
+      const hM=[...hRaw].sort(hSort);
       if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
       ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('RPM '+(rpm||'____'),xNR+HZW+4,yCx-4);
       ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
@@ -1048,20 +1130,32 @@ function runDiagnosis(){
     const bAxial=B.meas.filter(m=>m.pos==='AX_OB'||m.pos==='AX_IB');
 
     // ── ANGULAR MISALIGNMENT — axial phase across coupling ──────────
-    // Valid cross-coupling pairs: DE vs DE, and NDE vs NDE.
-    // Never mix DE on one machine with NDE on the other — those sensors
-    // are on opposite ends of two different machines.
-    // normalizeAxialPhase() corrects for sensor orientation before comparison.
+    // Primary: DE (coupling-end) vs DE across the coupling.
+    // Secondary: NDE vs NDE across the coupling.
+    // If one machine has no DE sensor, fall back to using whatever axial
+    // sensors it has — but only for detecting misalignment, and note it.
+    // normalizeAxialPhase() corrects for sensor orientation before comparing.
     const aDE=A.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
     const bDE=B.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
     const aNDE=A.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
     const bNDE=B.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
     const axPairs=[];
-    aDE.forEach(a=>bDE.forEach(b=>axPairs.push({a,b})));
-    aNDE.forEach(a=>bNDE.forEach(b=>axPairs.push({a,b})));
+    // DE vs DE — the only valid cross-coupling axial comparison.
+    // DE sensors sit at the coupling end and directly sense the coupling's
+    // angular rocking motion. Orientation normalization handles sensor direction.
+    aDE.forEach(a=>bDE.forEach(b=>axPairs.push({a,b,primary:true})));
+    // Fallback: if one machine has no DE sensor, use its NDE sensor but
+    // mark as non-primary so it only informs the misalignment flag,
+    // never colors bubbles.
+    if(aDE.length===0&&aNDE.length>0&&bDE.length>0){
+      aNDE.forEach(a=>bDE.forEach(b=>axPairs.push({a,b,primary:false})));
+    }
+    if(bDE.length===0&&bNDE.length>0&&aDE.length>0){
+      aDE.forEach(a=>bNDE.forEach(b=>axPairs.push({a,b,primary:false})));
+    }
 
     let axOut=0,axIn=0;
-    axPairs.forEach(({a,b})=>{
+    axPairs.forEach(({a,b,primary})=>{
       // Normalize both phases to outboard reference before comparing.
       // Two sensors both facing outboard → same reference, compare directly.
       // One facing inboard → flip that one first.
@@ -1069,9 +1163,16 @@ function runDiagnosis(){
       const normA = normalizeAxialPhase(a.phase, a.axDir||'out');
       const normB = normalizeAxialPhase(b.phase, b.axDir||'out');
       const d=phaseDiff(normA, normB);
-      if(isOutOfPhase(d,TOL)){axOut++;setSev(a.id,'fault');setSev(b.id,'fault');}
-      else if(isInPhase(d,TOL)){axIn++;setSev(a.id,'ok');setSev(b.id,'ok');}
-      else{setSev(a.id,'warn');setSev(b.id,'warn');}
+      if(isOutOfPhase(d,TOL)){
+        axOut++;
+        // Only color bubbles red for valid same-position pairs
+        if(primary){setSev(a.id,'fault');setSev(b.id,'fault');}
+      } else if(isInPhase(d,TOL)){
+        axIn++;
+        if(primary){setSev(a.id,'ok');setSev(b.id,'ok');}
+      } else {
+        if(primary){setSev(a.id,'warn');setSev(b.id,'warn');}
+      }
     });
 
     if(axPairs.length>0){
@@ -1176,11 +1277,18 @@ function runDiagnosis(){
       }
     });
 
-    // ── AXIAL OUTBOARD vs INBOARD SAME MACHINE — Bent Shaft (Axial) ─────
-    // Uses normalized phases so sensor orientation is accounted for.
-    // After normalization, OB and IB on a healthy shaft should be IN PHASE.
-    // If they are ~180° out after normalization → genuine axial reversal / bent shaft.
+    // ── AXIAL NDE vs DE SAME MACHINE — Bent Shaft (Axial) ─────
+    // Compare NDE and DE axial sensors on the same machine after orientation
+    // normalization. On a healthy shaft they should be in phase.
+    // EXCEPTION: if angular misalignment has already been flagged across this
+    // machine's coupling, the DE sensor's reading is explained by the misalignment
+    // — not a bent shaft. Skip the check for that machine to avoid a false alarm.
+    const angMisalignFlagged=results.some(r=>r.label&&r.label.indexOf('Angular Misalignment')>-1);
     [A,B].forEach(node=>{
+      // If angular misalignment is confirmed, skip the DE sensor on the machine
+      // that is part of the flagged coupling pair (A or B in this coupling loop).
+      // We still run the check but exclude the DE sensor from triggering if
+      // angular misalignment is already the known cause of its reading.
       const ob=node.meas.filter(m=>m.pos==='AX_OB'&&hasVal(m));
       const ib=node.meas.filter(m=>m.pos==='AX_IB'&&hasVal(m));
       if(ob.length>0&&ib.length>0){
@@ -1192,15 +1300,20 @@ function runDiagnosis(){
             const obDirLabel=(obm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             const ibDirLabel=(ibm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             if(isOutOfPhase(d,TOL)){
+              // If angular misalignment is already flagged, the DE sensor's reading
+              // is explained by the misalignment — not a bent shaft. Skip entirely.
+              if(angMisalignFlagged) return;
               setSev(obm.id,'fault');setSev(ibm.id,'fault');
               results.push({type:'fault',
                 label:'⚠ Axial Phase Reversal — '+node.name,
                 desc:'After correcting for sensor orientation ('+obm.label+': '+obDirLabel+', '+ibm.label+': '+ibDirLabel+'), outboard axial (normalized: '+normOB+'°) and inboard axial (normalized: '+normIB+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). On a healthy shaft both axial points should be in phase once sensor directions are accounted for. This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
             } else if(d>60&&d<120){
-              setSev(obm.id,'warn');setSev(ibm.id,'warn');
-              results.push({type:'warn',
-                label:'⚡ Unusual Axial Phase Relationship — '+node.name,
-                desc:'After correcting for sensor orientation ('+obm.label+': '+obDirLabel+', '+ibm.label+': '+ibDirLabel+'), outboard and inboard axial readings on '+node.name+' are ~90° out of phase (normalized diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+              if(!angMisalignFlagged){
+                setSev(obm.id,'warn');setSev(ibm.id,'warn');
+                results.push({type:'warn',
+                  label:'⚡ Unusual Axial Phase Relationship — '+node.name,
+                  desc:'After correcting for sensor orientation ('+obm.label+': '+obDirLabel+', '+ibm.label+': '+ibDirLabel+'), outboard and inboard axial readings on '+node.name+' are ~90° out of phase (normalized diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+              }
             }
           });
         });
