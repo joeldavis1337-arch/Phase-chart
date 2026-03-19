@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html>
 <head>
 <meta charset="UTF-8">
@@ -58,8 +57,8 @@ body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 .add-node:active{background:var(--bg3)}
 
 /* ── Diagnosis panel ── */
-.diag-panel{background:var(–bg3);border:1px solid var(–bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
-.diag-title{font-size:12px;font-weight:700;color:var(–tx3);text-transform:uppercase;letter-spacing:.07em}
+.diag-panel{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
+.diag-title{font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
 .diag-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border-left:4px solid #ccc}
 .diag-item.ok    {background:#f0fdf4;border-left-color:#22c55e}
 .diag-item.warn  {background:#fffbeb;border-left-color:#f59e0b}
@@ -69,54 +68,68 @@ body.dark .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
 body.dark .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
 body.dark .diag-item.fault {background:#291414;border-left-color:#ef4444}
 body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
-.diag-label{font-size:13px;font-weight:700;color:var(–tx)}
-.diag-desc {font-size:11px;color:var(–tx2);line-height:1.5}
-.diag-empty{font-size:12px;color:var(–tx3);text-align:center;padding:8px 0}
+.diag-label{font-size:13px;font-weight:700;color:var(--tx)}
+.diag-desc {font-size:11px;color:var(--tx2);line-height:1.5}
+.diag-empty{font-size:12px;color:var(--tx3);text-align:center;padding:8px 0}
 
 /* Bubble color overrides rendered on canvas — handled in JS */
 
 /* Axial orientation toggle */
-.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(–bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
-.ax-dir-btn{background:var(–bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(–tx3);cursor:pointer;font-family:‘Roboto’,sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
-.ax-dir-btn.active{background:var(–tx);color:var(–bg)}
-.ax-dir-btn:first-child{border-right:1px solid var(–bd2)}
-.ax-dir-hint{font-size:10px;color:var(–tx3);font-style:italic;padding:1px 0 3px}
+.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.ax-dir-btn{background:var(--bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(--tx3);cursor:pointer;font-family:'Roboto',sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
+.ax-dir-btn.active{background:var(--tx);color:var(--bg)}
+.ax-dir-btn:first-child{border-right:1px solid var(--bd2)}
+.ax-dir-hint{font-size:10px;color:var(--tx3);font-style:italic;padding:1px 0 3px}
 /* ── History panel ── */
-.hist-card{background:var(–bg3);border:1px solid var(–bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
-.hist-card:hover{border-color:var(–bd2)}
+.hist-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
+.hist-card:hover{border-color:var(--bd2)}
 .hist-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.hist-card-title{font-size:14px;font-weight:700;color:var(–tx);flex:1;line-height:1.3}
-.hist-card-del{background:none;border:none;cursor:pointer;color:var(–tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
+.hist-card-title{font-size:14px;font-weight:700;color:var(--tx);flex:1;line-height:1.3}
+.hist-card-del{background:none;border:none;cursor:pointer;color:var(--tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
 .hist-card-del:active{color:#ef4444}
-.hist-card-meta{font-size:11px;color:var(–tx3);display:flex;gap:10px;flex-wrap:wrap}
-.hist-card-load{background:none;border:1px solid var(–bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(–tx2);cursor:pointer;font-family:‘Roboto’,sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
+.hist-card-meta{font-size:11px;color:var(--tx3);display:flex;gap:10px;flex-wrap:wrap}
+.hist-card-load{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
 .hist-card-load:active{opacity:.6}
-.hist-empty{font-size:13px;color:var(–tx3);text-align:center;padding:32px 16px;line-height:1.6}
-.hist-save-btn{background:var(–bg3);border:1px solid var(–bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(–tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:‘Roboto’,sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.hist-empty{font-size:13px;color:var(--tx3);text-align:center;padding:32px 16px;line-height:1.6}
+.hist-save-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(--tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .hist-save-btn:active{opacity:.6}
-.hist-count{font-size:10px;color:var(–tx3);text-align:right;padding:2px 0}
+.hist-count{font-size:10px;color:var(--tx3);text-align:right;padding:2px 0}
 /* ── Confirm modal ── */
 .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1100;align-items:center;justify-content:center;padding:20px}
 .confirm-overlay.show{display:flex}
-.confirm-sheet{background:var(–bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
-.confirm-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
-.confirm-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
+.confirm-sheet{background:var(--bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.confirm-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
+.confirm-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
 .confirm-btns{display:flex;gap:10px}
-.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:‘Roboto’,sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(–bd2);-webkit-appearance:none}
-.confirm-ok{background:var(–tx);color:var(–bg);font-weight:700}
-.confirm-cancel-btn{background:var(–bg2);color:var(–tx)}
+.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(--bd2);-webkit-appearance:none}
+.confirm-ok{background:var(--tx);color:var(--bg);font-weight:700}
+.confirm-cancel-btn{background:var(--bg2);color:var(--tx)}
+/* ── What's New modal ── */
+.wn-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
+.wn-overlay.show{display:flex}
+.wn-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:0;max-height:80vh;overflow:hidden}
+.wn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
+.wn-header h2{font-size:16px;font-weight:700;color:var(--tx)}
+.wn-close{background:none;border:none;font-size:22px;color:var(--tx3);cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation}
+.wn-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
+.wn-version{margin-bottom:18px}
+.wn-version-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.wn-version-num{font-size:14px;font-weight:700;color:var(--tx)}
+.wn-badge{font-size:10px;font-weight:700;background:#3b82f6;color:#fff;padding:2px 7px;border-radius:10px}
+.wn-date{font-size:11px;color:var(--tx3)}
+.wn-item{display:flex;gap:8px;font-size:12px;color:var(--tx2);padding:4px 0;line-height:1.5}
+.wn-item::before{content:'•';color:var(--tx3);flex-shrink:0}
 /* ── Share / print modal ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal-sheet{background:var(–bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
-.modal-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
-.modal-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
+.modal-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.modal-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
+.modal-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
 .modal-actions{display:flex;flex-direction:column;gap:10px}
-.modal-btn{background:var(–bg2);border:1px solid var(–bd);border-radius:10px;padding:14px;font-size:15px;font-family:‘Roboto’,sans-serif;color:var(–tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.modal-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:15px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .modal-btn:active{opacity:.6}
-.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:‘Roboto’,sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
+.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
 </style>
-
 </head>
 <body class="light">
 <div class="app">
@@ -136,6 +149,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
     </select></label>
     <button class="btn" id="dm-btn" onclick="toggleDark()">🌙 Dark</button>
     <button class="btn" id="print-btn">🖨 Print / Share</button>
+    <button class="btn" id="wn-btn" onclick="openWN()">✨ What's New</button>
     <label>Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
   </div>
   <div class="tab-bar">
@@ -162,14 +176,30 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
     </div>
     <div class="sidebar hidden" id="panel-diag">
       <h3>Possible Diagnosis</h3>
-      <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Based on Emerson/CSI cross-channel phase analysis principles. Always confirm with additional data.</div>
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Based on Emerson/CSI cross-channel phase analysis principles. Always confirm with additional data.</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#ef4444"></div>Fault — action required</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#f59e0b"></div>Warning — monitor closely</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#22c55e"></div>Normal — no issue indicated</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#3b82f6"></div>Info — additional context</div>
+      </div>
       <div id="diag-results"></div>
     </div>
   </div>
 </div>
 
-<!-- Share/Print modal -->
+<!-- What's New modal -->
+<div class="wn-overlay" id="wn-modal">
+  <div class="wn-sheet">
+    <div class="wn-header">
+      <h2>What's New</h2>
+      <button class="wn-close" onclick="closeWN()">×</button>
+    </div>
+    <div class="wn-scroll" id="wn-content"></div>
+  </div>
+</div>
 
+<!-- Share/Print modal -->
 <div class="modal-overlay" id="share-modal">
   <div class="modal-sheet">
     <h2>Print / Share Chart</h2>
@@ -184,7 +214,6 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- Confirm modal -->
-
 <div class="confirm-overlay" id="confirm-modal">
   <div class="confirm-sheet">
     <h2 id="confirm-title">Are you sure?</h2>
@@ -207,7 +236,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.4';
+  return '1.2.5';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -231,12 +260,12 @@ function getUnit(){return UNITS[document.getElementById('amp-unit').value]||UNIT
 function onUnitChange(){renderSidebar();redraw();}
 
 const PALETTE=[{fill:'#1a6bbf'},{fill:'#1a9e75'},{fill:'#c94040'},{fill:'#7a7adc'},{fill:'#c97a1a'},{fill:'#555555'}];
-const SHAPES=['Motor','Gearbox','Fan','Pump','Turbine','Compressor','Blower','Coupling','Bearing','Shaft'];
+const SHAPES=['Motor','Gearbox','Fan','Pump','Turbine','Compressor','Blower','Fan (Overhung)','Fan (Center Hung)','Coupling','Bearing','Shaft'];
 function pal(ci){return PALETTE[ci%PALETTE.length];}
 
 // ── Data ─────────────────────────────────────────────────
 let nodes=[
-  {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',coupSide:'R',meas:[
+  {id:1,name:'Driver',shape:'Motor',ci:0,rpm:'',coupSide:'R',notes:'',meas:[
     {id:5,pos:'HORIZ_NDE',label:'H1',amp:0,phase:0,ref:false},
     {id:6,pos:'HORIZ_DE', label:'H2',amp:0,phase:0,ref:false},
     {id:3,pos:'VERT_NDE', label:'V1',amp:0,phase:0,ref:false},
@@ -244,11 +273,11 @@ let nodes=[
     {id:1,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
     {id:2,pos:'AX_IB',    label:'A2',amp:0,phase:0,ref:false,axDir:'out'},
   ]},
-  {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',coupSide:'L',meas:[
-    {id:11,pos:'HORIZ_NDE',label:'H3',amp:0,phase:0,ref:false},
-    {id:12,pos:'HORIZ_DE', label:'H4',amp:0,phase:0,ref:false},
-    {id:9, pos:'VERT_NDE', label:'V3',amp:0,phase:0,ref:false},
-    {id:10,pos:'VERT_DE',  label:'V4',amp:0,phase:0,ref:false},
+  {id:2,name:'Driven',shape:'Pump',ci:0,rpm:'',coupSide:'L',notes:'',meas:[
+    {id:11,pos:'HORIZ_DE', label:'H3',amp:0,phase:0,ref:false},
+    {id:12,pos:'HORIZ_NDE',label:'H4',amp:0,phase:0,ref:false},
+    {id:9, pos:'VERT_DE',  label:'V3',amp:0,phase:0,ref:false},
+    {id:10,pos:'VERT_NDE', label:'V4',amp:0,phase:0,ref:false},
     {id:7, pos:'AX_IB',    label:'A3',amp:0,phase:0,ref:false,axDir:'out'},
     {id:8, pos:'AX_OB',    label:'A4',amp:0,phase:0,ref:false,axDir:'out'},
   ]},
@@ -296,6 +325,9 @@ function renderSidebar(){
         </div>
       </div>
       <div class="ax-dir-hint">${(n.coupSide||'R')==='R'?'Coupling is on the right side of this component':'Coupling is on the left side of this component'}</div>
+      <h3 style="margin-top:4px">Notes</h3>
+      <textarea rows="2" placeholder="Job number, observations, technician..." style="width:100%;font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:6px 8px;color:var(--tx);font-family:'Roboto',sans-serif;resize:vertical;min-height:48px"
+        onchange="upN(${n.id},'notes',this.value)">${esc(n.notes||'')}</textarea>
       <h3 style="margin-top:4px">Measurement points</h3>
       <div id="meas-${n.id}"></div>
       <button class="add-m" onclick="addMeas(${n.id})">+ measurement point</button>`;
@@ -308,10 +340,17 @@ function renderSidebar(){
       mEl.appendChild(md);
     });
   });
-  const ab=document.createElement('button');
-  ab.className='add-node';ab.textContent='+ Add component';
-  ab.addEventListener('click',addNode);
-  el.appendChild(ab);
+  if(nodes.length<2){
+    const ab=document.createElement('button');
+    ab.className='add-node';ab.textContent='+ Add component';
+    ab.addEventListener('click',addNode);
+    el.appendChild(ab);
+  } else {
+    const ab=document.createElement('div');
+    ab.style.cssText='font-size:11px;color:var(--tx3);text-align:center;padding:8px;border:1px dashed var(--bd);border-radius:8px';
+    ab.textContent='2-component limit — Driver and Driven only. Cross-channel phase analysis is validated for single-coupling equipment trains.';
+    el.appendChild(ab);
+  }
 }
 
 function measHTML(nid,m,u,coupSide){
@@ -417,7 +456,7 @@ function handlePhaseInput(el){
 function addNode(){
   // Smart default: first node coupling on right, all subsequent on left
   const cs=nodes.length===0?'R':'L';
-  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',coupSide:cs,meas:[
+  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',coupSide:cs,notes:'',meas:[
     {id:mid++,pos:'HORIZ_NDE',label:'H',amp:0,phase:0,ref:false},
     {id:mid++,pos:'VERT_NDE', label:'V',amp:0,phase:0,ref:false},
     {id:mid++,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
@@ -787,6 +826,25 @@ function drawShapeIcon(ctx,shape,cx,cy,size,color){
       function gear(gx,gy,r,t){const tr=r*1.38;ctx.beginPath();for(let i=0;i<t;i++){const a1=i*Math.PI*2/t-.18,a2=i*Math.PI*2/t+.18,a3=(i+.5)*Math.PI*2/t-.12,a4=(i+.5)*Math.PI*2/t+.12;if(i===0)ctx.moveTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));else ctx.lineTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a1),gy+tr*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a2),gy+tr*Math.sin(a2));ctx.lineTo(gx+r*Math.cos(a3),gy+r*Math.sin(a3));ctx.lineTo(gx+r*Math.cos(a4),gy+r*Math.sin(a4));}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(gx,gy,r*.35,0,Math.PI*2);ctx.stroke();}
       gear(cx-s*.38,cy,s*.5,7);gear(cx+s*.48,cy,s*.35,5);break;
     case 'Fan':case 'Blower':ctx.beginPath();ctx.arc(cx,cy,s*.22,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.56,s*.17,s*.37,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}break;
+    case 'Fan (Overhung)':
+      // Overhung fan: hub + 4 blades all on one side (right), shaft extends left with one bearing
+      ctx.beginPath();ctx.arc(cx+s*.2,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub offset right
+      for(let i=0;i<4;i++){ctx.save();ctx.translate(cx+s*.2,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
+      // shaft line to left
+      ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx+s*.2-s*.2,cy);ctx.lineTo(cx-s*.8,cy);ctx.stroke();
+      // single bearing on shaft (left side)
+      ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.55,cy,s*.18,0,Math.PI*2);ctx.stroke();
+      break;
+    case 'Fan (Center Hung)':
+      // Center hung fan: hub center, blades center, two bearings flanking
+      ctx.beginPath();ctx.arc(cx,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub
+      for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
+      // shaft line through
+      ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx+s,cy);ctx.stroke();
+      // two bearings flanking
+      ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
+      ctx.beginPath();ctx.arc(cx+s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
+      break;
     case 'Pump':ctx.beginPath();ctx.arc(cx,cy,s*.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.25,0,Math.PI*2);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+s*.7,cy);ctx.lineTo(cx+s,cy);ctx.stroke();ctx.lineWidth=1.3;for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.25);ctx.quadraticCurveTo(s*.27,s*.37,s*.27,s*.66);ctx.stroke();ctx.restore();}break;
     case 'Turbine':ctx.beginPath();ctx.arc(cx,cy,s*.67,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.21,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(0,s*.21);ctx.quadraticCurveTo(s*.31,s*.31,s*.17,s*.61);ctx.stroke();ctx.restore();}break;
     case 'Compressor':ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.66);ctx.lineTo(0,s*.29);ctx.moveTo(-s*.11,s*.43);ctx.lineTo(0,s*.29);ctx.lineTo(s*.11,s*.43);ctx.stroke();ctx.restore();}break;
@@ -1010,11 +1068,9 @@ function desktopPrint(){
       .page-break{page-break-before:always}
     }
   </style>
-
   </head><body>
 
   <!-- PAGE 1: Chart -->
-
   <div class="page">
     <h1>${title}</h1>
     <img src="${imgData}" id="chartimg">
@@ -1022,7 +1078,6 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
-
   <div class="page page-break">
     <h1>${title} — Measurement Data</h1>
     <div class="section-title">Measurement Points</div>
@@ -1036,7 +1091,6 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 3: Diagnosis -->
-
   <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
     <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
@@ -1447,8 +1501,8 @@ function runDiagnosis(){
       }
     }
 
-    // ── FAN / BLOWER ──────────────────────────────────────────────────
-    if(shape==='Fan'||shape==='Blower'){
+    // ── FAN / BLOWER / CENTER HUNG ───────────────────────────────────
+    if(shape==='Fan'||shape==='Blower'||shape==='Fan (Center Hung)'){
       // Aerodynamic imbalance: high radial, erratic phase, load-dependent
       if(maxRad>highAmp&&erraticPhase){
         results.push({type:'warn',
@@ -1466,6 +1520,35 @@ function runDiagnosis(){
         results.push({type:'warn',
           label:'⚡ Possible Structural Looseness / Soft Foot — '+node.name,
           desc:'Moderate amplitude with erratic phase on '+node.name+' suggests structural looseness rather than a rotor fault. Fan/blower bases are prone to soft foot and frame distortion. Check all mounting bolts, base plate flatness, and duct connections for looseness.'});
+      }
+    }
+
+    // ── OVERHUNG FAN ─────────────────────────────────────────────────
+    if(shape==="Fan (Overhung)"){
+      // Overhung imbalance: high radial AND high axial in phase with each other
+      // This is the signature pattern — overhung mass creates both radial and axial force
+      if(maxRad>ampThresh&&maxAx>ampThresh){
+        var radAxRatio=maxAx/maxRad;
+        if(radAxRatio>0.5&&vM.length>0&&axAll.length>0){
+          var axRadDiff=phaseDiff(vM[0].phase,axAll[0].phase);
+          if(axRadDiff>=55&&axRadDiff<=125){
+            results.push({type:'warn',
+              label:'⚡ Possible Overhung Imbalance — '+node.name,
+              desc:'Elevated radial and axial amplitudes (axial/radial ratio: '+radAxRatio.toFixed(2)+') with ~90° phase difference between radial and axial is the classic overhung imbalance signature. The eccentric mass creates a rotating couple that drives both radial and axial motion simultaneously. Balance the impeller — static or couple balance depending on impeller width.'});
+          }
+        }
+      }
+      // High axial only: bearing overload or structural resonance
+      if(maxAx>highAmp&&maxAx>maxRad*1.5){
+        results.push({type:'warn',
+          label:'⚡ Excessive Axial — '+node.name+' (Overhung)',
+          desc:'Axial amplitude significantly exceeds radial on this overhung fan (axial: '+maxAx.toFixed(3)+', radial: '+maxRad.toFixed(3)+'). High axial on an overhung machine indicates the bearing is carrying excessive thrust from the overhung mass — possible causes include imbalance, bent shaft, or worn thrust bearing. Inspect bearing condition and check shaft straightness.'});
+      }
+      // Erratic phase with elevated radial: aerodynamic instability or blade damage
+      if(erraticPhase&&maxRad>ampThresh){
+        results.push({type:'warn',
+          label:'⚡ Possible Blade Damage / Aerodynamic Instability — '+node.name,
+          desc:'Erratic phase with elevated radial on this overhung fan may indicate a damaged or missing blade, buildup causing aerodynamic imbalance, or unstable flow at the impeller. Overhung fans are especially sensitive to aerodynamic asymmetry because there is no outboard bearing to constrain shaft motion. Inspect blades visually and check for buildup or erosion.'});
       }
     }
 
@@ -1620,6 +1703,13 @@ function histSave(entries){
   catch(e){alert('Storage full — delete some history entries to free space.');}
 }
 
+function getSeverityBadge(){
+  // Compute overall severity from current diagResults
+  if(diagResults.some(r=>r.type==='fault')) return 'fault';
+  if(diagResults.some(r=>r.type==='warn'))  return 'warn';
+  if(diagResults.some(r=>r.type==='ok'))    return 'ok';
+  return 'info';
+}
 function saveToHistory(){
   const title=document.getElementById('chart-title').value.trim()||'Untitled';
   const rpm=document.getElementById('global-rpm').value||'';
@@ -1630,6 +1720,7 @@ function saveToHistory(){
     id:Date.now(),
     title,rpm,unit,layout,date,
     components:nodes.length,
+    severity:getSeverityBadge(),
     nodes:JSON.parse(JSON.stringify(nodes)), // deep clone
     meta:{
       chartTitle:title,
@@ -1712,9 +1803,14 @@ function renderHistory(){
   entries.forEach(entry=>{
     const card=document.createElement('div');
     card.className='hist-card';
+    const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'}[entry.severity||'info'];
+    const sevLabel={fault:'Fault',warn:'Warning',ok:'Normal',info:'No data'}[entry.severity||'info'];
     card.innerHTML=`
       <div class="hist-card-hdr">
-        <div class="hist-card-title">${esc(entry.title)}</div>
+        <div style="display:flex;align-items:center;gap:7px;flex:1;min-width:0">
+          <div title="${sevLabel}" style="width:11px;height:11px;border-radius:50%;background:${sevColor};flex-shrink:0"></div>
+          <div class="hist-card-title">${esc(entry.title)}</div>
+        </div>
         <button class="hist-card-del" onclick="deleteFromHistory(${entry.id},event)" title="Delete">×</button>
       </div>
       <div class="hist-card-meta">
@@ -1747,6 +1843,58 @@ function doConfirm(){
   if(cb) cb();
 }
 
+// ── Changelog ────────────────────────────────────────────
+const CHANGELOG={
+  '1.2.5':{
+    date:'03/19/2026',
+    items:[
+      'New shape: Fan (Overhung) — dedicated icon and overhung imbalance diagnosis',
+      'New shape: Fan (Center Hung) — dedicated icon, reuses Fan/Blower diagnosis logic',
+      'Component limit enforced — 2 components max (Driver + Driven) for analysis integrity',
+      'Notes field added per component — saves with history for job tracking',
+      'Severity badge on History tab — red/yellow/green/blue dot shows fault level at a glance',
+      'Color legend added to Diagnosis tab',
+      "What's New changelog added — auto-updates with each version",
+      'Smart auto-labeling — new measurement points auto-named by type and number',
+      'Position tag changes now reflect immediately in bubble chart and diagnosis',
+      'Default Driven component sensor positions corrected (H3/V3 = DE, H4/V4 = NDE)',
+      'Axial cross-coupling logic corrected — only DE vs DE compared across coupling',
+      'iOS keyboard fix — negative sign and decimal point now work on phase and amplitude fields',
+    ]
+  },
+};
+
+function openWN(){
+  const el=document.getElementById('wn-content');
+  const curVer=getDocVersion();
+  el.innerHTML='';
+  Object.keys(CHANGELOG).sort((a,b)=>{
+    const pa=a.split('.').map(Number),pb=b.split('.').map(Number);
+    for(let i=0;i<3;i++){if(pa[i]!==pb[i])return pb[i]-pa[i];}
+    return 0;
+  }).forEach(ver=>{
+    const entry=CHANGELOG[ver];
+    const isCurrent=ver===curVer;
+    const div=document.createElement('div');
+    div.className='wn-version';
+    div.innerHTML=`
+      <div class="wn-version-hdr">
+        <span class="wn-version-num">v${ver}</span>
+        ${isCurrent?'<span class="wn-badge">Current</span>':''}
+        <span class="wn-date">${entry.date||''}</span>
+      </div>
+      ${entry.items.map(item=>`<div class="wn-item">${item}</div>`).join('')}`;
+    el.appendChild(div);
+    if(!isCurrent){
+      div.style.opacity='0.6';
+    }
+  });
+  document.getElementById('wn-modal').classList.add('show');
+}
+function closeWN(){
+  document.getElementById('wn-modal').classList.remove('show');
+}
+
 function boot(){
   // Prevent scroll wheel / trackpad from changing number input values
   // This is a critical fix — scrolling while a number field is focused
@@ -1766,6 +1914,7 @@ function boot(){
   document.getElementById('download-image-btn').addEventListener('click',downloadImage);
   document.getElementById('desktop-print-btn').addEventListener('click',desktopPrint);
   document.getElementById('confirm-ok-btn').addEventListener('click',doConfirm);
+  document.getElementById('wn-modal').addEventListener('click',function(e){if(e.target===this)closeWN();});
   // Close confirm on overlay tap
   document.getElementById('confirm-modal').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
   // Close share modal on overlay tap
@@ -1779,6 +1928,5 @@ function boot(){
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
 else{boot();}
 </script>
-
 </body>
 </html>
