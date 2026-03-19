@@ -368,8 +368,7 @@ function measHTML(nid,m,u,coupSide){
     ${axDirHTML}
     <div class="row">
       <span class="lbl">Amp (${u.label})</span>
-      <input type="number" inputmode="decimal" placeholder="0" value="${ampVal||''}"
-        min="0" max="${u.max}" step="${u.step}"
+      <input type="text" inputmode="decimal" placeholder="0" value="${ampVal||''}"
         style="${numStyle}"
         data-nid="${nid}" data-mid="${m.id}"
         onchange="handleAmpInput(this)"
@@ -377,8 +376,7 @@ function measHTML(nid,m,u,coupSide){
     </div>
     <div class="row">
       <span class="lbl">Phase (-180° to 180°)</span>
-      <input type="number" inputmode="numeric" placeholder="0" value="${phaseVal||''}"
-        min="-180" max="180" step="1"
+      <input type="text" inputmode="decimal" placeholder="0" value="${phaseVal||''}"
         style="${numStyle}"
         data-nid="${nid}" data-mid="${m.id}"
         onchange="handlePhaseInput(this)"
@@ -389,7 +387,10 @@ function measHTML(nid,m,u,coupSide){
 function handleAmpInput(el){
   const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
   const u=getUnit();
-  let val=parseFloat(el.value);
+  const raw=el.value;
+  // Allow partial input while typing (e.g. "0." or empty)
+  if(raw===''||raw==='.'||raw==='0.'){return;}
+  let val=parseFloat(raw);
   if(isNaN(val)||val<0)val=0;
   if(val>u.max)val=u.max;
   const n=nodes.find(x=>x.id===nid2);
@@ -398,7 +399,10 @@ function handleAmpInput(el){
 }
 function handlePhaseInput(el){
   const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
-  let val=Math.round(parseFloat(el.value));
+  const raw=el.value;
+  // Allow partial input while typing (e.g. "-" or "-1" mid-entry)
+  if(raw===''||raw==='-'||raw==='-0'){return;}
+  let val=Math.round(parseFloat(raw));
   if(isNaN(val))val=0;
   if(val>180)val=180;
   if(val<-180)val=-180;
