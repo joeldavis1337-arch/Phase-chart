@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -57,8 +58,8 @@ body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 .add-node:active{background:var(--bg3)}
 
 /* ── Diagnosis panel ── */
-.diag-panel{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
-.diag-title{font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
+.diag-panel{background:var(–bg3);border:1px solid var(–bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
+.diag-title{font-size:12px;font-weight:700;color:var(–tx3);text-transform:uppercase;letter-spacing:.07em}
 .diag-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border-left:4px solid #ccc}
 .diag-item.ok    {background:#f0fdf4;border-left-color:#22c55e}
 .diag-item.warn  {background:#fffbeb;border-left-color:#f59e0b}
@@ -68,68 +69,69 @@ body.dark .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
 body.dark .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
 body.dark .diag-item.fault {background:#291414;border-left-color:#ef4444}
 body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
-.diag-label{font-size:13px;font-weight:700;color:var(--tx)}
-.diag-desc {font-size:11px;color:var(--tx2);line-height:1.5}
-.diag-empty{font-size:12px;color:var(--tx3);text-align:center;padding:8px 0}
+.diag-label{font-size:13px;font-weight:700;color:var(–tx)}
+.diag-desc {font-size:11px;color:var(–tx2);line-height:1.5}
+.diag-empty{font-size:12px;color:var(–tx3);text-align:center;padding:8px 0}
 
 /* Bubble color overrides rendered on canvas — handled in JS */
 
 /* Axial orientation toggle */
-.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
-.ax-dir-btn{background:var(--bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(--tx3);cursor:pointer;font-family:'Roboto',sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
-.ax-dir-btn.active{background:var(--tx);color:var(--bg)}
-.ax-dir-btn:first-child{border-right:1px solid var(--bd2)}
-.ax-dir-hint{font-size:10px;color:var(--tx3);font-style:italic;padding:1px 0 3px}
+.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(–bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.ax-dir-btn{background:var(–bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(–tx3);cursor:pointer;font-family:‘Roboto’,sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
+.ax-dir-btn.active{background:var(–tx);color:var(–bg)}
+.ax-dir-btn:first-child{border-right:1px solid var(–bd2)}
+.ax-dir-hint{font-size:10px;color:var(–tx3);font-style:italic;padding:1px 0 3px}
 /* ── History panel ── */
-.hist-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
-.hist-card:hover{border-color:var(--bd2)}
+.hist-card{background:var(–bg3);border:1px solid var(–bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
+.hist-card:hover{border-color:var(–bd2)}
 .hist-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.hist-card-title{font-size:14px;font-weight:700;color:var(--tx);flex:1;line-height:1.3}
-.hist-card-del{background:none;border:none;cursor:pointer;color:var(--tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
+.hist-card-title{font-size:14px;font-weight:700;color:var(–tx);flex:1;line-height:1.3}
+.hist-card-del{background:none;border:none;cursor:pointer;color:var(–tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
 .hist-card-del:active{color:#ef4444}
-.hist-card-meta{font-size:11px;color:var(--tx3);display:flex;gap:10px;flex-wrap:wrap}
-.hist-card-load{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
+.hist-card-meta{font-size:11px;color:var(–tx3);display:flex;gap:10px;flex-wrap:wrap}
+.hist-card-load{background:none;border:1px solid var(–bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(–tx2);cursor:pointer;font-family:‘Roboto’,sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
 .hist-card-load:active{opacity:.6}
-.hist-empty{font-size:13px;color:var(--tx3);text-align:center;padding:32px 16px;line-height:1.6}
-.hist-save-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(--tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.hist-empty{font-size:13px;color:var(–tx3);text-align:center;padding:32px 16px;line-height:1.6}
+.hist-save-btn{background:var(–bg3);border:1px solid var(–bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(–tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:‘Roboto’,sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .hist-save-btn:active{opacity:.6}
-.hist-count{font-size:10px;color:var(--tx3);text-align:right;padding:2px 0}
+.hist-count{font-size:10px;color:var(–tx3);text-align:right;padding:2px 0}
 /* ── Confirm modal ── */
 .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1100;align-items:center;justify-content:center;padding:20px}
 .confirm-overlay.show{display:flex}
-.confirm-sheet{background:var(--bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
-.confirm-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
-.confirm-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
+.confirm-sheet{background:var(–bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.confirm-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
+.confirm-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
 .confirm-btns{display:flex;gap:10px}
-.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(--bd2);-webkit-appearance:none}
-.confirm-ok{background:var(--tx);color:var(--bg);font-weight:700}
-.confirm-cancel-btn{background:var(--bg2);color:var(--tx)}
-/* ── What's New modal ── */
+.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:‘Roboto’,sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(–bd2);-webkit-appearance:none}
+.confirm-ok{background:var(–tx);color:var(–bg);font-weight:700}
+.confirm-cancel-btn{background:var(–bg2);color:var(–tx)}
+/* ── What’s New modal ── */
 .wn-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .wn-overlay.show{display:flex}
-.wn-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:0;max-height:80vh;overflow:hidden}
+.wn-sheet{background:var(–bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:0;max-height:80vh;overflow:hidden}
 .wn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-shrink:0}
-.wn-header h2{font-size:16px;font-weight:700;color:var(--tx)}
-.wn-close{background:none;border:none;font-size:22px;color:var(--tx3);cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation}
+.wn-header h2{font-size:16px;font-weight:700;color:var(–tx)}
+.wn-close{background:none;border:none;font-size:22px;color:var(–tx3);cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation}
 .wn-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
 .wn-version{margin-bottom:18px}
 .wn-version-hdr{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.wn-version-num{font-size:14px;font-weight:700;color:var(--tx)}
+.wn-version-num{font-size:14px;font-weight:700;color:var(–tx)}
 .wn-badge{font-size:10px;font-weight:700;background:#3b82f6;color:#fff;padding:2px 7px;border-radius:10px}
-.wn-date{font-size:11px;color:var(--tx3)}
-.wn-item{display:flex;gap:8px;font-size:12px;color:var(--tx2);padding:4px 0;line-height:1.5}
-.wn-item::before{content:'•';color:var(--tx3);flex-shrink:0}
+.wn-date{font-size:11px;color:var(–tx3)}
+.wn-item{display:flex;gap:8px;font-size:12px;color:var(–tx2);padding:4px 0;line-height:1.5}
+.wn-item::before{content:’•’;color:var(–tx3);flex-shrink:0}
 /* ── Share / print modal ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
-.modal-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
-.modal-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
+.modal-sheet{background:var(–bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.modal-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
+.modal-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
 .modal-actions{display:flex;flex-direction:column;gap:10px}
-.modal-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:15px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.modal-btn{background:var(–bg2);border:1px solid var(–bd);border-radius:10px;padding:14px;font-size:15px;font-family:‘Roboto’,sans-serif;color:var(–tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .modal-btn:active{opacity:.6}
-.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
+.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:‘Roboto’,sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
 </style>
+
 </head>
 <body class="light">
 <div class="app">
@@ -189,6 +191,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- What's New modal -->
+
 <div class="wn-overlay" id="wn-modal">
   <div class="wn-sheet">
     <div class="wn-header">
@@ -200,6 +203,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- Share/Print modal -->
+
 <div class="modal-overlay" id="share-modal">
   <div class="modal-sheet">
     <h2>Print / Share Chart</h2>
@@ -214,6 +218,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- Confirm modal -->
+
 <div class="confirm-overlay" id="confirm-modal">
   <div class="confirm-sheet">
     <h2 id="confirm-title">Are you sure?</h2>
@@ -328,232 +333,200 @@ function renderSidebar(){
       <h3 style="margin-top:4px">Notes</h3>
       <textarea rows="2" placeholder="Job number, observations, technician..." style="width:100%;font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:6px 8px;color:var(--tx);font-family:'Roboto',sans-serif;resize:vertical;min-height:48px"
         onchange="upN(${n.id},'notes',this.value)">${esc(n.notes||'')}</textarea>
-      <h3 style="margin-top:4px">Measurement points</h3>
-      <div id="meas-${n.id}"></div>
-      <button class="add-m" onclick="addMeas(${n.id})">+ measurement point</button>`;
-    el.appendChild(card);
-    const mEl=card.querySelector('#meas-'+n.id);
-    n.meas.forEach(m=>{
-      const md=document.createElement('div');
-      md.className='mrow';
-      md.innerHTML=measHTML(n.id,m,u,n.coupSide||'R');
-      mEl.appendChild(md);
-    });
-  });
-  if(nodes.length<2){
-    const ab=document.createElement('button');
-    ab.className='add-node';ab.textContent='+ Add component';
-    ab.addEventListener('click',addNode);
-    el.appendChild(ab);
-  } else {
-    const ab=document.createElement('div');
-    ab.style.cssText='font-size:11px;color:var(--tx3);text-align:center;padding:8px;border:1px dashed var(--bd);border-radius:8px';
-    ab.textContent='2-component limit — Driver and Driven only. Cross-channel phase analysis is validated for single-coupling equipment trains.';
-    el.appendChild(ab);
-  }
+
+```
+  <h3 style="margin-top:4px">Measurement points</h3>
+  <div id="meas-${n.id}"></div>
+  <button class="add-m" onclick="addMeas(${n.id})">+ measurement point</button>`;
+el.appendChild(card);
+const mEl=card.querySelector('#meas-'+n.id);
+n.meas.forEach(m=>{
+  const md=document.createElement('div');
+  md.className='mrow';
+  md.innerHTML=measHTML(n.id,m,u,n.coupSide||'R');
+  mEl.appendChild(md);
+});
+```
+
+});
+if(nodes.length<2){
+const ab=document.createElement(‘button’);
+ab.className=‘add-node’;ab.textContent=’+ Add component’;
+ab.addEventListener(‘click’,addNode);
+el.appendChild(ab);
+} else {
+const ab=document.createElement(‘div’);
+ab.style.cssText=‘font-size:11px;color:var(–tx3);text-align:center;padding:8px;border:1px dashed var(–bd);border-radius:8px’;
+ab.textContent=‘2-component limit — Driver and Driven only. Cross-channel phase analysis is validated for single-coupling equipment trains.’;
+el.appendChild(ab);
+}
 }
 
 function measHTML(nid,m,u,coupSide){
-  coupSide=coupSide||'R';
-  const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
-  const phaseVal=Math.round(parseFloat(m.phase)||0);
-  const isAxial=m.pos==='AX_OB'||m.pos==='AX_IB';
-  const axDir=m.axDir||'out';
-  const isVertLayout=document.getElementById('layout').value==='V';
+coupSide=coupSide||‘R’;
+const ampVal=Math.min(parseFloat(m.amp)||0,u.max);
+const phaseVal=Math.round(parseFloat(m.phase)||0);
+const isAxial=m.pos===‘AX_OB’||m.pos===‘AX_IB’;
+const axDir=m.axDir||‘out’;
+const isVertLayout=document.getElementById(‘layout’).value===‘V’;
 
-  // Arrow direction for inboard depends on which side the coupling is on:
-  // Coupling on RIGHT → inboard points right (➡), outboard points left (⬅)
-  // Coupling on LEFT  → inboard points left (⬅), outboard points right (➡)
-  const inArrow  = coupSide==='R' ? 'Inboard ➡' : '⬅ Inboard';
-  const outArrow = coupSide==='R' ? '⬅ Outboard' : 'Outboard ➡';
-  const btnInLabel  = isVertLayout ? '⬇ Downward' : inArrow;
-  const btnOutLabel = isVertLayout ? '⬆ Upward'   : outArrow;
-  const hintIn  = isVertLayout
-    ? 'Sensor face points downward (toward base / driven end)'
-    : 'Sensor face points toward the coupling';
-  const hintOut = isVertLayout
-    ? 'Sensor face points upward (toward free / drive end)'
-    : 'Sensor face points away from coupling (free end)';
+// Arrow direction for inboard depends on which side the coupling is on:
+// Coupling on RIGHT → inboard points right (➡), outboard points left (⬅)
+// Coupling on LEFT  → inboard points left (⬅), outboard points right (➡)
+const inArrow  = coupSide===‘R’ ? ‘Inboard ➡’ : ‘⬅ Inboard’;
+const outArrow = coupSide===‘R’ ? ‘⬅ Outboard’ : ‘Outboard ➡’;
+const btnInLabel  = isVertLayout ? ‘⬇ Downward’ : inArrow;
+const btnOutLabel = isVertLayout ? ‘⬆ Upward’   : outArrow;
+const hintIn  = isVertLayout
+? ‘Sensor face points downward (toward base / driven end)’
+: ‘Sensor face points toward the coupling’;
+const hintOut = isVertLayout
+? ‘Sensor face points upward (toward free / drive end)’
+: ‘Sensor face points away from coupling (free end)’;
 
-  const posOpts=[
-    {v:'AX_OB',l:'Axial Non-Drive End (NDE)'},
-    {v:'AX_IB',l:'Axial Drive End (DE)'},
-    {v:'VERT_NDE',l:'Vertical Non-Drive End (NDE)'},
-    {v:'VERT_DE', l:'Vertical Drive End (DE)'},
-    {v:'HORIZ_NDE',l:'Horizontal Non-Drive End (NDE)'},
-    {v:'HORIZ_DE', l:'Horizontal Drive End (DE)'},
-  ];
-  const numStyle=`font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;width:100%;text-align:center`;
+const posOpts=[
+{v:‘AX_OB’,l:‘Axial Non-Drive End (NDE)’},
+{v:‘AX_IB’,l:‘Axial Drive End (DE)’},
+{v:‘VERT_NDE’,l:‘Vertical Non-Drive End (NDE)’},
+{v:‘VERT_DE’, l:‘Vertical Drive End (DE)’},
+{v:‘HORIZ_NDE’,l:‘Horizontal Non-Drive End (NDE)’},
+{v:‘HORIZ_DE’, l:‘Horizontal Drive End (DE)’},
+];
+const numStyle=`font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;width:100%;text-align:center`;
 
-  // Axial orientation toggle
-  const axDirHTML=isAxial?`
-    <div class="row" style="gap:8px;flex-wrap:wrap">
-      <span class="lbl" style="min-width:80px">Sensor orientation</span>
-      <div class="ax-dir-toggle">
-        <button class="ax-dir-btn${axDir==='in'?' active':''}" onclick="upM(${nid},${m.id},'axDir','in');renderSidebar();redraw()">${btnInLabel}</button>
-        <button class="ax-dir-btn${axDir==='out'?' active':''}" onclick="upM(${nid},${m.id},'axDir','out');renderSidebar();redraw()">${btnOutLabel}</button>
-      </div>
-    </div>
-    <div class="ax-dir-hint">${axDir==='in'?hintIn:hintOut}</div>`:'';
+// Axial orientation toggle
+const axDirHTML=isAxial?` <div class="row" style="gap:8px;flex-wrap:wrap"> <span class="lbl" style="min-width:80px">Sensor orientation</span> <div class="ax-dir-toggle"> <button class="ax-dir-btn${axDir==='in'?' active':''}" onclick="upM(${nid},${m.id},'axDir','in');renderSidebar();redraw()">${btnInLabel}</button> <button class="ax-dir-btn${axDir==='out'?' active':''}" onclick="upM(${nid},${m.id},'axDir','out');renderSidebar();redraw()">${btnOutLabel}</button> </div> </div> <div class="ax-dir-hint">${axDir==='in'?hintIn:hintOut}</div>`:’’;
 
-  return `
-    <div class="mhdr">
-      <input class="mlabel" value="${esc(m.label)}" onchange="upM(${nid},${m.id},'label',this.value)">
-      <select class="nc-sel" style="flex:1" onchange="upM(${nid},${m.id},'pos',this.value);renderSidebar();redraw()">
-        ${posOpts.map(o=>`<option value="${o.v}"${o.v===m.pos?' selected':''}>${o.l}</option>`).join('')}
-      </select>
-      <button class="rm" onclick="rmMeas(${nid},${m.id})">×</button>
-    </div>
-    <div class="ref-row">
-      <input type="checkbox" id="ref-${m.id}" ${m.ref?'checked':''} onchange="upM(${nid},${m.id},'ref',this.checked)">
-      <label for="ref-${m.id}" style="cursor:pointer">Reference sensor</label>
-    </div>
-    ${axDirHTML}
-    <div class="row">
-      <span class="lbl">Amp (${u.label})</span>
-      <input type="text" inputmode="decimal" placeholder="0" value="${ampVal||''}"
-        style="${numStyle}"
-        data-nid="${nid}" data-mid="${m.id}"
-        onchange="handleAmpInput(this)"
-        oninput="handleAmpInput(this)">
-    </div>
-    <div class="row">
-      <span class="lbl">Phase (-180° to 180°)</span>
-      <input type="text" inputmode="text" placeholder="0" value="${phaseVal||''}"
-        style="${numStyle}"
-        data-nid="${nid}" data-mid="${m.id}"
-        onchange="handlePhaseInput(this)"
-        oninput="handlePhaseInput(this)">
-    </div>`;
+return ` <div class="mhdr"> <input class="mlabel" value="${esc(m.label)}" onchange="upM(${nid},${m.id},'label',this.value)"> <select class="nc-sel" style="flex:1" onchange="upM(${nid},${m.id},'pos',this.value);renderSidebar();redraw()"> ${posOpts.map(o=>`<option value=”${o.v}”${o.v===m.pos?’ selected’:’’}>${o.l}</option>`).join('')} </select> <button class="rm" onclick="rmMeas(${nid},${m.id})">×</button> </div> <div class="ref-row"> <input type="checkbox" id="ref-${m.id}" ${m.ref?'checked':''} onchange="upM(${nid},${m.id},'ref',this.checked)"> <label for="ref-${m.id}" style="cursor:pointer">Reference sensor</label> </div> ${axDirHTML} <div class="row"> <span class="lbl">Amp (${u.label})</span> <input type="text" inputmode="decimal" placeholder="0" value="${ampVal||''}" style="${numStyle}" data-nid="${nid}" data-mid="${m.id}" onchange="handleAmpInput(this)" oninput="handleAmpInput(this)"> </div> <div class="row"> <span class="lbl">Phase (-180° to 180°)</span> <input type="text" inputmode="text" placeholder="0" value="${phaseVal||''}" style="${numStyle}" data-nid="${nid}" data-mid="${m.id}" onchange="handlePhaseInput(this)" oninput="handlePhaseInput(this)"> </div>`;
 }
 
 function handleAmpInput(el){
-  const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
-  const u=getUnit();
-  const raw=el.value;
-  // Allow partial input while typing (e.g. "0." or empty)
-  if(raw===''||raw==='.'||raw==='0.'){return;}
-  let val=parseFloat(raw);
-  if(isNaN(val)||val<0)val=0;
-  if(val>u.max)val=u.max;
-  const n=nodes.find(x=>x.id===nid2);
-  if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.amp=val;}
-  runDiagnosis();
+const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
+const u=getUnit();
+const raw=el.value;
+// Allow partial input while typing (e.g. “0.” or empty)
+if(raw===’’||raw===’.’||raw===‘0.’){return;}
+let val=parseFloat(raw);
+if(isNaN(val)||val<0)val=0;
+if(val>u.max)val=u.max;
+const n=nodes.find(x=>x.id===nid2);
+if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.amp=val;}
+runDiagnosis();
 }
 function handlePhaseInput(el){
-  const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
-  const raw=el.value;
-  // Allow partial input while typing (e.g. "-" or "-1" mid-entry)
-  if(raw===''||raw==='-'||raw==='-0'){return;}
-  let val=Math.round(parseFloat(raw));
-  if(isNaN(val))val=0;
-  if(val>180)val=180;
-  if(val<-180)val=-180;
-  const n=nodes.find(x=>x.id===nid2);
-  if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.phase=val;}
-  runDiagnosis();
+const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
+const raw=el.value;
+// Allow partial input while typing (e.g. “-” or “-1” mid-entry)
+if(raw===’’||raw===’-’||raw===’-0’){return;}
+let val=Math.round(parseFloat(raw));
+if(isNaN(val))val=0;
+if(val>180)val=180;
+if(val<-180)val=-180;
+const n=nodes.find(x=>x.id===nid2);
+if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.phase=val;}
+runDiagnosis();
 }
 function addNode(){
-  // Smart default: first node coupling on right, all subsequent on left
-  const cs=nodes.length===0?'R':'L';
-  nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:'',coupSide:cs,notes:'',meas:[
-    {id:mid++,pos:'HORIZ_NDE',label:'H',amp:0,phase:0,ref:false},
-    {id:mid++,pos:'VERT_NDE', label:'V',amp:0,phase:0,ref:false},
-    {id:mid++,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
-    {id:mid++,pos:'AX_IB',    label:'A2',amp:0,phase:0,ref:false,axDir:'out'},
-  ]});
-  renderSidebar();redraw();
+// Smart default: first node coupling on right, all subsequent on left
+const cs=nodes.length===0?‘R’:‘L’;
+nodes.push({id:nid++,name:SHAPES[nodes.length%SHAPES.length],shape:SHAPES[nodes.length%SHAPES.length],ci:0,rpm:’’,coupSide:cs,notes:’’,meas:[
+{id:mid++,pos:‘HORIZ_NDE’,label:‘H’,amp:0,phase:0,ref:false},
+{id:mid++,pos:‘VERT_NDE’, label:‘V’,amp:0,phase:0,ref:false},
+{id:mid++,pos:‘AX_OB’,    label:‘A1’,amp:0,phase:0,ref:false,axDir:‘out’},
+{id:mid++,pos:‘AX_IB’,    label:‘A2’,amp:0,phase:0,ref:false,axDir:‘out’},
+]});
+renderSidebar();redraw();
 }
 function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
 function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();runDiagnosis();}
 // Returns the label prefix for a given position type
 function posPrefix(pos){
-  if(pos==='HORIZ_NDE'||pos==='HORIZ_DE') return 'H';
-  if(pos==='VERT_NDE'||pos==='VERT_DE')   return 'V';
-  if(pos==='AX_IB'||pos==='AX_OB')        return 'A';
-  return 'P';
+if(pos===‘HORIZ_NDE’||pos===‘HORIZ_DE’) return ‘H’;
+if(pos===‘VERT_NDE’||pos===‘VERT_DE’)   return ‘V’;
+if(pos===‘AX_IB’||pos===‘AX_OB’)        return ‘A’;
+return ‘P’;
 }
 // Returns the next available label for a given prefix on a node
 function nextLabel(n, prefix){
-  let maxNum=0;
-  n.meas.forEach(m=>{
-    const match=(m.label||'').match(/^([A-Za-z]+)(\d+)$/);
-    if(match&&match[1]===prefix){
-      const num=parseInt(match[2]);
-      if(num>maxNum)maxNum=num;
-    }
-  });
-  return prefix+(maxNum+1);
+let maxNum=0;
+n.meas.forEach(m=>{
+const match=(m.label||’’).match(/^([A-Za-z]+)(\d+)$/);
+if(match&&match[1]===prefix){
+const num=parseInt(match[2]);
+if(num>maxNum)maxNum=num;
+}
+});
+return prefix+(maxNum+1);
 }
 // Returns the best default position type to add next on a node
 function nextDefaultPos(n){
-  const has=pos=>n.meas.some(m=>m.pos===pos);
-  const hasH=has('HORIZ_NDE')||has('HORIZ_DE');
-  const hasV=has('VERT_NDE')||has('VERT_DE');
-  const hasA=has('AX_IB')||has('AX_OB');
-  // Fill in missing pair partner first
-  if(has('HORIZ_NDE')&&!has('HORIZ_DE')) return 'HORIZ_DE';
-  if(has('HORIZ_DE')&&!has('HORIZ_NDE')) return 'HORIZ_NDE';
-  if(has('VERT_NDE')&&!has('VERT_DE'))   return 'VERT_DE';
-  if(has('VERT_DE')&&!has('VERT_NDE'))   return 'VERT_NDE';
-  if(has('AX_IB')&&!has('AX_OB'))        return 'AX_OB';
-  if(has('AX_OB')&&!has('AX_IB'))        return 'AX_IB';
-  // If an entire type is missing, add it
-  if(!hasH) return 'HORIZ_NDE';
-  if(!hasV) return 'VERT_NDE';
-  if(!hasA) return 'AX_IB';
-  // All types present — default to HORIZ_NDE (most commonly added extra)
-  return 'HORIZ_NDE';
+const has=pos=>n.meas.some(m=>m.pos===pos);
+const hasH=has(‘HORIZ_NDE’)||has(‘HORIZ_DE’);
+const hasV=has(‘VERT_NDE’)||has(‘VERT_DE’);
+const hasA=has(‘AX_IB’)||has(‘AX_OB’);
+// Fill in missing pair partner first
+if(has(‘HORIZ_NDE’)&&!has(‘HORIZ_DE’)) return ‘HORIZ_DE’;
+if(has(‘HORIZ_DE’)&&!has(‘HORIZ_NDE’)) return ‘HORIZ_NDE’;
+if(has(‘VERT_NDE’)&&!has(‘VERT_DE’))   return ‘VERT_DE’;
+if(has(‘VERT_DE’)&&!has(‘VERT_NDE’))   return ‘VERT_NDE’;
+if(has(‘AX_IB’)&&!has(‘AX_OB’))        return ‘AX_OB’;
+if(has(‘AX_OB’)&&!has(‘AX_IB’))        return ‘AX_IB’;
+// If an entire type is missing, add it
+if(!hasH) return ‘HORIZ_NDE’;
+if(!hasV) return ‘VERT_NDE’;
+if(!hasA) return ‘AX_IB’;
+// All types present — default to HORIZ_NDE (most commonly added extra)
+return ‘HORIZ_NDE’;
 }
 function addMeas(nid2){
-  const n=nodes.find(x=>x.id===nid2);
-  if(n){
-    const pos=nextDefaultPos(n);
-    const prefix=posPrefix(pos);
-    const label=nextLabel(n,prefix);
-    const newM={id:mid++,pos,label,amp:0,phase:0,ref:false};
-    if(pos==='AX_IB'||pos==='AX_OB') newM.axDir='out';
-    n.meas.push(newM);
-  }
-  renderSidebar();redraw();
+const n=nodes.find(x=>x.id===nid2);
+if(n){
+const pos=nextDefaultPos(n);
+const prefix=posPrefix(pos);
+const label=nextLabel(n,prefix);
+const newM={id:mid++,pos,label,amp:0,phase:0,ref:false};
+if(pos===‘AX_IB’||pos===‘AX_OB’) newM.axDir=‘out’;
+n.meas.push(newM);
+}
+renderSidebar();redraw();
 }
 function rmMeas(nid2,mid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();redraw();}
 function upM(nid2,mid2,k,v){
-  const n=nodes.find(x=>x.id===nid2);
-  if(n){
-    const m=n.meas.find(x=>x.id===mid2);
-    if(m){
-      m[k]=v;
-      // When position type changes, auto-update label to match new type's prefix + next number
-      if(k==='pos'){
-        const prefix=posPrefix(v);
-        // Only auto-update if current label doesn't already match this prefix
-        const curMatch=(m.label||'').match(/^([A-Za-z]+)(\d+)$/);
-        if(!curMatch||curMatch[1]!==prefix){
-          m.label=nextLabel(n,prefix);
-        }
-        // Add axDir default if switching to axial
-        if((v==='AX_IB'||v==='AX_OB')&&!m.axDir) m.axDir='out';
-      }
-    }
-  }
-  renderSidebar();
-  runDiagnosis();
+const n=nodes.find(x=>x.id===nid2);
+if(n){
+const m=n.meas.find(x=>x.id===mid2);
+if(m){
+m[k]=v;
+// When position type changes, auto-update label to match new type’s prefix + next number
+if(k===‘pos’){
+const prefix=posPrefix(v);
+// Only auto-update if current label doesn’t already match this prefix
+const curMatch=(m.label||’’).match(/^([A-Za-z]+)(\d+)$/);
+if(!curMatch||curMatch[1]!==prefix){
+m.label=nextLabel(n,prefix);
+}
+// Add axDir default if switching to axial
+if((v===‘AX_IB’||v===‘AX_OB’)&&!m.axDir) m.axDir=‘out’;
+}
+}
+}
+renderSidebar();
+runDiagnosis();
 }
 
 // ── Tabs ──────────────────────────────────────────────────
 function showTab(tab){
-  const panels={history:'panel-history',components:'panel-components',chart:'panel-chart',diag:'panel-diag'};
-  const tabs={history:'tab-history',components:'tab-components',chart:'tab-chart',diag:'tab-diag'};
-  Object.values(panels).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
-  Object.values(tabs).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
-  const panel=document.getElementById(panels[tab]);
-  const tabEl=document.getElementById(tabs[tab]);
-  if(panel)panel.classList.remove('hidden');
-  if(tabEl)tabEl.classList.add('active');
-  if(tab==='chart'){runDiagnosis();requestAnimationFrame(redraw);}
-  if(tab==='diag')runDiagnosis();
-  if(tab==='history')renderHistory();
+const panels={history:‘panel-history’,components:‘panel-components’,chart:‘panel-chart’,diag:‘panel-diag’};
+const tabs={history:‘tab-history’,components:‘tab-components’,chart:‘tab-chart’,diag:‘tab-diag’};
+Object.values(panels).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add(‘hidden’);});
+Object.values(tabs).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove(‘active’);});
+const panel=document.getElementById(panels[tab]);
+const tabEl=document.getElementById(tabs[tab]);
+if(panel)panel.classList.remove(‘hidden’);
+if(tabEl)tabEl.classList.add(‘active’);
+if(tab===‘chart’){runDiagnosis();requestAnimationFrame(redraw);}
+if(tab===‘diag’)runDiagnosis();
+if(tab===‘history’)renderHistory();
 }
 
 // ── Canvas constants ──────────────────────────────────────
@@ -561,495 +534,489 @@ const BR=26,ARM=18,BSLOT=BR+ARM+8,NW=140,NH=72,HPAD=88,VPAD=62,CG=50;
 const DPR=window.devicePixelRatio||1;
 
 function getTC(){
-  return darkMode
-    ?{bg:'#1e1e1e',tx:'#eeeeee',tx2:'#aaaaaa',tx3:'#666666',bub:'#2a2a2a',bstr:'#cccccc',ln:'#cccccc',cp1:'#444',cp2:'#555',dash:'#444',foot:'#555'}
-    :{bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
+return darkMode
+?{bg:’#1e1e1e’,tx:’#eeeeee’,tx2:’#aaaaaa’,tx3:’#666666’,bub:’#2a2a2a’,bstr:’#cccccc’,ln:’#cccccc’,cp1:’#444’,cp2:’#555’,dash:’#444’,foot:’#555’}
+:{bg:’#ffffff’,tx:’#111111’,tx2:’#444444’,tx3:’#999999’,bub:’#ffffff’,bstr:’#111111’,ln:’#111111’,cp1:’#ccc’,cp2:’#aaa’,dash:’#cccccc’,foot:’#aaaaaa’};
 }
 
 function applyFitScale(W,H){
-  const c=document.getElementById('panel-chart');
-  if(!c)return;
-  const cw=c.clientWidth||window.innerWidth,ch=c.clientHeight||window.innerHeight;
-  const s=Math.min(cw/W,ch/H,1);
-  const vp=document.getElementById('chart-viewport');
-  vp.style.transform=`scale(${s})`;
-  vp.style.left=Math.max(0,(cw-W*s)/2)+'px';
-  vp.style.top=Math.max(0,(ch-H*s)/2)+'px';
+const c=document.getElementById(‘panel-chart’);
+if(!c)return;
+const cw=c.clientWidth||window.innerWidth,ch=c.clientHeight||window.innerHeight;
+const s=Math.min(cw/W,ch/H,1);
+const vp=document.getElementById(‘chart-viewport’);
+vp.style.transform=`scale(${s})`;
+vp.style.left=Math.max(0,(cw-W*s)/2)+‘px’;
+vp.style.top=Math.max(0,(ch-H*s)/2)+‘px’;
 }
 
 function setupCanvas(w,h){
-  const cv=document.getElementById('chart');
-  cv.width=Math.round(w*DPR);cv.height=Math.round(h*DPR);
-  cv.style.width=w+'px';cv.style.height=h+'px';
-  const ctx=cv.getContext('2d');ctx.scale(DPR,DPR);return ctx;
+const cv=document.getElementById(‘chart’);
+cv.width=Math.round(w*DPR);cv.height=Math.round(h*DPR);
+cv.style.width=w+‘px’;cv.style.height=h+‘px’;
+const ctx=cv.getContext(‘2d’);ctx.scale(DPR,DPR);return ctx;
 }
 
 // Build a full-res offscreen canvas for export (always crisp, uses DPR)
 function buildExportCanvas(){
-  const N=nodes.length;if(!N)return null;
-  const tc=getTC();
-  const {W,H}=getChartDims();
-  const off=document.createElement('canvas');
-  off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
-  const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
-  renderChart(ctx,W,H,tc);
-  return off;
+const N=nodes.length;if(!N)return null;
+const tc=getTC();
+const {W,H}=getChartDims();
+const off=document.createElement(‘canvas’);
+off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
+const ctx=off.getContext(‘2d’);ctx.scale(DPR,DPR);
+renderChart(ctx,W,H,tc);
+return off;
 }
 
 // Always renders in light mode regardless of current theme — for print/reports
 function buildExportCanvasLight(){
-  const N=nodes.length;if(!N)return null;
-  const tcLight={bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
-  const {W,H}=getChartDims();
-  const off=document.createElement('canvas');
-  off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
-  const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
-  renderChart(ctx,W,H,tcLight);
-  return off;
+const N=nodes.length;if(!N)return null;
+const tcLight={bg:’#ffffff’,tx:’#111111’,tx2:’#444444’,tx3:’#999999’,bub:’#ffffff’,bstr:’#111111’,ln:’#111111’,cp1:’#ccc’,cp2:’#aaa’,dash:’#cccccc’,foot:’#aaaaaa’};
+const {W,H}=getChartDims();
+const off=document.createElement(‘canvas’);
+off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
+const ctx=off.getContext(‘2d’);ctx.scale(DPR,DPR);
+renderChart(ctx,W,H,tcLight);
+return off;
 }
 
 function redraw(){
-  const c=document.getElementById('panel-chart');
-  if(!c||c.classList.contains('hidden'))return;
-  if(!nodes.length){drawEmpty();return;}
-  if(document.getElementById('layout').value==='V'){
-    drawVertical();
-  } else {
-    const {W,H}=getChartDims();
-    const tc=getTC();
-    const ctx=setupCanvas(W,H);
-    renderChart(ctx,W,H,tc);
-    applyFitScale(W,H);
-  }
+const c=document.getElementById(‘panel-chart’);
+if(!c||c.classList.contains(‘hidden’))return;
+if(!nodes.length){drawEmpty();return;}
+if(document.getElementById(‘layout’).value===‘V’){
+drawVertical();
+} else {
+const {W,H}=getChartDims();
+const tc=getTC();
+const ctx=setupCanvas(W,H);
+renderChart(ctx,W,H,tc);
+applyFitScale(W,H);
+}
 }
 
 function drawVertical(){
-  if(!nodes.length){drawEmpty();return;}
-  const title=document.getElementById('chart-title').value||'';
-  const grpm=document.getElementById('global-rpm').value||'____';
-  const u=getUnit();
-  const tc=getTC();
-  const N=nodes.length;
+if(!nodes.length){drawEmpty();return;}
+const title=document.getElementById(‘chart-title’).value||’’;
+const grpm=document.getElementById(‘global-rpm’).value||’____’;
+const u=getUnit();
+const tc=getTC();
+const N=nodes.length;
 
-  // HARDCODED portrait box: 72 wide, 140 tall
-  var BW=72, BH=140;
-  var AXH=BSLOT*2+8;
-  var VZW=BSLOT*2+6;
-  var HZW=BSLOT*2+6;
-  var CELLH=AXH+BH+AXH;
-  var CW=HPAD*2+VZW+BW+HZW+100;
-  var CH=VPAD*2+60+N*CELLH+(N-1)*CG+60;
+// HARDCODED portrait box: 72 wide, 140 tall
+var BW=72, BH=140;
+var AXH=BSLOT*2+8;
+var VZW=BSLOT*2+6;
+var HZW=BSLOT*2+6;
+var CELLH=AXH+BH+AXH;
+var CW=HPAD*2+VZW+BW+HZW+100;
+var CH=VPAD*2+60+N*CELLH+(N-1)*CG+60;
 
-  var ctx=setupCanvas(CW,CH);
-  ctx.fillStyle=tc.bg; ctx.fillRect(0,0,CW,CH);
+var ctx=setupCanvas(CW,CH);
+ctx.fillStyle=tc.bg; ctx.fillRect(0,0,CW,CH);
 
-  var XC=HPAD+VZW+BW/2;
-  var XL=XC-BW/2;
-  var XR=XC+BW/2;
+var XC=HPAD+VZW+BW/2;
+var XL=XC-BW/2;
+var XR=XC+BW/2;
 
-  ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;
-  ctx.textAlign='center';ctx.fillText('AXIAL (TOP)',XC,VPAD+10);
-  ctx.textAlign='center';ctx.fillText('AXIAL (BOTTOM)',XC,CH-14);
-  ctx.save();ctx.translate(HPAD-22,CH/2);ctx.rotate(-Math.PI/2);ctx.fillText('VERTICAL',0,0);ctx.restore();
-  ctx.save();ctx.translate(CW-22,CH/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
+ctx.font=‘bold 13px Roboto,sans-serif’;ctx.fillStyle=tc.tx;
+ctx.textAlign=‘center’;ctx.fillText(‘AXIAL (TOP)’,XC,VPAD+10);
+ctx.textAlign=‘center’;ctx.fillText(‘AXIAL (BOTTOM)’,XC,CH-14);
+ctx.save();ctx.translate(HPAD-22,CH/2);ctx.rotate(-Math.PI/2);ctx.fillText(‘VERTICAL’,0,0);ctx.restore();
+ctx.save();ctx.translate(CW-22,CH/2);ctx.rotate(Math.PI/2);ctx.fillText(‘HORIZONTAL’,0,0);ctx.restore();
 
-  var lgx=HPAD-22,lgy=VPAD+32;
-  ctx.save();
-  ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
-  ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
-  ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText('Amplitude',lgx,lgy-BR*0.42);ctx.fillText('Phase',lgx,lgy+BR*0.42);
-  ctx.textBaseline='alphabetic';ctx.restore();
-  ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='left';
-  ctx.fillText(title,lgx+BR+8,lgy+4);
+var lgx=HPAD-22,lgy=VPAD+32;
+ctx.save();
+ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
+ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+ctx.font=‘8px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;
+ctx.fillText(‘Amplitude’,lgx,lgy-BR*0.42);ctx.fillText(‘Phase’,lgx,lgy+BR*0.42);
+ctx.textBaseline=‘alphabetic’;ctx.restore();
+ctx.font=‘bold 12px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘left’;
+ctx.fillText(title,lgx+BR+8,lgy+4);
 
-  function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir);}
-  function dsh(x1,y1,x2,y2){
-    ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;
-    ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
-    ctx.setLineDash([]);
-  }
+function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir);}
+function dsh(x1,y1,x2,y2){
+ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;
+ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ctx.setLineDash([]);
+}
 
-  nodes.forEach(function(node,ni){
-    const coupSide=node.coupSide||'R';
-    function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,coupSide);}
-    var cellTop=VPAD+60+ni*(CELLH+CG);
-    var boxTop=cellTop+AXH;
-    var boxBot=boxTop+BH;
-    var boxMid=boxTop+BH/2;
-    var rpm=node.rpm||grpm;
+nodes.forEach(function(node,ni){
+const p=pal(node.ci);
+const coupSide=node.coupSide||‘R’;
+function bub(m,bx,by){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,coupSide);}
+var cellTop=VPAD+60+ni*(CELLH+CG);
+var boxTop=cellTop+AXH;
+var boxBot=boxTop+BH;
+var boxMid=boxTop+BH/2;
+var rpm=node.rpm||grpm;
 
-    var axIB=node.meas.filter(function(m){return m.pos==='AX_IB';});
-    var axOB=node.meas.filter(function(m){return m.pos==='AX_OB';});
-    var vM=node.meas.filter(function(m){return m.pos==='VERT_NDE'||m.pos==='VERT_DE';});
-    var hM=node.meas.filter(function(m){return m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE';});
+```
+var axIB=node.meas.filter(function(m){return m.pos==='AX_IB';});
+var axOB=node.meas.filter(function(m){return m.pos==='AX_OB';});
+var vM=node.meas.filter(function(m){return m.pos==='VERT_NDE'||m.pos==='VERT_DE';});
+var hM=node.meas.filter(function(m){return m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE';});
 
-    // Coupling
-    if(ni<N-1){
-      var nextBoxTop=VPAD+60+(ni+1)*(CELLH+CG)+AXH;
-      var gapMid=(boxBot+nextBoxTop)/2;
-      ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(XC,boxBot+2);ctx.lineTo(XC,nextBoxTop-2);ctx.stroke();
-      ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.roundRect(XC-20,gapMid-7,40,14,4);ctx.fill();ctx.stroke();
-      ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(XC-13,gapMid-11,26,22,3);ctx.fill();ctx.stroke();
-    }
+// Coupling
+if(ni<N-1){
+  var nextBoxTop=VPAD+60+(ni+1)*(CELLH+CG)+AXH;
+  var gapMid=(boxBot+nextBoxTop)/2;
+  ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(XC,boxBot+2);ctx.lineTo(XC,nextBoxTop-2);ctx.stroke();
+  ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect(XC-20,gapMid-7,40,14,4);ctx.fill();ctx.stroke();
+  ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(XC-13,gapMid-11,26,22,3);ctx.fill();ctx.stroke();
+}
 
-    // RPM
-    ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';
-    ctx.fillText('RPM '+(rpm||'____'),XR+HZW/2+8,boxMid-4);
+// RPM
+ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';
+ctx.fillText('RPM '+(rpm||'____'),XR+HZW/2+8,boxMid-4);
 
-    // PORTRAIT BOX — 72 wide x 140 tall
-    ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;
-    ctx.beginPath();ctx.roundRect(XL,boxTop,72,140,5);ctx.fill();ctx.stroke();
-    ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';
-    ctx.fillText(node.name,XC,boxTop+18);
-    drawShapeIcon(ctx,node.shape,XC,boxTop+90,24,p.fill);
-    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='left';
-    if(axIB.length) ctx.fillText(axIB.map(function(m){return m.label;}).join('/'),XL+3,boxTop+130);
-    if(axOB.length) ctx.fillText(axOB.map(function(m){return m.label;}).join('/'),XL+3,boxBot-4);
+// PORTRAIT BOX — 72 wide x 140 tall
+ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;
+ctx.beginPath();ctx.roundRect(XL,boxTop,72,140,5);ctx.fill();ctx.stroke();
+ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';
+ctx.fillText(node.name,XC,boxTop+18);
+drawShapeIcon(ctx,node.shape,XC,boxTop+90,24,p.fill);
+ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='left';
+if(axIB.length) ctx.fillText(axIB.map(function(m){return m.label;}).join('/'),XL+3,boxTop+130);
+if(axOB.length) ctx.fillText(axOB.map(function(m){return m.label;}).join('/'),XL+3,boxBot-4);
 
-    // AXIAL INBOARD top
-    axIB.forEach(function(m,i){
-      var span=(axIB.length-1)*(BSLOT*2+4);
-      var bx=XC-span/2+i*(BSLOT*2+4);
-      var by=cellTop+AXH/2;
-      dsh(XC,boxTop,bx,by+BSLOT);bub(m,bx,by);
-    });
+// AXIAL INBOARD top
+axIB.forEach(function(m,i){
+  var span=(axIB.length-1)*(BSLOT*2+4);
+  var bx=XC-span/2+i*(BSLOT*2+4);
+  var by=cellTop+AXH/2;
+  dsh(XC,boxTop,bx,by+BSLOT);bub(m,bx,by);
+});
 
-    // AXIAL OUTBOARD bottom
-    axOB.forEach(function(m,i){
-      var span=(axOB.length-1)*(BSLOT*2+4);
-      var bx=XC-span/2+i*(BSLOT*2+4);
-      var by=cellTop+CELLH-AXH/2;
-      dsh(XC,boxBot,bx,by-BSLOT);bub(m,bx,by);
-    });
+// AXIAL OUTBOARD bottom
+axOB.forEach(function(m,i){
+  var span=(axOB.length-1)*(BSLOT*2+4);
+  var bx=XC-span/2+i*(BSLOT*2+4);
+  var by=cellTop+CELLH-AXH/2;
+  dsh(XC,boxBot,bx,by-BSLOT);bub(m,bx,by);
+});
 
-    // VERTICAL left
-    vM.forEach(function(m,i){
-      var span=(vM.length-1)*(BSLOT*2+4);
-      var bx=XL-VZW/2;
-      var by=boxMid-span/2+i*(BSLOT*2+4);
-      dsh(XL,boxMid,bx+BSLOT,by);bub(m,bx,by);
-    });
+// VERTICAL left
+vM.forEach(function(m,i){
+  var span=(vM.length-1)*(BSLOT*2+4);
+  var bx=XL-VZW/2;
+  var by=boxMid-span/2+i*(BSLOT*2+4);
+  dsh(XL,boxMid,bx+BSLOT,by);bub(m,bx,by);
+});
 
-    // HORIZONTAL right
-    hM.forEach(function(m,i){
-      var span=(hM.length-1)*(BSLOT*2+4);
-      var bx=XR+HZW/2;
-      var by=boxMid-span/2+i*(BSLOT*2+4);
-      dsh(XR,boxMid,bx-BSLOT,by);bub(m,bx,by);
-    });
-  });
+// HORIZONTAL right
+hM.forEach(function(m,i){
+  var span=(hM.length-1)*(BSLOT*2+4);
+  var bx=XR+HZW/2;
+  var by=boxMid-span/2+i*(BSLOT*2+4);
+  dsh(XR,boxMid,bx-BSLOT,by);bub(m,bx,by);
+});
+```
 
-  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-  ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees | Vertical Equipment Train',HPAD,CH-4);
-  var stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-4);
-  applyFitScale(CW,CH);
+});
+
+ctx.font=‘10px Roboto,sans-serif’;ctx.fillStyle=tc.foot;
+ctx.textAlign=‘left’;ctx.fillText(‘Amplitude in ‘+u.label+’ | Phase in degrees | Vertical Equipment Train’,HPAD,CH-4);
+var stamp=‘v’+getDocVersion()+’  |  ‘+getDocDate()+’  |  © ‘+new Date().getFullYear()+’ Joel Davis’;
+ctx.textAlign=‘right’;ctx.fillText(stamp,CW-20,CH-4);
+applyFitScale(CW,CH);
 }
 
 function drawEmpty(){
-  const tc=getTC();
-  const ctx=setupCanvas(300,160);
-  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,300,160);
-  ctx.font='13px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';
-  ctx.fillText('Add components to begin',150,80);
-  applyFitScale(300,160);
+const tc=getTC();
+const ctx=setupCanvas(300,160);
+ctx.fillStyle=tc.bg;ctx.fillRect(0,0,300,160);
+ctx.font=‘13px Roboto,sans-serif’;ctx.fillStyle=tc.tx3;ctx.textAlign=‘center’;
+ctx.fillText(‘Add components to begin’,150,80);
+applyFitScale(300,160);
 }
 
 function getChartDims(){
-  const N=nodes.length||1;
-  const isV=document.getElementById('layout').value==='V';
-  if(!isV){
-    const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
-    const W=HPAD*2+N*NCW+(N-1)*CG;
-    const yNT=VPAD+TAH+NTS;
-    return {W,H:yNT+NH+HAH+28+VPAD/2};
-  } else {
-    const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
-    return {W:HPAD*2+VZW+NW+HZW+20,H:VPAD*2+N*nCH+(N-1)*CG+40};
-  }
+const N=nodes.length||1;
+const isV=document.getElementById(‘layout’).value===‘V’;
+if(!isV){
+const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
+const W=HPAD*2+N*NCW+(N-1)*CG;
+const yNT=VPAD+TAH+NTS;
+return {W,H:yNT+NH+HAH+28+VPAD/2};
+} else {
+const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
+return {W:HPAD*2+VZW+NW+HZW+20,H:VPAD*2+N*nCH+(N-1)*CG+40};
+}
 }
 
 function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
-  const u=getUnit(),r=BR;
-  ctx.save();
-  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
-  ctx.fillStyle=tc.bub;ctx.fill();
-  const sevColor=measId&&bubbleSeverity[measId]?bubbleSeverity[measId]:null;
-  const outlineColor=sevColor==='fault'?'#ef4444':sevColor==='warn'?'#f59e0b':sevColor==='ok'?'#22c55e':tc.bstr;
-  const outlineWidth=sevColor?2.5:isRef?2:1.3;
-  if(isRef){ctx.setLineDash([4,3]);}else{ctx.setLineDash([]);}
-  ctx.strokeStyle=outlineColor;ctx.lineWidth=outlineWidth;
-  ctx.stroke();ctx.setLineDash([]);
-  ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
-  ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
-  const phDisp=Math.round(parseFloat(phase)||0);
-  ctx.font='9px Roboto,sans-serif';ctx.fillText(phDisp+'°',cx,cy+r*0.42);
-  ctx.font='bold 10px Roboto,sans-serif';ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle=tc.tx;
-  ctx.fillText(label,cx+r+3,cy-r*0.3);
-  if(isRef){ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.fillText('REF',cx+r+3,cy+r*0.35);}
-  // Sensor orientation indicator — small tag below label, layout-aware
-  if(axDir==='in'||axDir==='out'){
-    const isVL=document.getElementById('layout').value==='V';
-    const cs=coupSide||'R';
-    // Arrow points toward coupling for inboard, away for outboard
-    // Direction flips based on which side of the coupling the component is on
-    const tag = axDir==='in'
-      ? (isVL ? '⬇ Down' : (cs==='R' ? 'Inboard ➡' : '⬅ Inboard'))
-      : (isVL ? '⬆ Up'   : (cs==='R' ? '⬅ Outboard' : 'Outboard ➡'));
-    ctx.font='bold 8px Roboto,sans-serif';
-    ctx.fillStyle=axDir==='in'?'#f59e0b':tc.tx3;
-    ctx.textAlign='left';
-    ctx.fillText(tag,cx+r+3,cy+r*0.72);
-  }
-  const rad=((Math.round(parseFloat(phase)||0))-90)*Math.PI/180;
-  const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
-  const ax2=cx+Math.cos(rad)*(r+ARM),ay2=cy+Math.sin(rad)*(r+ARM);
-  ctx.strokeStyle=tc.ln;ctx.lineWidth=1.8;ctx.lineCap='round';
-  ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
-  const al=5,aa=0.45;
-  ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
-  ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
-  ctx.restore();
+const u=getUnit(),r=BR;
+ctx.save();
+ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+ctx.fillStyle=tc.bub;ctx.fill();
+const sevColor=measId&&bubbleSeverity[measId]?bubbleSeverity[measId]:null;
+const outlineColor=sevColor===‘fault’?’#ef4444’:sevColor===‘warn’?’#f59e0b’:sevColor===‘ok’?’#22c55e’:tc.bstr;
+const outlineWidth=sevColor?2.5:isRef?2:1.3;
+if(isRef){ctx.setLineDash([4,3]);}else{ctx.setLineDash([]);}
+ctx.strokeStyle=outlineColor;ctx.lineWidth=outlineWidth;
+ctx.stroke();ctx.setLineDash([]);
+ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+ctx.font=‘bold 8px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;
+ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+’ ’+u.label,cx,cy-r*0.42);
+const phDisp=Math.round(parseFloat(phase)||0);
+ctx.font=‘9px Roboto,sans-serif’;ctx.fillText(phDisp+‘°’,cx,cy+r*0.42);
+ctx.font=‘bold 10px Roboto,sans-serif’;ctx.textBaseline=‘alphabetic’;ctx.textAlign=‘left’;ctx.fillStyle=tc.tx;
+ctx.fillText(label,cx+r+3,cy-r*0.3);
+if(isRef){ctx.font=‘bold 8px Roboto,sans-serif’;ctx.fillStyle=tc.tx2;ctx.fillText(‘REF’,cx+r+3,cy+r*0.35);}
+// Sensor orientation indicator — small tag below label, layout-aware
+if(axDir===‘in’||axDir===‘out’){
+const isVL=document.getElementById(‘layout’).value===‘V’;
+const cs=coupSide||‘R’;
+// Arrow points toward coupling for inboard, away for outboard
+// Direction flips based on which side of the coupling the component is on
+const tag = axDir===‘in’
+? (isVL ? ‘⬇ Down’ : (cs===‘R’ ? ‘Inboard ➡’ : ‘⬅ Inboard’))
+: (isVL ? ‘⬆ Up’   : (cs===‘R’ ? ‘⬅ Outboard’ : ‘Outboard ➡’));
+ctx.font=‘bold 8px Roboto,sans-serif’;
+ctx.fillStyle=axDir===‘in’?’#f59e0b’:tc.tx3;
+ctx.textAlign=‘left’;
+ctx.fillText(tag,cx+r+3,cy+r*0.72);
+}
+const rad=((Math.round(parseFloat(phase)||0))-90)*Math.PI/180;
+const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+const ax2=cx+Math.cos(rad)*(r+ARM),ay2=cy+Math.sin(rad)*(r+ARM);
+ctx.strokeStyle=tc.ln;ctx.lineWidth=1.8;ctx.lineCap=‘round’;
+ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+const al=5,aa=0.45;
+ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
+ctx.restore();
 }
 
 function drawShapeIcon(ctx,shape,cx,cy,size,color){
-  ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1.3;ctx.fillStyle='none';
-  const s=size*0.5;
-  switch(shape){
-    case 'Motor':ctx.beginPath();ctx.roundRect(cx-s,cy-s*.6,s*2,s*1.2,3);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.35,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx-s*1.4,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+s,cy);ctx.lineTo(cx+s*1.4,cy);ctx.stroke();break;
-    case 'Gearbox':
-      function gear(gx,gy,r,t){const tr=r*1.38;ctx.beginPath();for(let i=0;i<t;i++){const a1=i*Math.PI*2/t-.18,a2=i*Math.PI*2/t+.18,a3=(i+.5)*Math.PI*2/t-.12,a4=(i+.5)*Math.PI*2/t+.12;if(i===0)ctx.moveTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));else ctx.lineTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a1),gy+tr*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a2),gy+tr*Math.sin(a2));ctx.lineTo(gx+r*Math.cos(a3),gy+r*Math.sin(a3));ctx.lineTo(gx+r*Math.cos(a4),gy+r*Math.sin(a4));}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(gx,gy,r*.35,0,Math.PI*2);ctx.stroke();}
-      gear(cx-s*.38,cy,s*.5,7);gear(cx+s*.48,cy,s*.35,5);break;
-    case 'Fan':case 'Blower':ctx.beginPath();ctx.arc(cx,cy,s*.22,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.56,s*.17,s*.37,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}break;
-    case 'Fan (Overhung)':
-      // Overhung fan: hub + 4 blades all on one side (right), shaft extends left with one bearing
-      ctx.beginPath();ctx.arc(cx+s*.2,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub offset right
-      for(let i=0;i<4;i++){ctx.save();ctx.translate(cx+s*.2,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
-      // shaft line to left
-      ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx+s*.2-s*.2,cy);ctx.lineTo(cx-s*.8,cy);ctx.stroke();
-      // single bearing on shaft (left side)
-      ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.55,cy,s*.18,0,Math.PI*2);ctx.stroke();
-      break;
-    case 'Fan (Center Hung)':
-      // Center hung fan: hub center, blades center, two bearings flanking
-      ctx.beginPath();ctx.arc(cx,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub
-      for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
-      // shaft line through
-      ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx+s,cy);ctx.stroke();
-      // two bearings flanking
-      ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
-      ctx.beginPath();ctx.arc(cx+s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
-      break;
-    case 'Pump':ctx.beginPath();ctx.arc(cx,cy,s*.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.25,0,Math.PI*2);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+s*.7,cy);ctx.lineTo(cx+s,cy);ctx.stroke();ctx.lineWidth=1.3;for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.25);ctx.quadraticCurveTo(s*.27,s*.37,s*.27,s*.66);ctx.stroke();ctx.restore();}break;
-    case 'Turbine':ctx.beginPath();ctx.arc(cx,cy,s*.67,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.21,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(0,s*.21);ctx.quadraticCurveTo(s*.31,s*.31,s*.17,s*.61);ctx.stroke();ctx.restore();}break;
-    case 'Compressor':ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.66);ctx.lineTo(0,s*.29);ctx.moveTo(-s*.11,s*.43);ctx.lineTo(0,s*.29);ctx.lineTo(s*.11,s*.43);ctx.stroke();ctx.restore();}break;
-    case 'Coupling':ctx.beginPath();ctx.roundRect(cx-s,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.beginPath();ctx.roundRect(cx+s*.3,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(cx-s*.3,cy);ctx.lineTo(cx+s*.3,cy);ctx.stroke();break;
-    case 'Bearing':ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.33,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.arc(cx+Math.cos(a)*s*.51,cy+Math.sin(a)*s*.51,s*.13,0,Math.PI*2);ctx.stroke();}break;
-    default:ctx.beginPath();ctx.roundRect(cx-s,cy-s*.17,s*2,s*.34,3);ctx.stroke();ctx.beginPath();ctx.arc(cx-s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx+s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();
-  }
-  ctx.restore();
+ctx.save();ctx.strokeStyle=color;ctx.lineWidth=1.3;ctx.fillStyle=‘none’;
+const s=size*0.5;
+switch(shape){
+case ‘Motor’:ctx.beginPath();ctx.roundRect(cx-s,cy-s*.6,s*2,s*1.2,3);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.35,0,Math.PI*2);ctx.stroke();ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx-s*1.4,cy);ctx.stroke();ctx.beginPath();ctx.moveTo(cx+s,cy);ctx.lineTo(cx+s*1.4,cy);ctx.stroke();break;
+case ‘Gearbox’:
+function gear(gx,gy,r,t){const tr=r*1.38;ctx.beginPath();for(let i=0;i<t;i++){const a1=i*Math.PI*2/t-.18,a2=i*Math.PI*2/t+.18,a3=(i+.5)*Math.PI*2/t-.12,a4=(i+.5)*Math.PI*2/t+.12;if(i===0)ctx.moveTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));else ctx.lineTo(gx+r*Math.cos(a1),gy+r*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a1),gy+tr*Math.sin(a1));ctx.lineTo(gx+tr*Math.cos(a2),gy+tr*Math.sin(a2));ctx.lineTo(gx+r*Math.cos(a3),gy+r*Math.sin(a3));ctx.lineTo(gx+r*Math.cos(a4),gy+r*Math.sin(a4));}ctx.closePath();ctx.stroke();ctx.beginPath();ctx.arc(gx,gy,r*.35,0,Math.PI*2);ctx.stroke();}
+gear(cx-s*.38,cy,s*.5,7);gear(cx+s*.48,cy,s*.35,5);break;
+case ‘Fan’:case ‘Blower’:ctx.beginPath();ctx.arc(cx,cy,s*.22,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.56,s*.17,s*.37,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}break;
+case ‘Fan (Overhung)’:
+// Overhung fan: hub + 4 blades all on one side (right), shaft extends left with one bearing
+ctx.beginPath();ctx.arc(cx+s*.2,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub offset right
+for(let i=0;i<4;i++){ctx.save();ctx.translate(cx+s*.2,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
+// shaft line to left
+ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx+s*.2-s*.2,cy);ctx.lineTo(cx-s*.8,cy);ctx.stroke();
+// single bearing on shaft (left side)
+ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.55,cy,s*.18,0,Math.PI*2);ctx.stroke();
+break;
+case ‘Fan (Center Hung)’:
+// Center hung fan: hub center, blades center, two bearings flanking
+ctx.beginPath();ctx.arc(cx,cy,s*.2,0,Math.PI*2);ctx.stroke(); // hub
+for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.ellipse(0,-s*.52,s*.14,s*.32,.28,0,Math.PI*2);ctx.stroke();ctx.restore();}
+// shaft line through
+ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx-s,cy);ctx.lineTo(cx+s,cy);ctx.stroke();
+// two bearings flanking
+ctx.lineWidth=1.3;ctx.beginPath();ctx.arc(cx-s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
+ctx.beginPath();ctx.arc(cx+s*.75,cy,s*.16,0,Math.PI*2);ctx.stroke();
+break;
+case ‘Pump’:ctx.beginPath();ctx.arc(cx,cy,s*.7,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.25,0,Math.PI*2);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+s*.7,cy);ctx.lineTo(cx+s,cy);ctx.stroke();ctx.lineWidth=1.3;for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.25);ctx.quadraticCurveTo(s*.27,s*.37,s*.27,s*.66);ctx.stroke();ctx.restore();}break;
+case ‘Turbine’:ctx.beginPath();ctx.arc(cx,cy,s*.67,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.21,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/3);ctx.beginPath();ctx.moveTo(0,s*.21);ctx.quadraticCurveTo(s*.31,s*.31,s*.17,s*.61);ctx.stroke();ctx.restore();}break;
+case ‘Compressor’:ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();for(let i=0;i<4;i++){ctx.save();ctx.translate(cx,cy);ctx.rotate(i*Math.PI/2);ctx.beginPath();ctx.moveTo(0,s*.66);ctx.lineTo(0,s*.29);ctx.moveTo(-s*.11,s*.43);ctx.lineTo(0,s*.29);ctx.lineTo(s*.11,s*.43);ctx.stroke();ctx.restore();}break;
+case ‘Coupling’:ctx.beginPath();ctx.roundRect(cx-s,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.beginPath();ctx.roundRect(cx+s*.3,cy-s*.27,s*.7,s*.54,2);ctx.stroke();ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(cx-s*.3,cy);ctx.lineTo(cx+s*.3,cy);ctx.stroke();break;
+case ‘Bearing’:ctx.beginPath();ctx.arc(cx,cy,s*.68,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx,cy,s*.33,0,Math.PI*2);ctx.stroke();for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.arc(cx+Math.cos(a)*s*.51,cy+Math.sin(a)*s*.51,s*.13,0,Math.PI*2);ctx.stroke();}break;
+default:ctx.beginPath();ctx.roundRect(cx-s,cy-s*.17,s*2,s*.34,3);ctx.stroke();ctx.beginPath();ctx.arc(cx-s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(cx+s*.45,cy,s*.19,0,Math.PI*2);ctx.stroke();
+}
+ctx.restore();
 }
 
 function renderChart(ctx,W,H,tc){
-  const N=nodes.length;if(!N)return;
-  const title=document.getElementById('chart-title').value||'';
-  const grpm=document.getElementById('global-rpm').value||'____';
-  const u=getUnit();
-  const isV=document.getElementById('layout').value==='V';
-  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+const N=nodes.length;if(!N)return;
+const title=document.getElementById(‘chart-title’).value||’’;
+const grpm=document.getElementById(‘global-rpm’).value||’____’;
+const u=getUnit();
+const isV=document.getElementById(‘layout’).value===‘V’;
+ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
 
-  function dash(x1,y1,x2,y2){ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
-  function bubble(m,bx,by,cs){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,cs||'R');}
+function dash(x1,y1,x2,y2){ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+function bubble(m,bx,by,cs){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,cs||‘R’);}
 
-  if(!isV){
-    const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
-    const yNT=VPAD+TAH+NTS,yM=yNT+NH/2,yNB=yNT+NH;
-    // legend
-    const lgx=HPAD-24,lgy=VPAD+18;
-    ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
-    ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
-    ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('Amplitude',lgx,lgy-BR*.42);ctx.fillText('Phase',lgx,lgy+BR*.42);ctx.textBaseline='alphabetic';
-    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='left';ctx.fillText(title,lgx+BR+10,lgy+5);
-    ctx.font='13px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+grpm,W/2,VPAD+14);
-    const rw=ctx.measureText('RPM  '+grpm).width+20;ctx.strokeStyle=tc.tx2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-rw/2+30,VPAD+17);ctx.lineTo(W/2+rw/2,VPAD+17);ctx.stroke();
-    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.fillText('VERTICAL',W/2,VPAD+TAH+14);ctx.fillText('HORIZONTAL',W/2,yNB+HAH+20);
-    ctx.font='bold 12px Roboto,sans-serif';ctx.textAlign='right';ctx.fillText('AXIAL',HPAD-6,yM+4);ctx.textAlign='left';ctx.fillText('AXIAL',W-HPAD+6,yM+4);
-    nodes.forEach((node,ni)=>{
-      const p=pal(node.ci);const cs=node.coupSide||'R';const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
-      // axL = sensors on the left (outer/free end), axR = sensors on right (coupling end)
-      // coupSide='R': coupling on right → DE(IB) right, NDE(OB) left
-      // coupSide='L': coupling on left → DE(IB) left, NDE(OB) right
-      const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
-      const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
-      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
-      const hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
-      if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
-      const yR=yNT-RPG-RPH;ctx.font='12px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.fillText('RPM  '+(rpm||'____'),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
-      ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
-      ctx.font='bold 14px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.fillText(node.name,xC,yNT+20);
-      drawShapeIcon(ctx,node.shape,xC,yNT+NH*.66,26,p.fill);
-      ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=p.fill;
-      if(axL.length){ctx.textAlign='left';ctx.fillText(axL.map(m=>m.label).join('/'),xNL+5,yNT+NH-5);}
-      if(axR.length){ctx.textAlign='right';ctx.fillText(axR.map(m=>m.label).join('/'),xNR-5,yNT+14);}
-      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNT-VAH/2-RPH-RPG-4;dash(bx,by+BSLOT,xC,yNT);bubble(m,bx,by,cs);});
-      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNB+HAH/2+4;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
-      axL.forEach((m,i)=>{const sh=axL.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+AZW/2;dash(xNL,yM,bx+BSLOT,by);bubble(m,bx,by,cs);});
-      axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by,cs);});
-    });
-    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-    ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
-    const ver='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-8);
-  } else {
-    const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
-    const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
-    ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.fillText(title,W/2,VPAD-22);
-    ctx.font='bold 12px Roboto,sans-serif';ctx.fillText('AXIAL',xC,VPAD-6);ctx.fillText('AXIAL',xC,H-VPAD/3+8);
-    ctx.save();ctx.translate(HPAD-18,H/2);ctx.rotate(-Math.PI/2);ctx.fillText('VERTICAL',0,0);ctx.restore();
-    ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText('HORIZONTAL',0,0);ctx.restore();
-    nodes.forEach((node,ni)=>{
-      const p=pal(node.ci);const cs=node.coupSide||'R';const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
-      const axL=cs==='R'?node.meas.filter(m=>m.pos==='AX_OB'):node.meas.filter(m=>m.pos==='AX_IB');
-      const axR=cs==='R'?node.meas.filter(m=>m.pos==='AX_IB'):node.meas.filter(m=>m.pos==='AX_OB');
-      const vM=node.meas.filter(m=>m.pos==='VERT_NDE'||m.pos==='VERT_DE');
-      const hM=node.meas.filter(m=>m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE');
-      if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
-      ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('RPM '+(rpm||'____'),xNR+HZW+4,yCx-4);
-      ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
-      ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.fillText(node.name,xC,yNT+18);
-      drawShapeIcon(ctx,node.shape,xC,yNT+NH*.65,24,p.fill);
-      axL.forEach((m,i)=>{const sp=(axL.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+AZH/2;dash(xC,yNT,bx,by+BSLOT);bubble(m,bx,by,cs);});
-      axR.forEach((m,i)=>{const sp=(axR.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+nCH-AZH/2;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
-      vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xNL-VZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNL,yCx,bx+BSLOT,by);bubble(m,bx,by,cs);});
-      hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xNR+HZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNR,yCx,bx-BSLOT,by);bubble(m,bx,by,cs);});
-    });
-    // Version / date stamp bottom center
-    const vstamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textAlign='center';ctx.fillText(vstamp,W/2,H-8);
-  }
+if(!isV){
+const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
+const yNT=VPAD+TAH+NTS,yM=yNT+NH/2,yNB=yNT+NH;
+// legend
+const lgx=HPAD-24,lgy=VPAD+18;
+ctx.beginPath();ctx.arc(lgx,lgy,BR,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.2;ctx.stroke();
+ctx.beginPath();ctx.moveTo(lgx-BR,lgy);ctx.lineTo(lgx+BR,lgy);ctx.strokeStyle=tc.ln;ctx.lineWidth=1;ctx.stroke();
+ctx.font=‘8px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘center’;ctx.textBaseline=‘middle’;
+ctx.fillText(‘Amplitude’,lgx,lgy-BR*.42);ctx.fillText(‘Phase’,lgx,lgy+BR*.42);ctx.textBaseline=‘alphabetic’;
+ctx.font=‘bold 13px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘left’;ctx.fillText(title,lgx+BR+10,lgy+5);
+ctx.font=‘13px Roboto,sans-serif’;ctx.fillStyle=tc.tx2;ctx.textAlign=‘center’;ctx.fillText(‘RPM  ‘+grpm,W/2,VPAD+14);
+const rw=ctx.measureText(‘RPM  ‘+grpm).width+20;ctx.strokeStyle=tc.tx2;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W/2-rw/2+30,VPAD+17);ctx.lineTo(W/2+rw/2,VPAD+17);ctx.stroke();
+ctx.font=‘bold 13px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘center’;ctx.fillText(‘VERTICAL’,W/2,VPAD+TAH+14);ctx.fillText(‘HORIZONTAL’,W/2,yNB+HAH+20);
+ctx.font=‘bold 12px Roboto,sans-serif’;ctx.textAlign=‘right’;ctx.fillText(‘AXIAL’,HPAD-6,yM+4);ctx.textAlign=‘left’;ctx.fillText(‘AXIAL’,W-HPAD+6,yM+4);
+nodes.forEach((node,ni)=>{
+const p=pal(node.ci);const cs=node.coupSide||‘R’;const cX=HPAD+ni*(NCW+CG);const xNL=cX+AZW,xNR=xNL+NW,xC=xNL+NW/2;const rpm=node.rpm||grpm;
+// axL = sensors on the left (outer/free end), axR = sensors on right (coupling end)
+// coupSide=‘R’: coupling on right → DE(IB) right, NDE(OB) left
+// coupSide=‘L’: coupling on left → DE(IB) left, NDE(OB) right
+const axL=cs===‘R’?node.meas.filter(m=>m.pos===‘AX_OB’):node.meas.filter(m=>m.pos===‘AX_IB’);
+const axR=cs===‘R’?node.meas.filter(m=>m.pos===‘AX_IB’):node.meas.filter(m=>m.pos===‘AX_OB’);
+const vM=node.meas.filter(m=>m.pos===‘VERT_NDE’||m.pos===‘VERT_DE’);
+const hM=node.meas.filter(m=>m.pos===‘HORIZ_NDE’||m.pos===‘HORIZ_DE’);
+if(ni<N-1){const cx1=xNR,cx2=cX+NCW+CG+AZW,mx=(cx1+cx2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx1,yM);ctx.lineTo(cx2,yM);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(mx-8,yM-11,16,22,3);ctx.fill();ctx.stroke();ctx.fillStyle=tc.cp2;ctx.beginPath();ctx.roundRect(mx-5,yM-14,10,28,2);ctx.fill();ctx.stroke();}
+const yR=yNT-RPG-RPH;ctx.font=‘12px Roboto,sans-serif’;ctx.fillStyle=tc.tx2;ctx.textAlign=‘center’;ctx.fillText(‘RPM  ‘+(rpm||’****’),xC,yR+RPH*.72);ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xNL+10,yR+RPH-2);ctx.lineTo(xNR-10,yR+RPH-2);ctx.stroke();
+ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
+ctx.font=‘bold 14px Roboto,sans-serif’;ctx.fillStyle=p.fill;ctx.textAlign=‘center’;ctx.fillText(node.name,xC,yNT+20);
+drawShapeIcon(ctx,node.shape,xC,yNT+NH*.66,26,p.fill);
+ctx.font=‘bold 10px Roboto,sans-serif’;ctx.fillStyle=p.fill;
+if(axL.length){ctx.textAlign=‘left’;ctx.fillText(axL.map(m=>m.label).join(’/’),xNL+5,yNT+NH-5);}
+if(axR.length){ctx.textAlign=‘right’;ctx.fillText(axR.map(m=>m.label).join(’/’),xNR-5,yNT+14);}
+vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNT-VAH/2-RPH-RPG-4;dash(bx,by+BSLOT,xC,yNT);bubble(m,bx,by,cs);});
+hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=yNB+HAH/2+4;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
+axL.forEach((m,i)=>{const sh=axL.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+AZW/2;dash(xNL,yM,bx+BSLOT,by);bubble(m,bx,by,cs);});
+axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by,cs);});
+});
+ctx.font=‘10px Roboto,sans-serif’;ctx.fillStyle=tc.foot;
+ctx.textAlign=‘left’;ctx.fillText(‘Amplitude in ‘+u.label+’ | Phase in degrees’,HPAD,H-8);
+const ver=‘v’+getDocVersion()+’  |  ‘+getDocDate()+’  |  © ‘+new Date().getFullYear()+’ Joel Davis’;
+ctx.textAlign=‘right’;ctx.fillText(ver,W-HPAD,H-8);
+} else {
+const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
+const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
+ctx.font=‘bold 13px Roboto,sans-serif’;ctx.fillStyle=tc.tx;ctx.textAlign=‘center’;ctx.fillText(title,W/2,VPAD-22);
+ctx.font=‘bold 12px Roboto,sans-serif’;ctx.fillText(‘AXIAL’,xC,VPAD-6);ctx.fillText(‘AXIAL’,xC,H-VPAD/3+8);
+ctx.save();ctx.translate(HPAD-18,H/2);ctx.rotate(-Math.PI/2);ctx.fillText(‘VERTICAL’,0,0);ctx.restore();
+ctx.save();ctx.translate(W-18,H/2);ctx.rotate(Math.PI/2);ctx.fillText(‘HORIZONTAL’,0,0);ctx.restore();
+nodes.forEach((node,ni)=>{
+const p=pal(node.ci);const cs=node.coupSide||‘R’;const cY=VPAD+ni*(nCH+CG);const yNT=cY+AZH,yNB=yNT+NH,yCx=yNT+NH/2;const rpm=node.rpm||grpm;
+const axL=cs===‘R’?node.meas.filter(m=>m.pos===‘AX_OB’):node.meas.filter(m=>m.pos===‘AX_IB’);
+const axR=cs===‘R’?node.meas.filter(m=>m.pos===‘AX_IB’):node.meas.filter(m=>m.pos===‘AX_OB’);
+const vM=node.meas.filter(m=>m.pos===‘VERT_NDE’||m.pos===‘VERT_DE’);
+const hM=node.meas.filter(m=>m.pos===‘HORIZ_NDE’||m.pos===‘HORIZ_DE’);
+if(ni<N-1){const yC1=cY+nCH,yC2=yC1+CG,my=(yC1+yC2)/2;ctx.strokeStyle=tc.tx2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xC,yC1);ctx.lineTo(xC,yC2);ctx.stroke();ctx.fillStyle=tc.cp1;ctx.strokeStyle=tc.tx3;ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(xC-9,my-8,18,16,3);ctx.fill();ctx.stroke();}
+ctx.font=‘11px Roboto,sans-serif’;ctx.fillStyle=tc.tx2;ctx.textAlign=‘left’;ctx.fillText(’RPM ‘+(rpm||’****’),xNR+HZW+4,yCx-4);
+ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xNL,yNT,NW,NH,5);ctx.fill();ctx.stroke();
+ctx.font=‘bold 13px Roboto,sans-serif’;ctx.fillStyle=p.fill;ctx.textAlign=‘center’;ctx.fillText(node.name,xC,yNT+18);
+drawShapeIcon(ctx,node.shape,xC,yNT+NH*.65,24,p.fill);
+axL.forEach((m,i)=>{const sp=(axL.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+AZH/2;dash(xC,yNT,bx,by+BSLOT);bubble(m,bx,by,cs);});
+axR.forEach((m,i)=>{const sp=(axR.length-1)*(BSLOT*2+4);const bx=xC-sp/2+i*(BSLOT*2+4),by=cY+nCH-AZH/2;dash(xC,yNB,bx,by-BSLOT);bubble(m,bx,by,cs);});
+vM.forEach((m,i)=>{const sp=(vM.length-1)*(BSLOT*2+4);const bx=xNL-VZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNL,yCx,bx+BSLOT,by);bubble(m,bx,by,cs);});
+hM.forEach((m,i)=>{const sp=(hM.length-1)*(BSLOT*2+4);const bx=xNR+HZW/2,by=yCx-sp/2+i*(BSLOT*2+4);dash(xNR,yCx,bx-BSLOT,by);bubble(m,bx,by,cs);});
+});
+// Version / date stamp bottom center
+const vstamp=‘v’+getDocVersion()+’  |  ‘+getDocDate()+’  |  © ‘+new Date().getFullYear()+’ Joel Davis’;
+ctx.font=‘10px Roboto,sans-serif’;ctx.fillStyle=tc.foot;ctx.textAlign=‘center’;ctx.fillText(vstamp,W/2,H-8);
+}
 }
 
 // ── Share / Print modal ───────────────────────────────────
 function openModal(){
-  document.getElementById('share-modal').classList.add('show');
+document.getElementById(‘share-modal’).classList.add(‘show’);
 }
 function closeModal(){
-  document.getElementById('share-modal').classList.remove('show');
+document.getElementById(‘share-modal’).classList.remove(‘show’);
 }
 
 // Returns a PNG data URL from the full-res export canvas
 function getExportDataURL(){
-  const off=buildExportCanvas();
-  return off ? off.toDataURL('image/png') : null;
+const off=buildExportCanvas();
+return off ? off.toDataURL(‘image/png’) : null;
 }
 
 // iOS share: use Web Share API with a File blob — shows native share sheet
 async function shareImage(){
-  closeModal();
-  const off=buildExportCanvas();
-  if(!off){alert('Add components first.');return;}
-  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
-  off.toBlob(async(blob)=>{
-    if(!blob)return;
-    const file=new File([blob],title.replace(/\s+/g,'_')+'.png',{type:'image/png'});
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      try{
-        await navigator.share({files:[file],title:title,text:'Cross-Channel Phase Analysis Chart'});
-      } catch(e){
-        if(e.name!=='AbortError') saveImageFallback(off,title);
-      }
-    } else {
-      saveImageFallback(off,title);
-    }
-  },'image/png');
+closeModal();
+const off=buildExportCanvas();
+if(!off){alert(‘Add components first.’);return;}
+const title=document.getElementById(‘chart-title’).value||‘Phase Bubble Chart’;
+off.toBlob(async(blob)=>{
+if(!blob)return;
+const file=new File([blob],title.replace(/\s+/g,’_’)+’.png’,{type:‘image/png’});
+if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+try{
+await navigator.share({files:[file],title:title,text:‘Cross-Channel Phase Analysis Chart’});
+} catch(e){
+if(e.name!==‘AbortError’) saveImageFallback(off,title);
+}
+} else {
+saveImageFallback(off,title);
+}
+},‘image/png’);
 }
 
 // Fallback: trigger <a download> — works on Android, Desktop, modern iOS (Files app)
 function saveImageFallback(off,title){
-  const a=document.createElement('a');
-  a.href=off.toDataURL('image/png');
-  a.download=(title||'chart').replace(/\s+/g,'_')+'.png';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
+const a=document.createElement(‘a’);
+a.href=off.toDataURL(‘image/png’);
+a.download=(title||‘chart’).replace(/\s+/g,’_’)+’.png’;
+document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
 function downloadImage(){
-  closeModal();
-  const off=buildExportCanvas();
-  if(!off){alert('Add components first.');return;}
-  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
-  saveImageFallback(off,title);
+closeModal();
+const off=buildExportCanvas();
+if(!off){alert(‘Add components first.’);return;}
+const title=document.getElementById(‘chart-title’).value||‘Phase Bubble Chart’;
+saveImageFallback(off,title);
 }
 
 // Desktop print: data URL in new tab, auto-print
 function desktopPrint(){
-  closeModal();
-  const off=buildExportCanvasLight();
-  if(!off){alert('Add components first.');return;}
-  const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
-  const u=getUnit();
-  const imgData=off.toDataURL('image/png');
+closeModal();
+const off=buildExportCanvasLight();
+if(!off){alert(‘Add components first.’);return;}
+const title=document.getElementById(‘chart-title’).value||‘Phase Bubble Chart’;
+const u=getUnit();
+const imgData=off.toDataURL(‘image/png’);
 
-  // ── Build diagnosis HTML for page 2 ──────────────────────
-  // Run a fresh diagnosis pass to make sure results are current
-  runDiagnosis();
-  const typeStyles={
-    fault:'border-left:4px solid #ef4444;background:#fef2f2',
-    warn: 'border-left:4px solid #f59e0b;background:#fffbeb',
-    ok:   'border-left:4px solid #22c55e;background:#f0fdf4',
-    info: 'border-left:4px solid #3b82f6;background:#eff6ff',
-  };
-  const typeIcons={fault:'⚠',warn:'⚡',ok:'✓',info:'ℹ'};
-  let diagRows='';
-  diagResults.forEach(r=>{
-    const s=typeStyles[r.type]||typeStyles.info;
-    diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;${s}">
-      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:3px">${r.label}</div>
-      <div style="font-size:11px;color:#444;line-height:1.6">${r.desc}</div>
-    </div>`;
-  });
+// ── Build diagnosis HTML for page 2 ──────────────────────
+// Run a fresh diagnosis pass to make sure results are current
+runDiagnosis();
+const typeStyles={
+fault:‘border-left:4px solid #ef4444;background:#fef2f2’,
+warn: ‘border-left:4px solid #f59e0b;background:#fffbeb’,
+ok:   ‘border-left:4px solid #22c55e;background:#f0fdf4’,
+info: ‘border-left:4px solid #3b82f6;background:#eff6ff’,
+};
+const typeIcons={fault:‘⚠’,warn:‘⚡’,ok:‘✓’,info:‘ℹ’};
+let diagRows=’’;
+diagResults.forEach(r=>{
+const s=typeStyles[r.type]||typeStyles.info;
+diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;${s}"> <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:3px">${r.label}</div> <div style="font-size:11px;color:#444;line-height:1.6">${r.desc}</div> </div>`;
+});
 
-  // ── Measurement data table ────────────────────────────────
-  const pl={
-    'AX_IB':    'Axial Drive End (DE)',
-    'AX_OB':    'Axial Non-Drive End (NDE)',
-    'VERT_NDE': 'Vertical Non-Drive End (NDE)',
-    'VERT_DE':  'Vertical Drive End (DE)',
-    'HORIZ_NDE':'Horizontal Non-Drive End (NDE)',
-    'HORIZ_DE': 'Horizontal Drive End (DE)',
-  };
-  const dirLabel=(m,n)=>{
-    const isV=document.getElementById('layout').value==='V';
-    if(m.pos==='AX_IB'||m.pos==='AX_OB'){
-      const cs=(n&&n.coupSide)||'R';
-      if(isV) return m.axDir==='in'?'⬇ Downward':'⬆ Upward';
-      if(m.axDir==='in') return cs==='R'?'Inboard ➡':'⬅ Inboard';
-      return cs==='R'?'⬅ Outboard':'Outboard ➡';
-    }
-    return '';
-  };
-  const posLabel=(m)=>pl[m.pos]||m.pos;
-  let rows='';
-  nodes.forEach(n=>n.meas.forEach(m=>{
-    rows+=`<tr>
-      <td>${n.name}</td>
-      <td><strong>${m.label}</strong></td>
-      <td>${posLabel(m)}</td>
-      <td style="text-align:center">${dirLabel(m,n)}</td>
-      <td style="text-align:center">${m.ref?'✓':''}</td>
-      <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td>
-      <td style="text-align:right">${Math.round(parseFloat(m.phase)||0)}°</td>
-    </tr>`;
-  }));
+// ── Measurement data table ────────────────────────────────
+const pl={
+‘AX_IB’:    ‘Axial Drive End (DE)’,
+‘AX_OB’:    ‘Axial Non-Drive End (NDE)’,
+‘VERT_NDE’: ‘Vertical Non-Drive End (NDE)’,
+‘VERT_DE’:  ‘Vertical Drive End (DE)’,
+‘HORIZ_NDE’:‘Horizontal Non-Drive End (NDE)’,
+‘HORIZ_DE’: ‘Horizontal Drive End (DE)’,
+};
+const dirLabel=(m,n)=>{
+const isV=document.getElementById(‘layout’).value===‘V’;
+if(m.pos===‘AX_IB’||m.pos===‘AX_OB’){
+const cs=(n&&n.coupSide)||‘R’;
+if(isV) return m.axDir===‘in’?‘⬇ Downward’:‘⬆ Upward’;
+if(m.axDir===‘in’) return cs===‘R’?‘Inboard ➡’:‘⬅ Inboard’;
+return cs===‘R’?‘⬅ Outboard’:‘Outboard ➡’;
+}
+return ‘’;
+};
+const posLabel=(m)=>pl[m.pos]||m.pos;
+let rows=’’;
+nodes.forEach(n=>n.meas.forEach(m=>{
+rows+=`<tr> <td>${n.name}</td> <td><strong>${m.label}</strong></td> <td>${posLabel(m)}</td> <td style="text-align:center">${dirLabel(m,n)}</td> <td style="text-align:center">${m.ref?'✓':''}</td> <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td> <td style="text-align:right">${Math.round(parseFloat(m.phase)||0)}°</td> </tr>`;
+}));
 
-  const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
+const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
 
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,sans-serif;color:#111;background:#fff}
@@ -1068,9 +1035,11 @@ function desktopPrint(){
       .page-break{page-break-before:always}
     }
   </style>
+
   </head><body>
 
   <!-- PAGE 1: Chart -->
+
   <div class="page">
     <h1>${title}</h1>
     <img src="${imgData}" id="chartimg">
@@ -1078,6 +1047,7 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
+
   <div class="page page-break">
     <h1>${title} — Measurement Data</h1>
     <div class="section-title">Measurement Points</div>
@@ -1091,6 +1061,7 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 3: Diagnosis -->
+
   <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
     <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
@@ -1928,5 +1899,6 @@ function boot(){
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
 else{boot();}
 </script>
+
 </body>
 </html>
