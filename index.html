@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <meta charset="UTF-8">
@@ -57,8 +58,8 @@ body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 .add-node:active{background:var(--bg3)}
 
 /* ── Diagnosis panel ── */
-.diag-panel{background:var(--bg3);border:1px solid var(--bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
-.diag-title{font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em}
+.diag-panel{background:var(–bg3);border:1px solid var(–bd);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;margin:10px 0 0}
+.diag-title{font-size:12px;font-weight:700;color:var(–tx3);text-transform:uppercase;letter-spacing:.07em}
 .diag-item{display:flex;flex-direction:column;gap:3px;padding:10px 12px;border-radius:8px;border-left:4px solid #ccc}
 .diag-item.ok    {background:#f0fdf4;border-left-color:#22c55e}
 .diag-item.warn  {background:#fffbeb;border-left-color:#f59e0b}
@@ -68,53 +69,54 @@ body.dark .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
 body.dark .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
 body.dark .diag-item.fault {background:#291414;border-left-color:#ef4444}
 body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
-.diag-label{font-size:13px;font-weight:700;color:var(--tx)}
-.diag-desc {font-size:11px;color:var(--tx2);line-height:1.5}
-.diag-empty{font-size:12px;color:var(--tx3);text-align:center;padding:8px 0}
+.diag-label{font-size:13px;font-weight:700;color:var(–tx)}
+.diag-desc {font-size:11px;color:var(–tx2);line-height:1.5}
+.diag-empty{font-size:12px;color:var(–tx3);text-align:center;padding:8px 0}
 
 /* Bubble color overrides rendered on canvas — handled in JS */
 
 /* Axial orientation toggle */
-.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(--bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
-.ax-dir-btn{background:var(--bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(--tx3);cursor:pointer;font-family:'Roboto',sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
-.ax-dir-btn.active{background:var(--tx);color:var(--bg)}
-.ax-dir-btn:first-child{border-right:1px solid var(--bd2)}
-.ax-dir-hint{font-size:10px;color:var(--tx3);font-style:italic;padding:1px 0 3px}
+.ax-dir-toggle{display:flex;align-items:center;gap:0;border:1px solid var(–bd2);border-radius:6px;overflow:hidden;flex-shrink:0}
+.ax-dir-btn{background:var(–bg);border:none;padding:5px 9px;font-size:11px;font-weight:700;color:var(–tx3);cursor:pointer;font-family:‘Roboto’,sans-serif;white-space:nowrap;min-height:30px;touch-action:manipulation;user-select:none;transition:background .15s,color .15s;line-height:1}
+.ax-dir-btn.active{background:var(–tx);color:var(–bg)}
+.ax-dir-btn:first-child{border-right:1px solid var(–bd2)}
+.ax-dir-hint{font-size:10px;color:var(–tx3);font-style:italic;padding:1px 0 3px}
 /* ── History panel ── */
-.hist-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
-.hist-card:hover{border-color:var(--bd2)}
+.hist-card{background:var(–bg3);border:1px solid var(–bd);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px;touch-action:manipulation;user-select:none;transition:border-color .15s}
+.hist-card:hover{border-color:var(–bd2)}
 .hist-card-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.hist-card-title{font-size:14px;font-weight:700;color:var(--tx);flex:1;line-height:1.3}
-.hist-card-del{background:none;border:none;cursor:pointer;color:var(--tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
+.hist-card-title{font-size:14px;font-weight:700;color:var(–tx);flex:1;line-height:1.3}
+.hist-card-del{background:none;border:none;cursor:pointer;color:var(–tx4);font-size:20px;line-height:1;padding:0 2px;min-width:28px;min-height:28px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0}
 .hist-card-del:active{color:#ef4444}
-.hist-card-meta{font-size:11px;color:var(--tx3);display:flex;gap:10px;flex-wrap:wrap}
-.hist-card-load{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
+.hist-card-meta{font-size:11px;color:var(–tx3);display:flex;gap:10px;flex-wrap:wrap}
+.hist-card-load{background:none;border:1px solid var(–bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(–tx2);cursor:pointer;font-family:‘Roboto’,sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
 .hist-card-load:active{opacity:.6}
-.hist-empty{font-size:13px;color:var(--tx3);text-align:center;padding:32px 16px;line-height:1.6}
-.hist-save-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(--tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.hist-empty{font-size:13px;color:var(–tx3);text-align:center;padding:32px 16px;line-height:1.6}
+.hist-save-btn{background:var(–bg3);border:1px solid var(–bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(–tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:‘Roboto’,sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .hist-save-btn:active{opacity:.6}
-.hist-count{font-size:10px;color:var(--tx3);text-align:right;padding:2px 0}
+.hist-count{font-size:10px;color:var(–tx3);text-align:right;padding:2px 0}
 /* ── Confirm modal ── */
 .confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1100;align-items:center;justify-content:center;padding:20px}
 .confirm-overlay.show{display:flex}
-.confirm-sheet{background:var(--bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
-.confirm-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
-.confirm-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
+.confirm-sheet{background:var(–bg3);border-radius:14px;padding:22px 20px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.confirm-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
+.confirm-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
 .confirm-btns{display:flex;gap:10px}
-.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(--bd2);-webkit-appearance:none}
-.confirm-ok{background:var(--tx);color:var(--bg);font-weight:700}
-.confirm-cancel-btn{background:var(--bg2);color:var(--tx)}
+.confirm-btns button{flex:1;padding:12px;border-radius:8px;font-size:15px;font-family:‘Roboto’,sans-serif;cursor:pointer;touch-action:manipulation;border:1px solid var(–bd2);-webkit-appearance:none}
+.confirm-ok{background:var(–tx);color:var(–bg);font-weight:700}
+.confirm-cancel-btn{background:var(–bg2);color:var(–tx)}
 /* ── Share / print modal ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
-.modal-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
-.modal-sheet p{font-size:13px;color:var(--tx2);text-align:center;line-height:1.5}
+.modal-sheet{background:var(–bg3);border-radius:16px 16px 0 0;padding:20px 20px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.modal-sheet h2{font-size:16px;font-weight:700;color:var(–tx);text-align:center}
+.modal-sheet p{font-size:13px;color:var(–tx2);text-align:center;line-height:1.5}
 .modal-actions{display:flex;flex-direction:column;gap:10px}
-.modal-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:15px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.modal-btn{background:var(–bg2);border:1px solid var(–bd);border-radius:10px;padding:14px;font-size:15px;font-family:‘Roboto’,sans-serif;color:var(–tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .modal-btn:active{opacity:.6}
-.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
+.modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:‘Roboto’,sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
 </style>
+
 </head>
 <body class="light">
 <div class="app">
@@ -167,6 +169,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- Share/Print modal -->
+
 <div class="modal-overlay" id="share-modal">
   <div class="modal-sheet">
     <h2>Print / Share Chart</h2>
@@ -181,6 +184,7 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 </div>
 
 <!-- Confirm modal -->
+
 <div class="confirm-overlay" id="confirm-modal">
   <div class="confirm-sheet">
     <h2 id="confirm-title">Are you sure?</h2>
@@ -376,7 +380,7 @@ function measHTML(nid,m,u,coupSide){
     </div>
     <div class="row">
       <span class="lbl">Phase (-180° to 180°)</span>
-      <input type="text" inputmode="decimal" placeholder="0" value="${phaseVal||''}"
+      <input type="text" inputmode="text" placeholder="0" value="${phaseVal||''}"
         style="${numStyle}"
         data-nid="${nid}" data-mid="${m.id}"
         onchange="handlePhaseInput(this)"
@@ -1006,9 +1010,11 @@ function desktopPrint(){
       .page-break{page-break-before:always}
     }
   </style>
+
   </head><body>
 
   <!-- PAGE 1: Chart -->
+
   <div class="page">
     <h1>${title}</h1>
     <img src="${imgData}" id="chartimg">
@@ -1016,6 +1022,7 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
+
   <div class="page page-break">
     <h1>${title} — Measurement Data</h1>
     <div class="section-title">Measurement Points</div>
@@ -1029,6 +1036,7 @@ function desktopPrint(){
   </div>
 
   <!-- PAGE 3: Diagnosis -->
+
   <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
     <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
@@ -1771,5 +1779,6 @@ function boot(){
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
 else{boot();}
 </script>
+
 </body>
 </html>
