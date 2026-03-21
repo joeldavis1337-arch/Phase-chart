@@ -11,6 +11,9 @@ html,body{height:100%;width:100%;overflow:hidden}
 body{font-family:'Roboto',sans-serif;font-size:14px;-webkit-text-size-adjust:100%;transition:background .2s,color .2s}
 body.light{--bg:#f0eeea;--bg2:#e8e6e1;--bg3:#fff;--bd:#ccc;--bd2:#bbb;--tx:#111;--tx2:#555;--tx3:#888;--tx4:#aaa;--cvbg:#fff;--inbg:#fff}
 body.dark {--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--bd:#444;--bd2:#555;--tx:#eee;--tx2:#aaa;--tx3:#666;--tx4:#444;--cvbg:#1e1e1e;--inbg:#2e2e2e}
+body.navy {--bg:#0d1b2a;--bg2:#112236;--bg3:#152c44;--bd:#1e3a54;--bd2:#2a4f72;--tx:#e8f4fd;--tx2:#8ab4d4;--tx3:#4a7a9b;--tx4:#2a4f72;--cvbg:#0f1f30;--inbg:#152c44}
+body.navy .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.navy .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 body{background:var(--bg);color:var(--tx)}
 .app{display:flex;flex-direction:column;height:100%;height:-webkit-fill-available}
 .topbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
@@ -119,6 +122,105 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 .wn-date{font-size:11px;color:var(--tx3)}
 .wn-item{display:flex;gap:8px;font-size:12px;color:var(--tx2);padding:4px 0;line-height:1.5}
 .wn-item::before{content:'•';color:var(--tx3);flex-shrink:0}
+/* ── Swipe-to-delete ── */
+.hist-card{position:relative;overflow:hidden;transition:transform .2s}
+.hist-card.swiping{transition:none}
+
+/* ── Bubble popup ── */
+.bubble-popup{position:fixed;background:var(--bg3);border:1px solid var(--bd2);border-radius:14px;padding:16px;min-width:210px;max-width:270px;box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:500;opacity:0;transform:scale(0.88);transition:opacity .16s,transform .16s;pointer-events:none}
+.bubble-popup.show{opacity:1;transform:scale(1);pointer-events:auto}
+.bp-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bp-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.bp-title{font-size:15px;font-weight:700;color:var(--tx);flex:1}
+.bp-sev{font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;color:#fff}
+.bp-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.bp-row:last-of-type{border-bottom:none}
+.bp-key{color:var(--tx3)}
+.bp-val{color:var(--tx);font-weight:600;text-align:right;max-width:160px}
+.bp-close{margin-top:10px;width:100%;padding:8px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;color:var(--tx2);font-size:12px;cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation}
+
+/* ── Annotation modal ── */
+.ann-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
+.ann-overlay.show{display:flex}
+.ann-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:18px 18px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px}
+.ann-sheet h2{font-size:15px;font-weight:700;color:var(--tx)}
+.ann-textarea{font-size:15px;background:var(--inbg);border:1px solid var(--bd2);border-radius:8px;padding:10px;color:var(--tx);font-family:'Roboto',sans-serif;resize:none;min-height:72px;width:100%}
+.ann-opts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ann-opt-label{font-size:11px;color:var(--tx3)}
+.ann-sel{font-size:13px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif}
+.ann-colors{display:flex;gap:6px}
+.ann-color-btn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;touch-action:manipulation}
+.ann-color-btn.active{border-color:var(--tx)}
+.ann-actions{display:flex;gap:8px}
+.ann-save{flex:1;background:var(--tx);color:var(--bg);border:none;border-radius:8px;padding:11px;font-size:14px;font-weight:700;font-family:'Roboto',sans-serif;cursor:pointer;touch-action:manipulation}
+.ann-cancel{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:11px 16px;font-size:14px;font-family:'Roboto',sans-serif;color:var(--tx2);cursor:pointer;touch-action:manipulation}
+.ann-delete{background:#fef2f2;border:1px solid #ef4444;border-radius:8px;padding:11px 14px;font-size:14px;font-family:'Roboto',sans-serif;color:#ef4444;cursor:pointer;touch-action:manipulation}
+
+/* ── Templates modal ── */
+.tpl-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
+.tpl-overlay.show{display:flex}
+.tpl-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:18px 18px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:10px;max-height:85vh;overflow:hidden}
+.tpl-sheet h2{font-size:15px;font-weight:700;color:var(--tx);flex-shrink:0}
+.tpl-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;display:flex;flex-direction:column;gap:8px}
+.tpl-card{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;cursor:pointer;touch-action:manipulation;display:flex;flex-direction:column;gap:4px}
+.tpl-card:active{opacity:.7}
+.tpl-card-title{font-size:13px;font-weight:700;color:var(--tx)}
+.tpl-card-desc{font-size:11px;color:var(--tx3);line-height:1.4}
+.tpl-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;flex-shrink:0}
+
+/* ── Logo upload ── */
+.logo-upload-area{border:1.5px dashed var(--bd2);border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:12px;color:var(--tx3);touch-action:manipulation}
+.logo-preview{max-height:44px;max-width:120px;object-fit:contain;border-radius:4px}
+
+/* ── History search ── */
+.hist-search{font-size:15px;background:var(--inbg);border:1px solid var(--bd2);border-radius:8px;padding:8px 12px;color:var(--tx);font-family:'Roboto',sans-serif;width:100%;-webkit-appearance:none;min-height:38px}
+.hist-filters{display:flex;gap:6px;flex-wrap:wrap}
+.hist-filter-btn{font-size:11px;padding:4px 10px;border-radius:14px;border:1px solid var(--bd2);background:var(--bg3);color:var(--tx3);cursor:pointer;touch-action:manipulation;font-family:'Roboto',sans-serif}
+.hist-filter-btn.active{background:var(--tx);color:var(--bg);border-color:var(--tx)}
+
+/* ── Undo toast ── */
+.undo-toast{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:#333;color:#fff;border-radius:10px;padding:10px 16px;font-size:13px;display:flex;align-items:center;gap:12px;z-index:700;transition:transform .25s ease;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.undo-toast.show{transform:translateX(-50%) translateY(0)}
+.undo-btn{background:#3b82f6;border:none;border-radius:6px;padding:5px 12px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation}
+
+/* ── Shareable card modal ── */
+.sc-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
+.sc-overlay.show{display:flex}
+.sc-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:18px 18px 36px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:12px}
+.sc-sheet h2{font-size:15px;font-weight:700;color:var(--tx)}
+.sc-actions{display:flex;flex-direction:column;gap:8px}
+.sc-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:13px;font-size:14px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;display:flex;align-items:center;gap:8px}
+.sc-btn:active{opacity:.6}
+
+/* ── Bug report modal ── */
+.bug-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:center;justify-content:center;padding:20px}
+.bug-overlay.show{display:flex}
+.bug-sheet{background:var(--bg3);border-radius:14px;padding:24px 22px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.bug-sheet h2{font-size:16px;font-weight:700;color:var(--tx);text-align:center}
+.bug-body{font-size:13px;color:var(--tx2);line-height:1.7;text-align:center}
+.bug-email{display:block;font-size:15px;font-weight:700;color:#1a6bbf;text-decoration:none;text-align:center;padding:10px;background:var(--bg2);border-radius:8px;border:1px solid var(--bd);margin-top:4px}
+.bug-email:hover{background:var(--bg)}
+.bug-close{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:11px;font-size:14px;font-family:'Roboto',sans-serif;color:var(--tx2);cursor:pointer;touch-action:manipulation;text-align:center;width:100%}
+/* ── Help modal ── */
+.help-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;align-items:flex-end;justify-content:center}
+.help-overlay.show{display:flex}
+.help-sheet{background:var(--bg3);border-radius:16px 16px 0 0;padding:18px 18px 36px;width:100%;max-width:520px;display:flex;flex-direction:column;gap:0;max-height:88vh;overflow:hidden}
+.help-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0}
+.help-header h2{font-size:16px;font-weight:700;color:var(--tx)}
+.help-close{background:none;border:none;font-size:22px;color:var(--tx3);cursor:pointer;padding:4px 8px;line-height:1;touch-action:manipulation}
+.help-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1}
+.help-section{margin-bottom:18px}
+.help-section-title{font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--bd)}
+.help-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.help-item:last-child{border-bottom:none}
+.help-icon{font-size:18px;flex-shrink:0;width:24px;text-align:center}
+.help-text{color:var(--tx2);line-height:1.5;flex:1}
+.help-text strong{color:var(--tx);display:block;margin-bottom:2px}
+
+/* ── Press ring ── */
+.press-ring{position:fixed;border-radius:50%;border:2px solid rgba(255,255,255,.4);pointer-events:none;opacity:0;transform:scale(0);transition:none;z-index:400}
+.press-ring.pressing{opacity:1;transform:scale(1);transition:transform .55s ease-out,opacity .55s ease-out}
+
 /* ── Share / print modal ── */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:flex-end;justify-content:center}
 .modal-overlay.show{display:flex}
@@ -147,10 +249,18 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
       <option value="H">Horizontal</option>
       <option value="V">Vertical</option>
     </select></label>
-    <button class="btn" id="dm-btn" onclick="toggleDark()">🌙 Dark</button>
+    <label>Theme: <select id="theme-sel" onchange="setTheme(this.value)" style="width:52px">
+      <option value="light">☀️</option>
+      <option value="dark">🌙</option>
+      <option value="navy">⚓</option>
+    </select></label>
     <button class="btn" id="print-btn">🖨 Print / Share</button>
+    <button class="btn" id="sc-btn-top" onclick="openShareCard()">📋 Share Card</button>
+    <button class="btn" onclick="openTemplates()">📐 Templates</button>
     <button class="btn" id="wn-btn" onclick="openWN()">✨ What's New</button>
     <label>Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
+    <button class="btn" onclick="openHelp()">❓ Help</button>
+    <button class="btn" onclick="openBugReport()">🐛 Report</button>
   </div>
   <div class="tab-bar">
     <button id="tab-history" onclick="showTab('history')">History</button>
@@ -161,12 +271,39 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
   <div class="body-wrap">
     <div class="sidebar hidden" id="panel-history">
       <h3>Saved Charts</h3>
-      <button class="hist-save-btn" onclick="saveToHistory()">💾 Save Current Chart to History</button>
+      <div style="display:flex;gap:8px">
+        <button class="hist-save-btn" style="flex:1" onclick="saveToHistory()">💾 Save to History</button>
+        <button class="hist-save-btn" style="flex:0;padding:11px 14px;font-size:13px" onclick="duplicateChart()" title="Duplicate current chart">⧉ Duplicate</button>
+      </div>
+      <input class="hist-search" id="hist-search" type="text" placeholder="Search charts..." oninput="renderHistory()">
+      <div class="hist-filters" id="hist-filters">
+        <button class="hist-filter-btn active" data-filter="all" onclick="setHistFilter('all')">All</button>
+        <button class="hist-filter-btn" data-filter="fault" onclick="setHistFilter('fault')">🔴 Fault</button>
+        <button class="hist-filter-btn" data-filter="warn" onclick="setHistFilter('warn')">🟡 Warning</button>
+        <button class="hist-filter-btn" data-filter="ok" onclick="setHistFilter('ok')">🟢 Normal</button>
+      </div>
       <div class="hist-count" id="hist-count"></div>
       <div id="hist-list"></div>
     </div>
     <div class="sidebar" id="panel-components">
-      <h3>Components &amp; Measurements</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h3 style="margin:0">Components &amp; Measurements</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn" id="undo-visible-btn" onclick="doUndo()" style="font-size:12px;padding:5px 10px;display:none">↩ Undo</button>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
+        <h3 style="margin:0">Chart Logo (optional)</h3>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div class="logo-upload-area" id="logo-drop" onclick="document.getElementById('logo-file').click()" style="flex:1;min-width:100px">
+            <span id="logo-hint">Tap to upload logo</span>
+            <img id="logo-preview" class="logo-preview" style="display:none">
+          </div>
+          <button class="btn" id="logo-clear-btn" onclick="clearLogo()" style="display:none;font-size:12px;padding:6px 10px">✕ Remove</button>
+        </div>
+        <input type="file" id="logo-file" accept="image/*" style="display:none" onchange="handleLogoUpload(this)">
+        <div style="font-size:10px;color:var(--tx3)">Logo is per-chart only — not saved between sessions. Re-upload for each new chart.</div>
+      </div>
       <div id="node-list"></div>
     </div>
     <div class="chart-area hidden" id="panel-chart">
@@ -186,6 +323,87 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
       <div id="diag-results"></div>
     </div>
   </div>
+</div>
+
+<!-- Annotation modal -->
+<div class="ann-overlay" id="ann-modal">
+  <div class="ann-sheet">
+    <h2 id="ann-modal-title">Add Annotation</h2>
+    <textarea class="ann-textarea" id="ann-text" placeholder="Type your note here..."></textarea>
+    <div class="ann-opts">
+      <span class="ann-opt-label">Size:</span>
+      <select class="ann-sel" id="ann-size">
+        <option value="11">Small</option>
+        <option value="13" selected>Medium</option>
+        <option value="16">Large</option>
+      </select>
+      <span class="ann-opt-label">Color:</span>
+      <div class="ann-colors">
+        <div class="ann-color-btn active" data-color="#111111" style="background:#111111" onclick="selectAnnColor(this)"></div>
+        <div class="ann-color-btn" data-color="#1a6bbf" style="background:#1a6bbf" onclick="selectAnnColor(this)"></div>
+        <div class="ann-color-btn" data-color="#ef4444" style="background:#ef4444" onclick="selectAnnColor(this)"></div>
+        <div class="ann-color-btn" data-color="#f59e0b" style="background:#f59e0b" onclick="selectAnnColor(this)"></div>
+        <div class="ann-color-btn" data-color="#22c55e" style="background:#22c55e" onclick="selectAnnColor(this)"></div>
+      </div>
+    </div>
+    <div class="ann-actions">
+      <button class="ann-cancel" onclick="closeAnnModal()">Cancel</button>
+      <button class="ann-delete" id="ann-delete-btn" style="display:none" onclick="deleteAnnotation()">🗑 Delete</button>
+      <button class="ann-save" onclick="saveAnnotation()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- Templates modal -->
+<div class="tpl-overlay" id="tpl-modal">
+  <div class="tpl-sheet">
+    <h2>Machine Templates</h2>
+    <div class="tpl-scroll" id="tpl-list"></div>
+    <button class="tpl-cancel" onclick="closeTpl()">Cancel</button>
+  </div>
+</div>
+
+<!-- Shareable card modal -->
+<div class="sc-overlay" id="sc-modal">
+  <div class="sc-sheet">
+    <h2>Share Diagnostic Card</h2>
+    <div style="font-size:11px;color:var(--tx3);margin:-4px 0 4px">Choose format then how to export</div>
+    <div style="font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Portrait — Summary</div>
+    <div class="sc-actions" style="gap:6px">
+      <button class="sc-btn" onclick="shareCard('portrait','share')">📤 Share (iPhone / messaging)</button>
+      <button class="sc-btn" onclick="shareCard('portrait','save')">📥 Save to Photos / Download</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-top:8px;margin-bottom:2px">Landscape — Chart + Findings</div>
+    <div class="sc-actions" style="gap:6px">
+      <button class="sc-btn" onclick="shareCard('landscape','share')">📤 Share (iPhone / messaging)</button>
+      <button class="sc-btn" onclick="shareCard('landscape','save')">📥 Save to Photos / Download</button>
+    </div>
+    <button class="tpl-cancel" onclick="closeSCModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- Bubble popup -->
+<div class="bubble-popup" id="bubble-popup">
+  <div class="bp-hdr">
+    <div class="bp-dot" id="bp-dot"></div>
+    <div class="bp-title" id="bp-title">—</div>
+    <div class="bp-sev" id="bp-sev"></div>
+  </div>
+  <div class="bp-row"><span class="bp-key">Position</span><span class="bp-val" id="bp-pos"></span></div>
+  <div class="bp-row"><span class="bp-key">Amplitude</span><span class="bp-val" id="bp-amp"></span></div>
+  <div class="bp-row"><span class="bp-key">Phase</span><span class="bp-val" id="bp-phase"></span></div>
+  <div class="bp-row"><span class="bp-key">Orientation</span><span class="bp-val" id="bp-orient"></span></div>
+  <div class="bp-row"><span class="bp-key">Reference</span><span class="bp-val" id="bp-ref"></span></div>
+  <button class="bp-close" onclick="hideBubblePopup()">Dismiss</button>
+</div>
+
+<!-- Press ring -->
+<div class="press-ring" id="press-ring"></div>
+
+<!-- Undo toast -->
+<div class="undo-toast" id="undo-toast">
+  <span id="undo-msg">Deleted</span>
+  <button class="undo-btn" onclick="doUndo()">Undo</button>
 </div>
 
 <!-- What's New modal -->
@@ -213,6 +431,68 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
   </div>
 </div>
 
+<!-- Bug report modal -->
+<div class="bug-overlay" id="bug-modal">
+  <div class="bug-sheet">
+    <h2>🐛 Report a Bug / Request a Feature</h2>
+    <div class="bug-body">
+      Found an issue or have an idea for a new feature?<br>
+      Send an email directly to the developer:
+      <a class="bug-email" href="mailto:joel.davis@johnhcarter.com?subject=Phase Analysis App — Bug/Feature Request">
+        joel.davis@johnhcarter.com
+      </a>
+      <span style="font-size:11px;color:var(--tx3);display:block;margin-top:8px">Please describe the issue or feature request in as much detail as possible. Screenshots are helpful!</span>
+    </div>
+    <button class="bug-close" onclick="closeBugReport()">Close</button>
+  </div>
+</div>
+
+<!-- Help modal -->
+<div class="help-overlay" id="help-modal">
+  <div class="help-sheet">
+    <div class="help-header">
+      <h2>❓ How to Use</h2>
+      <button class="help-close" onclick="closeHelp()">×</button>
+    </div>
+    <div class="help-scroll">
+      <div class="help-section">
+        <div class="help-section-title">Quick Start</div>
+        <div class="help-item"><div class="help-icon">1️⃣</div><div class="help-text"><strong>Set your RPM and units</strong>Enter the machine running speed and select your amplitude units (in/s, mils, etc.) in the top bar.</div></div>
+        <div class="help-item"><div class="help-icon">2️⃣</div><div class="help-text"><strong>Configure components</strong>Driver is on the left (typically a motor), Driven is on the right (pump, fan, etc.). Set the coupling side for each.</div></div>
+        <div class="help-item"><div class="help-icon">3️⃣</div><div class="help-text"><strong>Enter measurements</strong>For each sensor, enter the 1× amplitude and phase angle. Mark your fixed reference sensor with the Reference checkbox.</div></div>
+        <div class="help-item"><div class="help-icon">4️⃣</div><div class="help-text"><strong>Check the Chart tab</strong>Bubbles appear color-coded by severity. Green = normal, amber = warning, red = fault.</div></div>
+        <div class="help-item"><div class="help-icon">5️⃣</div><div class="help-text"><strong>Read the Diagnosis tab</strong>Automated fault analysis updates in real time as you enter data.</div></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">Sensor Positions</div>
+        <div class="help-item"><div class="help-icon">🔵</div><div class="help-text"><strong>Axial DE (Drive End)</strong>At the coupling end of the shaft. Most important for angular misalignment diagnosis.</div></div>
+        <div class="help-item"><div class="help-icon">⚪</div><div class="help-text"><strong>Axial NDE (Non-Drive End)</strong>At the free end of the shaft. Used for bent shaft / axial phase reversal check.</div></div>
+        <div class="help-item"><div class="help-icon">↕️</div><div class="help-text"><strong>Vertical DE / NDE</strong>Vertical sensors at each bearing. Used for radial misalignment, imbalance, and soft foot.</div></div>
+        <div class="help-item"><div class="help-icon">↔️</div><div class="help-text"><strong>Horizontal DE / NDE</strong>Horizontal sensors at each bearing. V and H are 90° apart physically — ~90° phase between them is normal.</div></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">Sensor Orientation (Axial only)</div>
+        <div class="help-item"><div class="help-icon">➡️</div><div class="help-text"><strong>Inboard</strong>Sensor face points toward the coupling. The app corrects this before phase comparisons.</div></div>
+        <div class="help-item"><div class="help-icon">⬅️</div><div class="help-text"><strong>Outboard</strong>Sensor face points away from the coupling (toward free end). Most common mounting.</div></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">Chart Features</div>
+        <div class="help-item"><div class="help-icon">👆</div><div class="help-text"><strong>Long press a bubble</strong>Hold any bubble on the chart for half a second to see full sensor details.</div></div>
+        <div class="help-item"><div class="help-icon">📌</div><div class="help-text"><strong>Add annotations</strong>Long press on empty chart space to drop a text note. Long press an existing note to edit or delete it.</div></div>
+        <div class="help-item"><div class="help-icon">📐</div><div class="help-text"><strong>Templates</strong>Use the Templates button to instantly set up a standard motor-pump or motor-fan train.</div></div>
+        <div class="help-item"><div class="help-icon">🖨️</div><div class="help-text"><strong>Print / Share</strong>Exports a 3-page report: bubble chart, measurement data table, and diagnosis findings.</div></div>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">History</div>
+        <div class="help-item"><div class="help-icon">💾</div><div class="help-text"><strong>Save to History</strong>Tap Save to History on the History tab. Up to 20 charts saved locally on this device.</div></div>
+        <div class="help-item"><div class="help-icon">⬅️</div><div class="help-text"><strong>Swipe to delete</strong>Swipe a history card left to instantly remove it.</div></div>
+        <div class="help-item"><div class="help-icon">↩️</div><div class="help-text"><strong>Undo</strong>After deleting a component or measurement point, tap the Undo button that appears in the header.</div></div>
+      </div>
+      <div style="font-size:10px;color:var(--tx3);padding:8px 0;line-height:1.6">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm modal -->
 <div class="confirm-overlay" id="confirm-modal">
   <div class="confirm-sheet">
@@ -236,17 +516,22 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.5';
+  return '1.2.7';
 }
 
 // ── Theme ─────────────────────────────────────────────────
 let darkMode=false;
-function toggleDark(){
-  darkMode=!darkMode;
-  document.body.className=darkMode?'dark':'light';
-  document.getElementById('dm-btn').textContent=darkMode?'☀️ Light':'🌙 Dark';
+let currentTheme='light';
+function setTheme(theme){
+  currentTheme=theme;
+  darkMode=(theme==='dark'||theme==='navy');
+  document.body.className=theme;
+  const sel=document.getElementById('theme-sel');
+  if(sel)sel.value=theme;
+  localStorage.setItem('phaseChart_theme',theme);
   redraw();
 }
+function toggleDark(){setTheme(currentTheme==='light'?'dark':'light');}
 
 // ── Units ─────────────────────────────────────────────────
 const UNITS={
@@ -257,6 +542,47 @@ const UNITS={
   'µm':  {label:'µm',  max:500, dec:1,step:0.5},
 };
 function getUnit(){return UNITS[document.getElementById('amp-unit').value]||UNITS['mils'];}
+
+// ── Logo system ───────────────────────────────────────────────
+let chartLogoDataURL=null;
+let _logoImg=new Image();
+_logoImg.onload=()=>redraw();
+function handleLogoUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    chartLogoDataURL=e.target.result;
+    _logoImg=new Image();
+    _logoImg.onload=()=>{redraw();setTimeout(redraw,50);};
+    _logoImg.src=chartLogoDataURL;
+    // If already cached/loaded synchronously on some browsers
+    if(_logoImg.complete&&_logoImg.naturalWidth)redraw();
+    const img=document.getElementById('logo-preview');
+    const hint=document.getElementById('logo-hint');
+    const clearBtn=document.getElementById('logo-clear-btn');
+    if(img){img.src=chartLogoDataURL;img.style.display='block';}
+    if(hint)hint.style.display='none';
+    if(clearBtn)clearBtn.style.display='';
+    // Logo is per-chart only — not saved to localStorage
+  };
+  reader.readAsDataURL(file);
+}
+function clearLogo(){
+  chartLogoDataURL=null;
+  _logoImg.src='';
+  // Logo not stored in localStorage
+  const img=document.getElementById('logo-preview');
+  const hint=document.getElementById('logo-hint');
+  const clearBtn=document.getElementById('logo-clear-btn');
+  if(img){img.src='';img.style.display='none';}
+  if(hint)hint.style.display='';
+  if(clearBtn)clearBtn.style.display='none';
+  redraw();
+}
+function restoreLogo(){
+  // Logo is per-chart only — not persisted across sessions
+}
 function onUnitChange(){renderSidebar();redraw();}
 
 const PALETTE=[{fill:'#1a6bbf'},{fill:'#1a9e75'},{fill:'#c94040'},{fill:'#7a7adc'},{fill:'#c97a1a'},{fill:'#555555'}];
@@ -285,6 +611,35 @@ let nodes=[
 let nid=3,mid=20;
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ── Undo system ───────────────────────────────────────────────
+let _undoSnapshot=null;
+let _undoTimer=null;
+let _undoMsg='';
+function takeSnapshot(msg){
+  _undoSnapshot=JSON.parse(JSON.stringify(nodes));
+  _undoMsg=msg||'Action undone';
+  showUndoToast(_undoMsg);
+}
+function showUndoToast(msg){
+  const t=document.getElementById('undo-toast');
+  const m=document.getElementById('undo-msg');
+  const ub=document.getElementById('undo-visible-btn');
+  if(m)m.textContent=msg;
+  if(ub)ub.style.display='';
+  if(t){t.classList.add('show');if(_undoTimer)clearTimeout(_undoTimer);_undoTimer=setTimeout(()=>{t.classList.remove('show');_undoSnapshot=null;if(ub)ub.style.display='none';},4000);}
+}
+function doUndo(){
+  if(!_undoSnapshot)return;
+  nodes=JSON.parse(JSON.stringify(_undoSnapshot));
+  _undoSnapshot=null;
+  if(_undoTimer){clearTimeout(_undoTimer);_undoTimer=null;}
+  const t=document.getElementById('undo-toast');
+  const ub=document.getElementById('undo-visible-btn');
+  if(t)t.classList.remove('show');
+  if(ub)ub.style.display='none';
+  renderSidebar();runDiagnosis();
+}
 
 // ── Sidebar ───────────────────────────────────────────────
 function renderSidebar(){
@@ -453,6 +808,89 @@ function handlePhaseInput(el){
   if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.phase=val;}
   runDiagnosis();
 }
+// ── Templates ────────────────────────────────────────────────
+const TEMPLATES=[
+  {title:'Motor → Pump',desc:'Standard horizontal centrifugal pump train with full sensor set',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Pump',shape:'Pump',coupSide:'L'}},
+  {title:'Motor → Fan',desc:'Between-bearing fan — horizontal train with V, H and axial sensors',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Fan',shape:'Fan',coupSide:'L'}},
+  {title:'Motor → Fan (Center Hung)',desc:'Center hung fan — bearings on both sides of impeller',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Fan',shape:'Fan (Center Hung)',coupSide:'L'}},
+  {title:'Motor → Fan (Overhung)',desc:'Overhung fan — impeller cantilevered past outboard bearing',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Fan (Overhung)',shape:'Fan (Overhung)',coupSide:'L'}},
+  {title:'Motor → Blower',desc:'Process blower with full radial and axial sensor coverage',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Blower',shape:'Blower',coupSide:'L'}},
+  {title:'Motor → Compressor',desc:'Motor-driven compressor — centrifugal or reciprocating',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Compressor',shape:'Compressor',coupSide:'L'}},
+  {title:'Motor → Gearbox',desc:'Speed increaser or reducer driven by motor',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Gearbox',shape:'Gearbox',coupSide:'L'}},
+  {title:'Motor → Coupling',desc:'Motor driving through a coupling element',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Driven',shape:'Coupling',coupSide:'L'}},
+  {title:'Motor → Bearing',desc:'Motor with standalone bearing housing as driven measurement point',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Bearing',shape:'Bearing',coupSide:'L'}},
+  {title:'Motor → Shaft',desc:'Motor driving a shaft — intermediate measurement',
+   driver:{name:'Motor',shape:'Motor',coupSide:'R'},driven:{name:'Shaft',shape:'Shaft',coupSide:'L'}},
+  {title:'Turbine → Pump',desc:'Steam or gas turbine driving a large pump',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Pump',shape:'Pump',coupSide:'L'}},
+  {title:'Turbine → Compressor',desc:'Turbine-driven compressor — common in oil and gas',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Compressor',shape:'Compressor',coupSide:'L'}},
+  {title:'Turbine → Gearbox',desc:'Turbine driving through a speed-reducing gearbox',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Gearbox',shape:'Gearbox',coupSide:'L'}},
+  {title:'Turbine → Blower',desc:'Turbine-driven blower — process plant configuration',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Blower',shape:'Blower',coupSide:'L'}},
+  {title:'Turbine → Fan',desc:'Turbine driving a large process fan',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Fan',shape:'Fan',coupSide:'L'}},
+  {title:'Turbine → Fan (Center Hung)',desc:'Turbine driving a center-hung fan',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Fan (Center Hung)',shape:'Fan (Center Hung)',coupSide:'L'}},
+  {title:'Turbine → Coupling',desc:'Turbine driving through a flexible coupling element',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Driven',shape:'Coupling',coupSide:'L'}},
+  {title:'Turbine → Bearing',desc:'Turbine driving to a standalone bearing measurement point',
+   driver:{name:'Turbine',shape:'Turbine',coupSide:'R'},driven:{name:'Bearing',shape:'Bearing',coupSide:'L'}},
+];
+
+function stdDriverMeas(){return [
+  {id:mid++,pos:'HORIZ_NDE',label:'H1',amp:0,phase:0,ref:true},
+  {id:mid++,pos:'HORIZ_DE', label:'H2',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'VERT_NDE', label:'V1',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'VERT_DE',  label:'V2',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'AX_OB',    label:'A1',amp:0,phase:0,ref:false,axDir:'out'},
+  {id:mid++,pos:'AX_IB',    label:'A2',amp:0,phase:0,ref:false,axDir:'out'},
+];}
+function stdDrivenMeas(){return [
+  {id:mid++,pos:'HORIZ_DE', label:'H3',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'HORIZ_NDE',label:'H4',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'VERT_DE',  label:'V3',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'VERT_NDE', label:'V4',amp:0,phase:0,ref:false},
+  {id:mid++,pos:'AX_IB',    label:'A3',amp:0,phase:0,ref:false,axDir:'out'},
+  {id:mid++,pos:'AX_OB',    label:'A4',amp:0,phase:0,ref:false,axDir:'out'},
+];}
+
+function applyTemplate(tpl){
+  takeSnapshot('Template applied');
+  nid=1;mid=1;
+  nodes=[
+    {id:nid++,...tpl.driver,ci:0,rpm:'',notes:'',meas:stdDriverMeas()},
+    {id:nid++,...tpl.driven,ci:1,rpm:'',notes:'',meas:stdDrivenMeas()},
+  ];
+  closeTpl();
+  renderSidebar();runDiagnosis();showTab('components');
+}
+
+function openTemplates(){
+  const list=document.getElementById('tpl-list');
+  if(!list)return;
+  list.innerHTML='';
+  TEMPLATES.forEach((tpl,i)=>{
+    const card=document.createElement('div');
+    card.className='tpl-card';
+    card.innerHTML=`<div class="tpl-card-title">${esc(tpl.title)}</div><div class="tpl-card-desc">${esc(tpl.desc)}</div>`;
+    card.addEventListener('click',()=>showConfirm('Load Template',`Load "${tpl.title}"? This replaces your current chart.`,()=>applyTemplate(tpl)));
+    list.appendChild(card);
+  });
+  document.getElementById('tpl-modal').classList.add('show');
+}
+function closeTpl(){document.getElementById('tpl-modal').classList.remove('show');}
+
 function addNode(){
   // Smart default: first node coupling on right, all subsequent on left
   const cs=nodes.length===0?'R':'L';
@@ -464,7 +902,7 @@ function addNode(){
   ]});
   renderSidebar();redraw();
 }
-function removeNode(id){nodes=nodes.filter(n=>n.id!==id);renderSidebar();redraw();}
+function removeNode(id){takeSnapshot('Component removed');nodes=nodes.filter(n=>n.id!==id);renderSidebar();runDiagnosis();}
 function upN(id,k,v){const n=nodes.find(x=>x.id===id);if(n)n[k]=v;renderSidebar();runDiagnosis();}
 // Returns the label prefix for a given position type
 function posPrefix(pos){
@@ -517,7 +955,7 @@ function addMeas(nid2){
   }
   renderSidebar();redraw();
 }
-function rmMeas(nid2,mid2){const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();redraw();}
+function rmMeas(nid2,mid2){takeSnapshot('Measurement point removed');const n=nodes.find(x=>x.id===nid2);if(n)n.meas=n.meas.filter(m=>m.id!==mid2);renderSidebar();runDiagnosis();}
 function upM(nid2,mid2,k,v){
   const n=nodes.find(x=>x.id===nid2);
   if(n){
@@ -560,7 +998,146 @@ function showTab(tab){
 const BR=26,ARM=18,BSLOT=BR+ARM+8,NW=140,NH=72,HPAD=88,VPAD=62,CG=50;
 const DPR=window.devicePixelRatio||1;
 
+// ── Canvas interaction — long press + annotation tap ─────────
+let _pressTimer=null,_pressX=0,_pressY=0,_pressStarted=false;
+const LONG_MS=520;
+
+// Store bubble hit rects for hit testing — populated during draw
+let _bubbleHitRects=[];
+
+function hitBubble(x,y){
+  // Convert screen coords to canvas logical coords using current scale
+  const vp=document.getElementById('chart-viewport');
+  const cv=document.getElementById('chart');
+  if(!vp||!cv)return null;
+  const rect=cv.getBoundingClientRect();
+  const scaleX=cv.offsetWidth?cv.offsetWidth/cv.offsetWidth:1;
+  // Use stored hit rects (logical canvas coords)
+  const transform=vp.style.transform;
+  const scaleMatch=transform.match(/scale\(([^)]+)\)/);
+  const scale=scaleMatch?parseFloat(scaleMatch[1]):1;
+  const vpRect=vp.getBoundingClientRect();
+  const lx=(x-vpRect.left)/scale;
+  const ly=(y-vpRect.top)/scale;
+  for(let i=_bubbleHitRects.length-1;i>=0;i--){
+    const b=_bubbleHitRects[i];
+    const dx=lx-b.cx,dy=ly-b.cy;
+    if(dx*dx+dy*dy<=b.r*b.r)return b;
+  }
+  return null;
+}
+
+function hitAnnotation(x,y){
+  const vp=document.getElementById('chart-viewport');
+  if(!vp)return null;
+  const transform=vp.style.transform;
+  const scaleMatch=transform.match(/scale\(([^)]+)\)/);
+  const scale=scaleMatch?parseFloat(scaleMatch[1]):1;
+  const vpRect=vp.getBoundingClientRect();
+  const lx=(x-vpRect.left)/scale;
+  const ly=(y-vpRect.top)/scale;
+  for(let i=annotations.length-1;i>=0;i--){
+    const a=annotations[i];
+    const dx=lx-a.x,dy=ly-a.y;
+    if(Math.abs(dx)<60&&Math.abs(dy)<20)return a;
+  }
+  return null;
+}
+
+function startPress(x,y){
+  _pressX=x;_pressY=y;_pressStarted=true;
+  const ring=document.getElementById('press-ring');
+  if(ring){
+    const sz=60;
+    ring.style.width=sz+'px';ring.style.height=sz+'px';
+    ring.style.left=(x-sz/2)+'px';ring.style.top=(y-sz/2)+'px';
+    ring.classList.remove('pressing');
+    void ring.offsetWidth;
+    ring.classList.add('pressing');
+  }
+  _pressTimer=setTimeout(()=>{
+    if(ring)ring.classList.remove('pressing');
+    const bub=hitBubble(x,y);
+    if(bub){showBubblePopup(bub,x,y);return;}
+    const ann=hitAnnotation(x,y);
+    if(ann){openAnnModal(ann.x,ann.y,ann.id);return;}
+    // Long press on empty chart area = new annotation
+    const vp=document.getElementById('chart-viewport');
+    if(vp){
+      const transform=vp.style.transform;
+      const scaleMatch=transform.match(/scale\(([^)]+)\)/);
+      const scale=scaleMatch?parseFloat(scaleMatch[1]):1;
+      const vpRect=vp.getBoundingClientRect();
+      const lx=(x-vpRect.left)/scale;
+      const ly=(y-vpRect.top)/scale;
+      openAnnModal(lx,ly,null);
+    }
+  },LONG_MS);
+}
+function cancelPress(){
+  _pressStarted=false;
+  if(_pressTimer){clearTimeout(_pressTimer);_pressTimer=null;}
+  const ring=document.getElementById('press-ring');
+  if(ring)ring.classList.remove('pressing');
+}
+
+function showBubblePopup(b,sx,sy){
+  const posLabels={
+    'AX_IB':'Axial Drive End (DE)','AX_OB':'Axial Non-Drive End (NDE)',
+    'VERT_DE':'Vertical Drive End (DE)','VERT_NDE':'Vertical Non-Drive End (NDE)',
+    'HORIZ_DE':'Horizontal Drive End (DE)','HORIZ_NDE':'Horizontal Non-Drive End (NDE)',
+  };
+  const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'}[b.severity||'info']||'#888';
+  const sevLabel={fault:'FAULT',warn:'WARNING',ok:'NORMAL',info:'INFO'}[b.severity||'info']||'—';
+  const u=getUnit();
+  document.getElementById('bp-dot').style.background=sevColor;
+  document.getElementById('bp-title').textContent=b.label;
+  document.getElementById('bp-sev').textContent=sevLabel;
+  document.getElementById('bp-sev').style.background=sevColor;
+  document.getElementById('bp-pos').textContent=posLabels[b.pos]||b.pos;
+  document.getElementById('bp-amp').textContent=(parseFloat(b.amp)||0).toFixed(u.dec)+' '+u.label;
+  document.getElementById('bp-phase').textContent=(Math.round(parseFloat(b.phase)||0))+'°';
+  document.getElementById('bp-orient').textContent=b.axDir?((b.axDir==='in'?'Inboard →':'← Outboard')):'N/A (radial)';
+  document.getElementById('bp-ref').textContent=b.ref?'Yes — Reference sensor':'No';
+  const popup=document.getElementById('bubble-popup');
+  const W=window.innerWidth,H=window.innerHeight;
+  const pw=270,ph=250;
+  let px=sx+16,py=sy-ph/2;
+  if(px+pw>W-10)px=sx-pw-16;
+  if(py<10)py=10;
+  if(py+ph>H-10)py=H-ph-10;
+  popup.style.left=px+'px';popup.style.top=py+'px';
+  popup.classList.add('show');
+}
+function hideBubblePopup(){
+  document.getElementById('bubble-popup').classList.remove('show');
+}
+
+function initChartInteraction(){
+  const cv=document.getElementById('chart');
+  if(!cv)return;
+  cv.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    hideBubblePopup();
+    startPress(t.clientX,t.clientY);
+  },{passive:true});
+  cv.addEventListener('touchend',e=>{cancelPress();},{passive:true});
+  cv.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    const dx=t.clientX-_pressX,dy=t.clientY-_pressY;
+    if(dx*dx+dy*dy>100)cancelPress();
+  },{passive:true});
+  cv.addEventListener('mousedown',e=>{hideBubblePopup();startPress(e.clientX,e.clientY);});
+  cv.addEventListener('mouseup',cancelPress);
+  cv.addEventListener('mouseleave',cancelPress);
+  cv.addEventListener('mousemove',e=>{
+    if(_pressTimer){const dx=e.clientX-_pressX,dy=e.clientY-_pressY;if(dx*dx+dy*dy>100)cancelPress();}
+  });
+}
+
 function getTC(){
+  if(currentTheme==='navy')
+    return {bg:'#0f1f30',tx:'#e8f4fd',tx2:'#8ab4d4',tx3:'#4a7a9b',bub:'#152c44',bstr:'#4a9ede',ln:'#8ab4d4',cp1:'#1e3a54',cp2:'#2a5070',dash:'#1e3a54',foot:'#4a7a9b'};
   return darkMode
     ?{bg:'#1e1e1e',tx:'#eeeeee',tx2:'#aaaaaa',tx3:'#666666',bub:'#2a2a2a',bstr:'#cccccc',ln:'#cccccc',cp1:'#444',cp2:'#555',dash:'#444',foot:'#555'}
     :{bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
@@ -748,6 +1325,29 @@ function drawVertical(){
   ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees | Vertical Equipment Train',HPAD,CH-4);
   var stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-4);
+  // Annotations
+  annotations.forEach(function(a){
+    if(!a.text)return;
+    ctx.save();ctx.font='bold '+(a.size||13)+'px Roboto,sans-serif';
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    var metrics=ctx.measureText(a.text);var tw=metrics.width+12,th=(a.size||13)+10;
+    ctx.fillStyle='rgba(255,255,255,0.92)';ctx.strokeStyle=a.color||'#1a6bbf';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(a.x,a.y-th/2,tw,th,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=a.color||'#1a6bbf';ctx.beginPath();ctx.arc(a.x,a.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.fillText(a.text,a.x+8,a.y);ctx.restore();
+  });
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    var maxH=96,maxW=260,srcW=_logoImg.naturalWidth,srcH=_logoImg.naturalHeight;
+    var scale=Math.min(maxW/srcW,maxH/srcH,1);
+    var iw=Math.round(srcW*scale),ih=Math.round(srcH*scale);
+    var lx=CW-iw-28,ly=16;
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.10)';ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,255,255,0.97)';
+    ctx.beginPath();ctx.roundRect(lx-12,ly-8,iw+24,ih+16,10);ctx.fill();
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;
+    ctx.drawImage(_logoImg,0,0,srcW,srcH,lx,ly,iw,ih);ctx.restore();
+  }
   applyFitScale(CW,CH);
 }
 
@@ -816,6 +1416,22 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
   ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
   ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
   ctx.restore();
+  // Register hit rect for long press detection
+  if(measId){
+    // Find the measurement data for this bubble
+    let measData=null;
+    nodes.forEach(n=>n.meas.forEach(m=>{if(m.id===measId)measData=m;}));
+    _bubbleHitRects.push({
+      cx,cy,r:BR,
+      label:label,
+      pos:measData?measData.pos:'',
+      amp:measData?measData.amp:0,
+      phase:measData?measData.phase:0,
+      ref:isRef,
+      axDir:measData?measData.axDir:null,
+      severity:measId&&bubbleSeverity[measId]?bubbleSeverity[measId]:null,
+    });
+  }
 }
 
 function drawShapeIcon(ctx,shape,cx,cy,size,color){
@@ -863,6 +1479,7 @@ function renderChart(ctx,W,H,tc){
   const u=getUnit();
   const isV=document.getElementById('layout').value==='V';
   ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+  _bubbleHitRects=[];  // Reset hit rects each render
 
   function dash(x1,y1,x2,y2){ctx.setLineDash([3,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
   function bubble(m,bx,by,cs){drawBubble(ctx,bx,by,m.amp,m.phase,m.label,m.ref,tc,m.id,m.axDir,cs||'R');}
@@ -934,6 +1551,42 @@ function renderChart(ctx,W,H,tc){
     const vstamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textAlign='center';ctx.fillText(vstamp,W/2,H-8);
   }
+  // ── Draw annotations (both layouts) ────────────────────────
+  annotations.forEach(a=>{
+    if(!a.text)return;
+    ctx.save();
+    ctx.font=`bold ${a.size||13}px Roboto,sans-serif`;
+    ctx.textAlign='left';ctx.textBaseline='middle';
+    const metrics=ctx.measureText(a.text);
+    const tw=metrics.width+12,th=(a.size||13)+10;
+    ctx.fillStyle='rgba(255,255,255,0.93)';
+    ctx.strokeStyle=a.color||'#1a6bbf';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(a.x,a.y-th/2,tw,th,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=a.color||'#1a6bbf';
+    ctx.beginPath();ctx.arc(a.x,a.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';
+    ctx.fillText(a.text,a.x+8,a.y);
+    ctx.restore();
+  });
+  // ── Draw logo (both layouts) ──────────────────────────────
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    // Draw at native source resolution capped to a generous display size
+    // This eliminates choppiness by never upscaling beyond the source
+    const maxH=96, maxW=260;
+    const srcW=_logoImg.naturalWidth, srcH=_logoImg.naturalHeight;
+    const scale=Math.min(maxW/srcW, maxH/srcH, 1); // never upscale
+    const iw=Math.round(srcW*scale), ih=Math.round(srcH*scale);
+    const lx=W-iw-28, ly=16;
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,0.10)';ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,255,255,0.97)';
+    ctx.beginPath();ctx.roundRect(lx-12,ly-8,iw+24,ih+16,10);ctx.fill();
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;
+    // Draw at full source resolution for crispness
+    ctx.drawImage(_logoImg,0,0,srcW,srcH,lx,ly,iw,ih);
+    ctx.restore();
+  }
 }
 
 // ── Share / Print modal ───────────────────────────────────
@@ -948,6 +1601,143 @@ function closeModal(){
 function getExportDataURL(){
   const off=buildExportCanvas();
   return off ? off.toDataURL('image/png') : null;
+}
+
+// ── Shareable card ────────────────────────────────────────────
+function openShareCard(){document.getElementById('sc-modal').classList.add('show');}
+function closeSCModal(){document.getElementById('sc-modal').classList.remove('show');}
+
+function shareCard(format, action){
+  closeSCModal();
+  runDiagnosis();
+  const title=document.getElementById('chart-title').value||'Analysis';
+  const rpm=document.getElementById('global-rpm').value||'—';
+  const u=getUnit();
+  const date=getDocDate();
+  const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'};
+  const sevLabel={fault:'⚠ FAULT — Action Required',warn:'⚡ WARNING — Monitor Closely',ok:'✓ NORMAL — No Issues',info:'ℹ INFO'};
+  const overallSev=diagResults.some(r=>r.type==='fault')?'fault':diagResults.some(r=>r.type==='warn')?'warn':diagResults.some(r=>r.type==='ok')?'ok':'info';
+  const findings=diagResults.filter(r=>r.type!=='info').slice(0,4);
+
+  const DPR=3;  // High res for sharing — always 3x regardless of screen
+  let W,H;
+  if(format==='portrait'){W=420;H=600;}
+  else{W=900;H=460;}
+
+  const off=document.createElement('canvas');
+  off.width=W*DPR;off.height=H*DPR;
+  const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
+
+  // Background — always light
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);
+  // Header bar
+  ctx.fillStyle='#1a3a5c';ctx.fillRect(0,0,W,48);
+  ctx.fillStyle='#ffffff';ctx.font='bold 13px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('Cross-Channel Phase Analysis',14,24);
+  ctx.font='11px Roboto,sans-serif';ctx.textAlign='right';
+  ctx.fillText('v'+getDocVersion(),W-14,24);
+
+  if(format==='portrait'){
+    // Title
+    ctx.fillStyle='#111';ctx.font='bold 18px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillText(title,20,80);
+    ctx.font='12px Roboto,sans-serif';ctx.fillStyle='#666';
+    ctx.fillText('RPM '+rpm+'  |  '+u.label+'  |  '+date,20,98);
+    // Severity badge
+    const sc=sevColor[overallSev];const sl=sevLabel[overallSev];
+    ctx.fillStyle=sc;ctx.beginPath();ctx.roundRect(20,110,W-40,36,8);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 14px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sl,W/2,128);
+    // Findings
+    let fy=168;
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    if(findings.length===0){
+      ctx.fillStyle='#aaa';ctx.font='12px Roboto,sans-serif';ctx.fillText('No findings — enter measurement data',20,fy);
+    } else {
+      findings.forEach(r=>{
+        const fc=sevColor[r.type]||'#888';
+        ctx.fillStyle=fc;ctx.fillRect(20,fy-13,4,56);
+        ctx.fillStyle='rgba(0,0,0,0.04)';ctx.beginPath();ctx.roundRect(28,fy-16,W-48,62,6);ctx.fill();
+        ctx.fillStyle='#111';ctx.font='bold 11px Roboto,sans-serif';
+        // Wrap label
+        const maxW=W-64;let label=r.label;
+        if(ctx.measureText(label).width>maxW)label=label.substring(0,40)+'...';
+        ctx.fillText(label,32,fy);
+        ctx.fillStyle='#555';ctx.font='10px Roboto,sans-serif';
+        // Wrap desc
+        const words=r.desc.split(' ');let line='';let ly=fy+14;
+        words.forEach(w=>{const test=line?line+' '+w:w;if(ctx.measureText(test).width<maxW-4){line=test;}else{ctx.fillText(line,32,ly);line=w;ly+=13;}});
+        if(line)ctx.fillText(line,32,ly);
+        fy+=72;
+      });
+    }
+    // Footer
+    ctx.fillStyle='#f0eeea';ctx.fillRect(0,H-36,W,36);
+    ctx.fillStyle='#888';ctx.font='9px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Generated by Cross-Channel Phase Analysis App  |  © '+new Date().getFullYear()+' Joel Davis',W/2,H-18);
+  } else {
+    // Landscape: chart on left, findings on right
+    const chartOff=buildExportCanvasLight();
+    if(chartOff){ctx.drawImage(chartOff,0,48,460,H-48);}
+    // Right panel
+    const rx=470,rw=W-rx-10;
+    ctx.fillStyle='#111';ctx.font='bold 14px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillText(title,rx,74);
+    ctx.font='11px Roboto,sans-serif';ctx.fillStyle='#666';
+    ctx.fillText('RPM '+rpm+'  |  '+u.label+'  |  '+date,rx,90);
+    const sc=sevColor[overallSev];const sl=sevLabel[overallSev];
+    ctx.fillStyle=sc;ctx.beginPath();ctx.roundRect(rx,100,rw,30,6);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold 11px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sl,rx+rw/2,115);
+    let fy=148;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    findings.slice(0,3).forEach(r=>{
+      const fc=sevColor[r.type]||'#888';
+      ctx.fillStyle=fc;ctx.fillRect(rx,fy-11,3,48);
+      ctx.fillStyle='#111';ctx.font='bold 10px Roboto,sans-serif';
+      let label=r.label;if(ctx.measureText(label).width>rw-10)label=label.substring(0,38)+'...';
+      ctx.fillText(label,rx+8,fy);
+      ctx.fillStyle='#555';ctx.font='9px Roboto,sans-serif';
+      const words=r.desc.split(' ');let line='';let ly=fy+13;
+      words.forEach(w=>{const test=line?line+' '+w:w;if(ctx.measureText(test).width<rw-12){line=test;}else{if(ly<fy+36){ctx.fillText(line,rx+8,ly);line=w;ly+=11;}}});
+      if(line&&ly<fy+38)ctx.fillText(line,rx+8,ly);
+      fy+=58;
+    });
+    ctx.fillStyle='#f0eeea';ctx.fillRect(0,H-28,W,28);
+    ctx.fillStyle='#888';ctx.font='9px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('Cross-Channel Phase Analysis App  |  © '+new Date().getFullYear()+' Joel Davis',W/2,H-14);
+  }
+
+  // Logo if present
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    var maxH=36,maxW=140,srcW=_logoImg.naturalWidth,srcH=_logoImg.naturalHeight;
+    var scale=Math.min(maxW/srcW,maxH/srcH,1);
+    var iw=Math.round(srcW*scale),ih=Math.round(srcH*scale);
+    var lx=W-iw-16,ly=Math.round((48-ih)/2);
+    ctx.save();
+    ctx.fillStyle='rgba(255,255,255,0.96)';
+    ctx.beginPath();ctx.roundRect(lx-6,ly-4,iw+12,ih+8,5);ctx.fill();
+    ctx.drawImage(_logoImg,0,0,srcW,srcH,lx,ly,iw,ih);
+    ctx.restore();
+  }
+
+  off.toBlob(async blob=>{
+    if(!blob)return;
+    const fname=title.replace(/\s+/g,'_')+'_card.png';
+    if(action==='save'){
+      // Direct download — saves to Photos on iOS, Downloads on desktop
+      saveImageFallback(off,title+'_card');
+    } else {
+      // Share via native share sheet (iOS share sheet, Android share, etc.)
+      const file=new File([blob],fname,{type:'image/png'});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        try{await navigator.share({files:[file],title,text:'Cross-Channel Phase Analysis'});}
+        catch(e){if(e.name!=='AbortError')saveImageFallback(off,title+'_card');}
+      } else {
+        // Fallback for desktop — download
+        saveImageFallback(off,title+'_card');
+      }
+    }
+  },'image/png');
 }
 
 // iOS share: use Web Share API with a File blob — shows native share sheet
@@ -1000,17 +1790,17 @@ function desktopPrint(){
   // Run a fresh diagnosis pass to make sure results are current
   runDiagnosis();
   const typeStyles={
-    fault:'border-left:4px solid #ef4444;background:#fef2f2',
-    warn: 'border-left:4px solid #f59e0b;background:#fffbeb',
-    ok:   'border-left:4px solid #22c55e;background:#f0fdf4',
-    info: 'border-left:4px solid #3b82f6;background:#eff6ff',
+    fault:{border:'#ef4444',bg:'#fef2f2',tx:'#991b1b'},
+    warn: {border:'#f59e0b',bg:'#fffbeb',tx:'#92400e'},
+    ok:   {border:'#22c55e',bg:'#f0fdf4',tx:'#166534'},
+    info: {border:'#3b82f6',bg:'#eff6ff',tx:'#1e40af'},
   };
-  const typeIcons={fault:'⚠',warn:'⚡',ok:'✓',info:'ℹ'};
+  const typeIcons={fault:'⚠ ',warn:'⚡ ',ok:'✓ ',info:'ℹ '};
   let diagRows='';
   diagResults.forEach(r=>{
     const s=typeStyles[r.type]||typeStyles.info;
-    diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;${s}">
-      <div style="font-size:13px;font-weight:700;color:#111;margin-bottom:3px">${r.label}</div>
+    diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;background:${s.bg};border-left:4px solid ${s.border}">
+      <div style="font-size:12px;font-weight:700;color:${s.tx};margin-bottom:4px">${typeIcons[r.type]||''}${r.label}</div>
       <div style="font-size:11px;color:#444;line-height:1.6">${r.desc}</div>
     </div>`;
   });
@@ -1075,7 +1865,6 @@ function desktopPrint(){
   <div class="page">
     <h1>${title}</h1>
     <img src="${imgData}" id="chartimg">
-    <div class="footer">${stamp}</div>
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
@@ -1088,13 +1877,18 @@ function desktopPrint(){
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="footer">${stamp}</div>
   </div>
 
   <!-- PAGE 3: Diagnosis -->
   <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
     <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;align-items:center">
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#ef4444;display:inline-block"></div><strong style="color:#ef4444">Fault</strong> — action required</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block"></div><strong style="color:#f59e0b">Warning</strong> — monitor closely</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></div><strong style="color:#22c55e">Normal</strong> — no issue indicated</div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#3b82f6;display:inline-block"></div><strong style="color:#3b82f6">Info</strong> — additional context</div>
+    </div>
     <div class="section-title">Findings</div>
     ${diagRows||'<div style="font-size:12px;color:#888;padding:8px 0">No diagnosis findings — enter measurement data to generate results.</div>'}
     <div class="footer">${stamp}</div>
@@ -1139,6 +1933,68 @@ function isOutOfPhase(d,tol){return d>=(180-tol);}
 
 let bubbleSeverity={};
 let diagResults=[];
+
+// ── Annotations ───────────────────────────────────────────────
+let annotations=[];  // [{id,x,y,text,size,color}]
+let _annId=1;
+let _annEditing=null;  // id of annotation being edited
+let _annPendingX=0,_annPendingY=0;
+let _annSelectedColor='#111111';
+
+function selectAnnColor(el){
+  document.querySelectorAll('.ann-color-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  _annSelectedColor=el.dataset.color;
+}
+function openAnnModal(x,y,existingId){
+  _annPendingX=x;_annPendingY=y;_annEditing=existingId||null;
+  const ta=document.getElementById('ann-text');
+  const title=document.getElementById('ann-modal-title');
+  const delBtn=document.getElementById('ann-delete-btn');
+  const sizeEl=document.getElementById('ann-size');
+  if(_annEditing){
+    const ann=annotations.find(a=>a.id===_annEditing);
+    if(ann){
+      if(ta)ta.value=ann.text;
+      if(sizeEl)sizeEl.value=ann.size||13;
+      // Restore color selection
+      _annSelectedColor=ann.color||'#111111';
+      document.querySelectorAll('.ann-color-btn').forEach(b=>{
+        b.classList.toggle('active',b.dataset.color===_annSelectedColor);
+      });
+    }
+    if(title)title.textContent='Edit Annotation';
+    if(delBtn)delBtn.style.display='';
+  } else {
+    if(ta)ta.value='';
+    if(sizeEl)sizeEl.value=13;
+    if(title)title.textContent='Add Annotation';
+    if(delBtn)delBtn.style.display='none';
+    _annSelectedColor='#111111';
+    document.querySelectorAll('.ann-color-btn').forEach(b=>{
+      b.classList.toggle('active',b.dataset.color===_annSelectedColor);
+    });
+  }
+  document.getElementById('ann-modal').classList.add('show');
+  setTimeout(()=>{if(ta)ta.focus();},200);
+}
+function closeAnnModal(){document.getElementById('ann-modal').classList.remove('show');}
+function saveAnnotation(){
+  const text=(document.getElementById('ann-text')?.value||'').trim();
+  if(!text){closeAnnModal();return;}
+  const size=parseInt(document.getElementById('ann-size')?.value)||13;
+  if(_annEditing){
+    const ann=annotations.find(a=>a.id===_annEditing);
+    if(ann){ann.text=text;ann.size=size;ann.color=_annSelectedColor;}
+  } else {
+    annotations.push({id:_annId++,x:_annPendingX,y:_annPendingY,text,size,color:_annSelectedColor});
+  }
+  closeAnnModal();redraw();
+}
+function deleteAnnotation(){
+  annotations=annotations.filter(a=>a.id!==_annEditing);
+  closeAnnModal();redraw();
+}
 
 function setSev(id,sev){
   // Only upgrade severity, never downgrade (fault > warn > ok)
@@ -1674,6 +2530,16 @@ function runDiagnosis(){
   redraw();
 }
 
+function haptic(pattern){
+  if(navigator.vibrate){try{navigator.vibrate(pattern);}catch(e){}}
+}
+let _lastHapticSeverity='';
+function checkHaptic(results){
+  const sev=results.some(r=>r.type==='fault')?'fault':results.some(r=>r.type==='warn')?'warn':'ok';
+  if(sev==='fault'&&_lastHapticSeverity!=='fault'){haptic([60,40,60]);}
+  _lastHapticSeverity=sev;
+}
+
 function renderDiagResults(results){
   const el=document.getElementById('diag-results');
   if(!el)return;
@@ -1688,6 +2554,7 @@ function renderDiagResults(results){
   disc.style.cssText='font-size:10px;color:var(--tx3);margin-top:8px;line-height:1.5;border-top:1px solid var(--bd);padding-top:8px';
   disc.textContent='Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.';
   el.appendChild(disc);
+  checkHaptic(results);
 }
 
 // ── Boot ──────────────────────────────────────────────────
@@ -1698,6 +2565,15 @@ const HIST_MAX=20;
 function histLoad(){
   try{return JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}
   catch(e){return [];}
+}
+
+let _histFilter='all';
+function setHistFilter(f){
+  _histFilter=f;
+  document.querySelectorAll('.hist-filter-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.filter===f);
+  });
+  renderHistory();
 }
 function histSave(entries){
   try{localStorage.setItem(HIST_KEY,JSON.stringify(entries));}
@@ -1711,6 +2587,20 @@ function getSeverityBadge(){
   if(diagResults.some(r=>r.type==='ok'))    return 'ok';
   return 'info';
 }
+function duplicateChart(){
+  // Deep clone nodes and reset all ids to avoid collisions
+  const cloned=JSON.parse(JSON.stringify(nodes));
+  let maxN=0,maxM=0;
+  cloned.forEach(n=>{if(n.id>maxN)maxN=n.id;n.meas.forEach(m=>{if(m.id>maxM)maxM=m.id;});});
+  nid=maxN+1;mid=maxM+1;
+  // Update chart title
+  const titleEl=document.getElementById('chart-title');
+  if(titleEl&&titleEl.value)titleEl.value=titleEl.value+' (Copy)';
+  renderSidebar();runDiagnosis();
+  showTab('components');
+  showUndoToast('Chart duplicated — edit as needed');
+}
+
 function saveToHistory(){
   const title=document.getElementById('chart-title').value.trim()||'Untitled';
   const rpm=document.getElementById('global-rpm').value||'';
@@ -1722,7 +2612,8 @@ function saveToHistory(){
     title,rpm,unit,layout,date,
     components:nodes.length,
     severity:getSeverityBadge(),
-    nodes:JSON.parse(JSON.stringify(nodes)), // deep clone
+    nodes:JSON.parse(JSON.stringify(nodes)),
+    annotations:JSON.parse(JSON.stringify(annotations)),
     meta:{
       chartTitle:title,
       globalRpm:rpm,
@@ -1767,6 +2658,9 @@ function loadFromHistory(id){
         document.getElementById('layout').value=entry.meta.layoutVal||'H';
         document.getElementById('doc-date').value=entry.meta.docDate||'';
       }
+      // Restore annotations
+      annotations=entry.annotations?JSON.parse(JSON.stringify(entry.annotations)):[];
+      _annId=annotations.length?Math.max(...annotations.map(a=>a.id))+1:1;
       renderSidebar();
       runDiagnosis();
       showTab('components');
@@ -1794,10 +2688,16 @@ function renderHistory(){
   const el=document.getElementById('hist-list');
   const countEl=document.getElementById('hist-count');
   if(!el)return;
-  const entries=histLoad();
-  if(countEl) countEl.textContent=entries.length?`${entries.length} of ${HIST_MAX} slots used`:'';
+  let entries=histLoad();
+  // Apply search filter
+  const searchVal=(document.getElementById('hist-search')?.value||'').toLowerCase().trim();
+  if(searchVal) entries=entries.filter(e=>(e.title||'').toLowerCase().includes(searchVal)||
+    (e.date||'').toLowerCase().includes(searchVal)||(e.unit||'').toLowerCase().includes(searchVal));
+  // Apply severity filter
+  if(_histFilter!=='all') entries=entries.filter(e=>e.severity===_histFilter);
+  if(countEl) countEl.textContent=entries.length?`${entries.length} of ${histLoad().length} entries`:'';
   if(!entries.length){
-    el.innerHTML=`<div class="hist-empty">No saved charts yet.<br>Hit <strong>Save Current Chart to History</strong> to store your first entry.</div>`;
+    el.innerHTML=`<div class="hist-empty">${searchVal||_histFilter!=='all'?'No charts match your filter.':'No saved charts yet.<br>Hit <strong>Save Current Chart to History</strong> to store your first entry.'}</div>`;
     return;
   }
   el.innerHTML='';
@@ -1814,14 +2714,39 @@ function renderHistory(){
         </div>
         <button class="hist-card-del" onclick="deleteFromHistory(${entry.id},event)" title="Delete">×</button>
       </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;margin:4px 0">
       <div class="hist-card-meta">
-        <span>📅 ${esc(entry.date)}</span>
-        <span>⚙️ ${entry.components} component${entry.components!==1?'s':''}</span>
-        ${entry.rpm?`<span>🔄 ${esc(entry.rpm)} RPM</span>`:''}
-        <span>📐 ${entry.layout==='V'?'Vertical':'Horizontal'}</span>
-        <span>📏 ${esc(entry.unit)}</span>
-      </div>
-      <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load Chart</button>`;
+          <span>📅 ${esc(entry.date)}</span>
+          <span>⚙️ ${entry.components} component${entry.components!==1?'s':''}</span>
+          ${entry.rpm?`<span>🔄 ${esc(entry.rpm)} RPM</span>`:''}
+          <span>📐 ${entry.layout==='V'?'Vertical':'Horizontal'}</span>
+          <span>📏 ${esc(entry.unit)}</span>
+        <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load Chart</button>`;
+    // Swipe to delete
+    let startX=0,dx=0,swiping=false;
+    const onStart=e=>{startX=(e.touches?e.touches[0]:e).clientX;dx=0;swiping=false;card.classList.remove('swiping');};
+    const onMove=e=>{
+      if(!e.touches)return;
+      dx=(e.touches?e.touches[0]:e).clientX-startX;
+      if(Math.abs(dx)>8){swiping=true;card.classList.add('swiping');card.style.transform=`translateX(${Math.min(0,dx)}px)`;card.style.opacity=Math.max(0.3,1+dx/200);}
+    };
+    const onEnd=e=>{
+      card.classList.remove('swiping');
+      if(dx<-100){
+        // Animate out then delete
+        card.style.transition='transform .2s,opacity .2s,height .2s';
+        card.style.transform='translateX(-110%)';card.style.opacity='0';card.style.height='0';card.style.overflow='hidden';card.style.padding='0';card.style.margin='0';
+        setTimeout(()=>{
+          const updated=histLoad().filter(en=>en.id!==entry.id);
+          histSave(updated);renderHistory();
+        },220);
+      } else {
+        card.style.transform='';card.style.opacity='';
+      }
+    };
+    card.addEventListener('touchstart',onStart,{passive:true});
+    card.addEventListener('touchmove',onMove,{passive:true});
+    card.addEventListener('touchend',onEnd,{passive:true});
     el.appendChild(card);
   });
 }
@@ -1846,6 +2771,33 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.2.7':{
+    date:'03/21/2026',
+    items:[
+      'Deep Navy theme — third theme option with matching blue canvas palette (dropdown shows icons only)',
+      'Long press on any bubble — popup showing full sensor details (position, amplitude, phase, severity)',
+      'Chart annotations — long press empty chart area to drop a pinned text note with font size and color options',
+      'Pre-built machine templates — 18 driver/driven configurations pre-wired with standard sensor positions',
+      'Company logo upload — add a logo to the chart that appears on print reports and exports',
+      'Search and filter history — search by title or date, filter by fault severity badge',
+      'Swipe to delete — swipe a history card left to instantly remove it',
+      'Duplicate chart — clone the current chart to start a new measurement on the same machine',
+      'Undo system — undo deleted components and measurement points with 4-second toast',
+      'Haptic feedback on iOS — double pulse vibration when a fault is first detected',
+      'Shareable diagnostic card — portrait summary card or landscape chart+findings card for messaging apps',
+      'Help / Tutorial button — tap ❓ Help in the top bar for a full guided walkthrough of the app',
+      'Report Bug / Request Feature — tap 🐛 Report to send feedback directly to the developer',
+      'Print report diagnosis — colored badges and icons now match the in-app diagnosis display',
+      'Print report legend — color legend added to the diagnosis page of the print report',
+      'Theme preference saved — Light, Dark, and Navy theme all persist across sessions',
+    ]
+  },
+  '1.2.6':{
+    date:'03/21/2026',
+    items:[
+      'Theme preference saved — app remembers Light, Dark, or Navy mode when closed and reopened',
+    ]
+  },
   '1.2.5':{
     date:'03/19/2026',
     items:[
@@ -1895,6 +2847,10 @@ function openWN(){
 function closeWN(){
   document.getElementById('wn-modal').classList.remove('show');
 }
+function openHelp(){document.getElementById('help-modal').classList.add('show');}
+function closeHelp(){document.getElementById('help-modal').classList.remove('show');}
+function openBugReport(){document.getElementById('bug-modal').classList.add('show');}
+function closeBugReport(){document.getElementById('bug-modal').classList.remove('show');}
 
 function boot(){
   // Prevent scroll wheel / trackpad from changing number input values
@@ -1923,6 +2879,25 @@ function boot(){
   window.addEventListener('resize',()=>{
     if(!document.getElementById('panel-chart').classList.contains('hidden'))requestAnimationFrame(redraw);
   });
+  // One-time clear of any demo history from previous test versions
+  if(!localStorage.getItem('phaseChart_v127_clean')){
+    localStorage.removeItem('phaseChart_history');
+    localStorage.setItem('phaseChart_v127_clean','1');
+  }
+  // Restore theme preference
+  const savedTheme=localStorage.getItem('phaseChart_theme')||'light';
+  setTheme(savedTheme);
+  // Restore logo
+  restoreLogo();
+  // Init chart interaction (long press, annotations)
+  initChartInteraction();
+  // Wire up annotation modal close on overlay tap
+  document.getElementById('ann-modal').addEventListener('click',function(e){if(e.target===this)closeAnnModal();});
+  document.getElementById('help-modal').addEventListener('click',function(e){if(e.target===this)closeHelp();});
+  document.getElementById('bug-modal').addEventListener('click',function(e){if(e.target===this)closeBugReport();});
+  document.getElementById('tpl-modal').addEventListener('click',function(e){if(e.target===this)closeTpl();});
+  document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
+  document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
   renderSidebar();
   renderHistory();
 }
