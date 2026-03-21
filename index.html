@@ -231,6 +231,21 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
 .modal-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:14px;font-size:15px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none;user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
 .modal-btn:active{opacity:.6}
 .modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
+
+/* ── Overflow menu ── */
+.overflow-menu-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:36px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:none;align-items:center;gap:5px}
+.overflow-menu-btn:active{opacity:.6}
+@media(max-width:700px){
+  .overflow-menu-btn{display:inline-flex;}
+  .topbar-collapsible{display:none!important;}
+  .topbar-collapsible.expanded{display:inline-flex!important;}
+}
+.overflow-dropdown{position:fixed;top:0;left:0;right:0;bottom:0;z-index:900;display:none}
+.overflow-dropdown.show{display:block}
+.overflow-panel{position:absolute;top:calc(var(--topbar-h,100px) + 2px);right:8px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:901}
+.overflow-item{background:none;border:none;padding:11px 14px;font-size:14px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;text-align:left;border-radius:8px;touch-action:manipulation;display:flex;align-items:center;gap:8px;-webkit-appearance:none}
+.overflow-item:active,.overflow-item:hover{background:var(--bg2)}
+.overflow-sep{height:1px;background:var(--bd);margin:4px 0}
 </style>
 </head>
 <body class="light">
@@ -254,13 +269,28 @@ body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
       <option value="dark">🌙</option>
       <option value="navy">⚓</option>
     </select></label>
-    <button class="btn" id="print-btn">🖨 Print / Share</button>
-    <button class="btn" id="sc-btn-top" onclick="openShareCard()">📋 Share Card</button>
-    <button class="btn" onclick="openTemplates()">📐 Templates</button>
-    <button class="btn" id="wn-btn" onclick="openWN()">✨ What's New</button>
-    <label>Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
-    <button class="btn" onclick="openHelp()">❓ Help</button>
-    <button class="btn" onclick="openBugReport()">🐛 Report</button>
+    <button class="btn topbar-collapsible" id="print-btn">🖨 Print / Share</button>
+    <button class="btn topbar-collapsible" id="sc-btn-top" onclick="openShareCard()">📋 Share Card</button>
+    <button class="btn topbar-collapsible" onclick="openTemplates()">📐 Templates</button>
+    <button class="btn topbar-collapsible" id="wn-btn" onclick="openWN()">✨ What's New</button>
+    <label class="topbar-collapsible">Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
+    <button class="btn topbar-collapsible" onclick="openHelp()">❓ Help</button>
+    <button class="btn topbar-collapsible" onclick="openBugReport()">🐛 Report</button>
+    <button class="overflow-menu-btn" id="overflow-btn" onclick="toggleOverflow()">⋯ More</button>
+  </div>
+  <!-- Overflow dropdown (mobile only) -->
+  <div class="overflow-dropdown" id="overflow-dropdown" onclick="closeOverflow()">
+    <div class="overflow-panel" onclick="event.stopPropagation()">
+      <button class="overflow-item" onclick="closeOverflow();document.getElementById('print-btn').click()">🖨 Print / Share</button>
+      <button class="overflow-item" onclick="closeOverflow();openShareCard()">📋 Share Card</button>
+      <button class="overflow-item" onclick="closeOverflow();openTemplates()">📐 Templates</button>
+      <div class="overflow-sep"></div>
+      <button class="overflow-item" onclick="closeOverflow();openWN()">✨ What's New</button>
+      <button class="overflow-item" onclick="closeOverflow();openHelp()">❓ Help</button>
+      <button class="overflow-item" onclick="closeOverflow();openBugReport()">🐛 Report</button>
+      <div class="overflow-sep"></div>
+      <label class="overflow-item" style="cursor:pointer">Date: <input type="text" id="doc-date-mobile" value="" placeholder="auto" style="flex:1;font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif;margin-left:6px" oninput="syncDate(this)"></label>
+    </div>
   </div>
   <div class="tab-bar">
     <button id="tab-history" onclick="showTab('history')">History</button>
@@ -2849,6 +2879,26 @@ function closeWN(){
 }
 function openHelp(){document.getElementById('help-modal').classList.add('show');}
 function closeHelp(){document.getElementById('help-modal').classList.remove('show');}
+
+// ── Overflow menu ──────────────────────────────────────────────────
+function toggleOverflow(){
+  const dd=document.getElementById('overflow-dropdown');
+  const tb=document.querySelector('.topbar');
+  if(tb)document.documentElement.style.setProperty('--topbar-h',tb.offsetHeight+'px');
+  dd.classList.toggle('show');
+  // Sync date field
+  const main=document.getElementById('doc-date');
+  const mob=document.getElementById('doc-date-mobile');
+  if(mob&&main)mob.value=main.value;
+}
+function closeOverflow(){
+  document.getElementById('overflow-dropdown').classList.remove('show');
+}
+function syncDate(el){
+  // Sync mobile date input back to the hidden main date input
+  const main=document.getElementById('doc-date');
+  if(main){main.value=el.value;redraw();}
+}
 function openBugReport(){document.getElementById('bug-modal').classList.add('show');}
 function closeBugReport(){document.getElementById('bug-modal').classList.remove('show');}
 
@@ -2878,6 +2928,8 @@ function boot(){
   document.getElementById('share-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
   window.addEventListener('resize',()=>{
     if(!document.getElementById('panel-chart').classList.contains('hidden'))requestAnimationFrame(redraw);
+    // Close overflow if screen is now wide enough
+    if(window.innerWidth>700)closeOverflow();
   });
   // One-time clear of any demo history from previous test versions
   if(!localStorage.getItem('phaseChart_v127_clean')){
