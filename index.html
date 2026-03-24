@@ -2845,9 +2845,32 @@ function desktopPrint(){
   });
 
   // ── Measurement data table ────────────────────────────────
-  const isFBLayout=document.getElementById('layout').value==='FB';
+  const _printLayout=document.getElementById('layout').value;
+  const isFBLayout=_printLayout==='FB';
+  const isBSLayout=_printLayout==='BS';
   let rows='';
-  if(isFBLayout){
+  if(isBSLayout){
+    // Base/Structure measurement table
+    const d=getBSData();
+    d.sections.forEach(sec=>{
+      sec.points.forEach(pt=>{
+        if(pt.inaccessible){
+          rows+=`<tr><td>${sec.label}</td><td>${esc(pt.dir)}</td><td colspan="5" style="color:#aaa;text-align:center">Inaccessible</td></tr>`;
+          return;
+        }
+        rows+=`<tr>
+          <td>${sec.label}</td>
+          <td>${esc(pt.dir)}</td>
+          <td>Base${pt.base.ref?' (REF)':''}</td>
+          <td style="text-align:right">${(parseFloat(pt.base.amp)||0).toFixed(u.dec)}</td>
+          <td style="text-align:right">${Math.round(parseFloat(pt.base.phase)||0)}°</td>
+          <td>Structure</td>
+          <td style="text-align:right">${(parseFloat(pt.struct.amp)||0).toFixed(u.dec)}</td>
+          <td style="text-align:right">${Math.round(parseFloat(pt.struct.phase)||0)}°</td>
+        </tr>`;
+      });
+    });
+  } else if(isFBLayout){
     // Foot/Base measurement table
     nodes.forEach(n=>{
       const fb=getFBNode(n.id);
@@ -2910,7 +2933,8 @@ function desktopPrint(){
     h1{font-size:16px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    img{max-width:100%;max-height:calc(100vh - 80px);width:auto;display:block}
+    img{max-width:100%;height:auto;display:block;page-break-inside:avoid}
+    @media screen{img{max-height:90vh;width:auto}}
     table{border-collapse:collapse;width:100%;font-size:11px}
     td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
@@ -2924,9 +2948,9 @@ function desktopPrint(){
   </head><body>
 
   <!-- PAGE 1: Chart -->
-  <div class="page">
+  <div class="page" style="page-break-inside:avoid">
     <h1>${title}</h1>
-    <img src="${imgData}" id="chartimg">
+    <img src="${imgData}" id="chartimg" style="page-break-inside:avoid;max-width:100%;height:auto">
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
@@ -2935,9 +2959,11 @@ function desktopPrint(){
     <div class="section-title">Measurement Points</div>
     <table>
       <thead><tr>
-        ${isFBLayout
-          ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (°)</th>'
-          : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (°)</th>'
+        ${isBSLayout
+          ? '<th>Section</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Structure</th><th>Struct Amp ('+u.label+')</th><th>Struct Phase (°)</th>'
+          : isFBLayout
+            ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (°)</th>'
+            : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (°)</th>'
         }
       </tr></thead>
       <tbody>${rows}</tbody>
@@ -2947,7 +2973,7 @@ function desktopPrint(){
   <!-- PAGE 3: Diagnosis -->
   <div class="page page-break">
     <h1>${title} — Diagnosis Report</h1>
-    <div class="subtitle">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Sensor orientation corrections applied before phase comparisons. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
+    <div class="subtitle">${isBSLayout ? 'Base/Structure phase analysis. ' : isFBLayout ? 'Foot/Base phase analysis. ' : 'Cross-channel phase analysis — Emerson/CSI principles. Sensor orientation corrections applied. '}±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;align-items:center">
       <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#ef4444;display:inline-block"></div><strong style="color:#ef4444">Fault</strong> — action required</div>
       <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block"></div><strong style="color:#f59e0b">Warning</strong> — monitor closely</div>
