@@ -11,9 +11,15 @@ html,body{height:100%;width:100%;overflow:hidden}
 body{font-family:'Roboto',sans-serif;font-size:14px;-webkit-text-size-adjust:100%;transition:background .2s,color .2s}
 body.light{--bg:#f0eeea;--bg2:#e8e6e1;--bg3:#fff;--bd:#ccc;--bd2:#bbb;--tx:#111;--tx2:#555;--tx3:#888;--tx4:#aaa;--cvbg:#fff;--inbg:#fff}
 body.dark {--bg:#1a1a1a;--bg2:#242424;--bg3:#2e2e2e;--bd:#444;--bd2:#555;--tx:#eee;--tx2:#aaa;--tx3:#666;--tx4:#444;--cvbg:#1e1e1e;--inbg:#2e2e2e}
-body.navy {--bg:#0d1b2a;--bg2:#112236;--bg3:#152c44;--bd:#1e3a54;--bd2:#2a4f72;--tx:#e8f4fd;--tx2:#8ab4d4;--tx3:#4a7a9b;--tx4:#2a4f72;--cvbg:#0f1f30;--inbg:#152c44}
-body.navy .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
-body.navy .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.navy  {--bg:#0d1b2a;--bg2:#112236;--bg3:#152c44;--bd:#1e3a54;--bd2:#2a4f72;--tx:#e8f4fd;--tx2:#8ab4d4;--tx3:#4a7a9b;--tx4:#2a4f72;--cvbg:#0f1f30;--inbg:#152c44}
+body.hicon {--bg:#000000;--bg2:#0a0a0a;--bg3:#111111;--bd:#444;--bd2:#666;--tx:#ffffff;--tx2:#ffff00;--tx3:#aaaaaa;--tx4:#555;--cvbg:#000000;--inbg:#1a1a1a}
+body.forest{--bg:#0d1a0f;--bg2:#122116;--bg3:#1a2e1c;--bd:#2a4a2e;--bd2:#3a6040;--tx:#c8f0d0;--tx2:#7ab88a;--tx3:#4a7a54;--tx4:#2a4a2e;--cvbg:#0f1e11;--inbg:#1a2e1c}
+body.navy  .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.navy  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238ab4d4' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.hicon .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23ffff00' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.hicon .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffff00' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.forest .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237ab88a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
+body.forest .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237ab88a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 body{background:var(--bg);color:var(--tx)}
 .app{display:flex;flex-direction:column;height:100%;height:-webkit-fill-available}
 .topbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
@@ -67,14 +73,26 @@ body.dark  .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:/
 .diag-item.warn  {background:#fffbeb;border-left-color:#f59e0b}
 .diag-item.fault {background:#fef2f2;border-left-color:#ef4444}
 .diag-item.info  {background:#eff6ff;border-left-color:#3b82f6}
-body.dark .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
-body.dark .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
-body.dark .diag-item.fault {background:#291414;border-left-color:#ef4444}
-body.dark .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
-body.navy .diag-item.ok    {background:#0d2218;border-left-color:#22c55e}
-body.navy .diag-item.warn  {background:#1e1a0a;border-left-color:#f59e0b}
-body.navy .diag-item.fault {background:#1e0d0d;border-left-color:#ef4444}
-body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
+body.dark   .diag-item.ok    {background:#14291a;border-left-color:#22c55e}
+body.dark   .diag-item.warn  {background:#292214;border-left-color:#f59e0b}
+body.dark   .diag-item.fault {background:#291414;border-left-color:#ef4444}
+body.dark   .diag-item.info  {background:#141e29;border-left-color:#3b82f6}
+body.navy   .diag-item.ok    {background:#0d2218;border-left-color:#22c55e}
+body.navy   .diag-item.warn  {background:#1e1a0a;border-left-color:#f59e0b}
+body.navy   .diag-item.fault {background:#1e0d0d;border-left-color:#ef4444}
+body.navy   .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
+body.hicon  .diag-item.ok    {background:#001400;border-left-color:#00ff00}
+body.hicon  .diag-item.warn  {background:#1a1400;border-left-color:#ffff00}
+body.hicon  .diag-item.fault {background:#1a0000;border-left-color:#ff3333}
+body.hicon  .diag-item.info  {background:#00001a;border-left-color:#4499ff}
+body.hicon  .diag-item.ok    .diag-label{color:#00ff00}
+body.hicon  .diag-item.warn  .diag-label{color:#ffff00}
+body.hicon  .diag-item.fault .diag-label{color:#ff3333}
+body.hicon  .diag-item.info  .diag-label{color:#4499ff}
+body.forest .diag-item.ok    {background:#0a1f0c;border-left-color:#22c55e}
+body.forest .diag-item.warn  {background:#1a1a08;border-left-color:#c8a020}
+body.forest .diag-item.fault {background:#1a0d0d;border-left-color:#c84040}
+body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
 .diag-label{font-size:13px;font-weight:700;color:var(--tx)}
 .diag-desc {font-size:11px;color:var(--tx2);line-height:1.5}
 .diag-empty{font-size:12px;color:var(--tx3);text-align:center;padding:8px 0}
@@ -301,6 +319,8 @@ body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
       <option value="light">☀️</option>
       <option value="dark">🌙</option>
       <option value="navy">⚓</option>
+      <option value="hicon">⚡</option>
+      <option value="forest">🌲</option>
     </select></label>
     <button class="btn topbar-collapsible" id="print-btn">🖨 Print / Share</button>
     <button class="btn topbar-collapsible" id="sc-btn-top" onclick="openShareCard()">📋 Share Card</button>
@@ -587,7 +607,7 @@ let darkMode=false;
 let currentTheme='light';
 function setTheme(theme){
   currentTheme=theme;
-  darkMode=(theme==='dark'||theme==='navy');
+  darkMode=(theme==='dark'||theme==='navy'||theme==='hicon'||theme==='forest');
   document.body.className=theme;
   const sel=document.getElementById('theme-sel');
   if(sel)sel.value=theme;
@@ -780,7 +800,7 @@ function renderBSSidebar(){
   // Info banner
   const info=document.createElement('div');
   info.style.cssText='font-size:11px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;line-height:1.6;margin-bottom:4px';
-  info.innerHTML='<strong style="color:var(--tx)">Base/Structure Phase Check</strong><br>All sensors vertical, magnet face down. Reference on base plate. Roving sensor moves to each base and structure location. Use N/S/E/W compass directions for consistent orientation.';
+  info.innerHTML='<strong style="color:var(--tx)">Base/Structure Phase Check</strong><br>All sensors vertical, magnet face down. Mark your reference sensor using the Reference checkbox on any base point. Roving sensor moves to each base and structure location.';
   el.appendChild(info);
 
   // RPM display
@@ -1599,6 +1619,10 @@ function initChartInteraction(){
 function getTC(){
   if(currentTheme==='navy')
     return {bg:'#0f1f30',tx:'#e8f4fd',tx2:'#8ab4d4',tx3:'#4a7a9b',bub:'#152c44',bstr:'#4a9ede',ln:'#8ab4d4',cp1:'#1e3a54',cp2:'#2a5070',dash:'#1e3a54',foot:'#4a7a9b'};
+  if(currentTheme==='hicon')
+    return {bg:'#000000',tx:'#ffffff',tx2:'#ffff00',tx3:'#aaaaaa',bub:'#111111',bstr:'#ffffff',ln:'#ffffff',cp1:'#333',cp2:'#555',dash:'#444444',foot:'#888888'};
+  if(currentTheme==='forest')
+    return {bg:'#0f1e11',tx:'#c8f0d0',tx2:'#7ab88a',tx3:'#4a7a54',bub:'#1a2e1c',bstr:'#5ab870',ln:'#7ab88a',cp1:'#2a4a2e',cp2:'#3a6040',dash:'#2a4a2e',foot:'#4a7a54'};
   return darkMode
     ?{bg:'#1e1e1e',tx:'#eeeeee',tx2:'#aaaaaa',tx3:'#666666',bub:'#2a2a2a',bstr:'#cccccc',ln:'#cccccc',cp1:'#444',cp2:'#555',dash:'#444',foot:'#555'}
     :{bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
@@ -3170,7 +3194,7 @@ function runBSDiagnosis(){
   if(!hasData){
     results.push({type:'info',
       label:'Enter base and structure measurements to begin',
-      desc:'Input amplitude and phase at each compass direction on the base/skid and the underlying structure. Reference sensor stays fixed on the base plate — typically at the North point. All sensors should be vertical with magnet face down on the surface.'
+      desc:'Input amplitude and phase at each compass direction on the base/skid and the underlying structure. Mark your chosen reference sensor location using the Reference checkbox. All sensors should be vertical with magnet face down on the surface.'
     });
   } else if(results.filter(r=>r.type!=='info').length===0){
     results.push({type:'ok',
@@ -4131,14 +4155,17 @@ function doConfirm(){
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
   '1.2.9':{
-    date:'03/22/2026',
+    date:'03/24/2026',
     items:[
       'Base/Structure layout — new layout for testing base plate vs foundation/structure phase relationships',
-      'Horizontal grid with compass directions (N/S/E/W) — add as many points as needed per section',
+      'Horizontal grid with compass directions — 6 default points (NDE-N/S/E, DE-N/S/E), fully customizable',
       'Single base or split Driver/Driven base modes for different equipment configurations',
       'Diagnosis checks: base/structure separation, base rocking, foundation flexibility, cross-section mismatch',
       'Inaccessible point option — skip any location that cannot be measured',
       'Base/Structure data saves and restores with history',
+      'High Contrast theme (⚡) — pure black background with maximum contrast, ideal for bright outdoor or industrial environments',
+      'Forest theme (🌲) — dark green oscilloscope-inspired palette, classic instrumentation feel',
+      'Both new themes fully supported across all layouts, diagnosis cards, and chart exports',
     ]
   },
   '1.2.8':{
