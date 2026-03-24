@@ -236,6 +236,18 @@ body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
 .modal-btn:active{opacity:.6}
 .modal-cancel{background:none;border:none;padding:10px;font-size:15px;font-family:'Roboto',sans-serif;color:#c00;cursor:pointer;touch-action:manipulation;text-align:center;-webkit-appearance:none}
 
+/* ── Foot/Base layout sidebar ── */
+.fb-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px}
+.fb-card-title{font-size:13px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.fb-foot-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fb-foot-cell{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:4px}
+.fb-foot-label{font-size:10px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.fb-foot-label .fb-ref-tag{font-size:9px;background:var(--tx3);color:var(--bg);padding:1px 5px;border-radius:3px}
+.fb-input-row{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.fb-sub-label{font-size:9px;color:var(--tx3);margin-bottom:1px}
+.fb-num{font-size:15px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;width:100%;text-align:center}
+.fb-inaccessible-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);padding:2px 0}
+.fb-inaccessible-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--tx3)}
 /* ── Overflow menu ── */
 .overflow-menu-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:36px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:none;align-items:center;gap:5px}
 .overflow-menu-btn:active{opacity:.6}
@@ -267,6 +279,7 @@ body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
     <label>Layout: <select id="layout" onchange="renderSidebar();redraw()">
       <option value="H">Horizontal</option>
       <option value="V">Vertical</option>
+      <option value="FB">Foot/Base</option>
     </select></label>
     <label>Theme: <select id="theme-sel" onchange="setTheme(this.value)" style="width:52px">
       <option value="light">☀️</option>
@@ -550,7 +563,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.7';
+  return '1.2.8';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -646,6 +659,155 @@ let nid=3,mid=20;
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
 
+// ── Foot/Base data ────────────────────────────────────────────────────
+// Structure: footBaseData[nodeId] = { locations: [ {id, label, foot:{amp,phase,ref}, base:{amp,phase}, inaccessible} ] }
+let footBaseData = {};
+const FB_LOCS = ['NDE-Left','NDE-Right','DE-Left','DE-Right'];
+
+function getFBNode(nodeId){
+  if(!footBaseData[nodeId]){
+    footBaseData[nodeId] = {
+      locations: FB_LOCS.map((lbl,i)=>({
+        id: nodeId*100+i,
+        label: lbl,
+        foot: {amp:0, phase:0, ref: (nodeId===nodes[0]?.id && i===0)}, // NDE-Left of first node = default ref
+        base: {amp:0, phase:0},
+        inaccessible: false,
+      }))
+    };
+  }
+  return footBaseData[nodeId];
+}
+
+function renderFBSidebar(){
+  const el=document.getElementById('node-list');
+  if(!el)return;
+  el.innerHTML='';
+  const u=getUnit();
+  const numStyle='font-size:15px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:Roboto,sans-serif;-webkit-appearance:none;min-height:32px;width:100%;text-align:center';
+
+  // Info banner
+  const info=document.createElement('div');
+  info.style.cssText='font-size:11px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;line-height:1.6;margin-bottom:4px';
+  info.innerHTML='<strong style="color:var(--tx)">Foot/Base Phase Check</strong><br>Compare machine feet to base structure. Reference sensor stays fixed at NDE-Left of Driver. Roaming sensor moves to each foot and base location.';
+  el.appendChild(info);
+
+  nodes.forEach(n=>{
+    const fb=getFBNode(n.id);
+    const p=pal(n.ci);
+    const card=document.createElement('div');
+    card.className='fb-card';
+    const titleDiv=document.createElement('div');
+    titleDiv.style.cssText='display:flex;align-items:center;gap:8px';
+    titleDiv.innerHTML=`<div style="width:11px;height:11px;border-radius:50%;background:${p.fill};flex-shrink:0"></div><div class="fb-card-title">${esc(n.name)}</div>`;
+    card.appendChild(titleDiv);
+
+    // Layout: 2x2 grid of foot locations
+    const grid=document.createElement('div');
+    grid.className='fb-foot-row';
+
+    fb.locations.forEach((loc,li)=>{
+      const cell=document.createElement('div');
+      cell.className='fb-foot-cell';
+      const isRef=loc.foot.ref;
+      cell.innerHTML=`
+        <div class="fb-foot-label">
+          ${esc(loc.label)}
+          ${isRef?'<span class="fb-ref-tag">REF</span>':''}
+        </div>
+        <div class="fb-inaccessible-row">
+          <input type="checkbox" id="fb-na-${loc.id}" ${loc.inaccessible?'checked':''}
+            onchange="setFBInaccessible(${n.id},${li},this.checked)">
+          <label for="fb-na-${loc.id}" style="cursor:pointer">Inaccessible</label>
+        </div>`;
+
+      if(!loc.inaccessible){
+        // Foot inputs
+        const footSec=document.createElement('div');
+        footSec.innerHTML=`<div class="fb-sub-label">📍 FOOT ${isRef?'(Reference)':''}</div>`;
+        const footGrid=document.createElement('div');
+        footGrid.className='fb-input-row';
+        footGrid.innerHTML=`
+          <div><div class="fb-sub-label">Amp (${u.label})</div>
+            <input type="text" inputmode="decimal" class="fb-num" value="${loc.foot.amp||''}" placeholder="0"
+              data-nid="${n.id}" data-li="${li}" data-sensor="foot" data-field="amp"
+              oninput="handleFBInput(this)" onchange="handleFBInput(this)"></div>
+          <div><div class="fb-sub-label">Phase (°)</div>
+            <input type="text" inputmode="text" class="fb-num" value="${loc.foot.phase||''}" placeholder="0"
+              data-nid="${n.id}" data-li="${li}" data-sensor="foot" data-field="phase"
+              oninput="handleFBInput(this)" onchange="handleFBInput(this)">
+          </div>`;
+        footSec.appendChild(footGrid);
+
+        // Ref checkbox
+        const refRow=document.createElement('div');
+        refRow.className='fb-inaccessible-row';
+        refRow.innerHTML=`<input type="checkbox" id="fb-ref-${loc.id}" ${isRef?'checked':''}
+          onchange="setFBRef(${n.id},${li},this.checked)">
+          <label for="fb-ref-${loc.id}" style="cursor:pointer">Reference sensor</label>`;
+        footSec.appendChild(refRow);
+        cell.appendChild(footSec);
+
+        // Base inputs
+        const baseSec=document.createElement('div');
+        baseSec.style.marginTop='4px';
+        baseSec.innerHTML=`<div class="fb-sub-label">🏗 BASE / STRUCTURE</div>`;
+        const baseGrid=document.createElement('div');
+        baseGrid.className='fb-input-row';
+        baseGrid.innerHTML=`
+          <div><div class="fb-sub-label">Amp (${u.label})</div>
+            <input type="text" inputmode="decimal" class="fb-num" value="${loc.base.amp||''}" placeholder="0"
+              data-nid="${n.id}" data-li="${li}" data-sensor="base" data-field="amp"
+              oninput="handleFBInput(this)" onchange="handleFBInput(this)"></div>
+          <div><div class="fb-sub-label">Phase (°)</div>
+            <input type="text" inputmode="text" class="fb-num" value="${loc.base.phase||''}" placeholder="0"
+              data-nid="${n.id}" data-li="${li}" data-sensor="base" data-field="phase"
+              oninput="handleFBInput(this)" onchange="handleFBInput(this)">
+          </div>`;
+        baseSec.appendChild(baseGrid);
+        cell.appendChild(baseSec);
+      }
+      grid.appendChild(cell);
+    });
+    card.appendChild(grid);
+    el.appendChild(card);
+  });
+}
+
+function handleFBInput(el){
+  const nid=parseInt(el.dataset.nid);
+  const li=parseInt(el.dataset.li);
+  const sensor=el.dataset.sensor; // 'foot' or 'base'
+  const field=el.dataset.field;   // 'amp' or 'phase'
+  const raw=el.value;
+  if(raw===''||raw==='-'||raw==='.'||raw==='0.')return;
+  let val=field==='amp'?parseFloat(raw):Math.round(parseFloat(raw));
+  if(isNaN(val))return;
+  if(field==='phase'){if(val>180)val=180;if(val<-180)val=-180;}
+  const fb=getFBNode(nid);
+  if(fb.locations[li])fb.locations[li][sensor][field]=val;
+  runFBDiagnosis();
+}
+
+function setFBInaccessible(nid,li,val){
+  const fb=getFBNode(nid);
+  if(fb.locations[li])fb.locations[li].inaccessible=val;
+  renderFBSidebar();runFBDiagnosis();
+}
+
+function setFBRef(nid,li,val){
+  // Only one reference sensor across all nodes
+  nodes.forEach(n=>{
+    const fb=getFBNode(n.id);
+    fb.locations.forEach(loc=>loc.foot.ref=false);
+  });
+  if(val){
+    const fb=getFBNode(nid);
+    if(fb.locations[li])fb.locations[li].foot.ref=true;
+  }
+  renderFBSidebar();runFBDiagnosis();
+}
+
 // ── Undo system ───────────────────────────────────────────────
 let _undoSnapshot=null;
 let _undoTimer=null;
@@ -677,6 +839,7 @@ function doUndo(){
 
 // ── Sidebar ───────────────────────────────────────────────
 function renderSidebar(){
+  if(document.getElementById('layout')?.value==='FB'){renderFBSidebar();return;}
   const u=getUnit();
   const el=document.getElementById('node-list');
   if(!el)return;
@@ -1247,7 +1410,10 @@ function redraw(){
   const c=document.getElementById('panel-chart');
   if(!c||c.classList.contains('hidden'))return;
   if(!nodes.length){drawEmpty();return;}
-  if(document.getElementById('layout').value==='V'){
+  const layout=document.getElementById('layout').value;
+  if(layout==='FB'){
+    drawFootBase();
+  } else if(layout==='V'){
     drawVertical();
   } else {
     const {W,H}=getChartDims();
@@ -1407,6 +1573,187 @@ function drawVertical(){
     ctx.drawImage(_logoImg,0,0,srcW,srcH,lx,ly,iw,ih);ctx.restore();
   }
   applyFitScale(CW,CH);
+}
+
+// ── Foot/Base Chart Renderer ─────────────────────────────────────────
+function drawFootBase(){
+  if(!nodes.length){drawEmpty();return;}
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const u=getUnit();
+  const tc=getTC();
+  const N=nodes.length;
+
+  // Grid layout: each node = one column of 4 rows (NDE-L, NDE-R, DE-L, DE-R)
+  // Each cell = Foot bubble + Base bubble stacked vertically
+  const BR=24,ARM=16,BSLOT=BR+ARM+6;
+  const CELL_W=BSLOT*2+24;   // width per foot location column
+  const CELL_H=BSLOT*4+32;   // height per cell (foot + base stacked)
+  const HPAD=70,VPAD=80;
+  const COL_GAP=20;
+  const ROW_H=CELL_H+16;
+  const ROWS=4;               // NDE-L, NDE-R, DE-L, DE-R
+  const COLS=N;
+
+  const W=HPAD*2+COLS*CELL_W+(COLS-1)*COL_GAP+40;
+  const H=VPAD+60+ROWS*ROW_H+40;
+
+  const ctx=setupCanvas(W,H);
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+
+  // Title
+  ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';
+  ctx.fillText(title,W/2,VPAD-28);
+  ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Foot/Base Phase Check  |  RPM '+grpm,W/2,VPAD-12);
+
+  // Row labels (left side) — top view of machine
+  const rowLabels=['NDE — Left','NDE — Right','DE — Left','DE — Right'];
+  const rowColors=['#1a6bbf','#1a9e75','#c94040','#7a7adc'];
+  rowLabels.forEach((lbl,ri)=>{
+    const cy=VPAD+60+ri*ROW_H+ROW_H/2;
+    ctx.save();
+    ctx.translate(HPAD-48,cy);
+    ctx.rotate(-Math.PI/2);
+    ctx.font='bold 10px Roboto,sans-serif';
+    ctx.fillStyle=rowColors[ri];
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(lbl,0,0);
+    ctx.restore();
+    // Horizontal guide line
+    ctx.setLineDash([2,4]);
+    ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
+    ctx.beginPath();ctx.moveTo(HPAD-30,cy);ctx.lineTo(W-HPAD+30,cy);ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Column headers (top) — one per component
+  nodes.forEach((node,ni)=>{
+    const p=pal(node.ci);
+    const cx=HPAD+ni*(CELL_W+COL_GAP)+CELL_W/2;
+    // Box
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(cx-CELL_W/2+4,VPAD+8,CELL_W-8,38,5);ctx.fill();ctx.stroke();
+    ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(node.name,cx,VPAD+27);
+  });
+
+  // Legend
+  const lgx=HPAD-48,lgy=VPAD+8;
+  ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(lgx,lgy,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Foot',lgx+9,lgy);
+  ctx.fillStyle='#888';ctx.beginPath();ctx.arc(lgx,lgy+14,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Base',lgx+9,lgy+14);
+
+  // Draw bubbles
+  function drawFBBubble(ctx,cx,cy,amp,phase,isRef,sevId,accentColor){
+    const r=BR;
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle=tc.bub;ctx.fill();
+    const sevColor=fbBubbleSeverity[sevId]?
+      (fbBubbleSeverity[sevId]==='fault'?'#ef4444':fbBubbleSeverity[sevId]==='warn'?'#f59e0b':fbBubbleSeverity[sevId]==='ok'?'#22c55e':'#888')
+      :accentColor||tc.bstr;
+    ctx.strokeStyle=sevColor;ctx.lineWidth=fbBubbleSeverity[sevId]?2.5:1.5;
+    if(isRef){ctx.setLineDash([4,3]);}
+    ctx.stroke();ctx.setLineDash([]);
+    // Divider
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=0.8;ctx.stroke();
+    // Text
+    const phNum=Math.round(parseFloat(phase)||0);
+    const ampNum=parseFloat(amp)||0;
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(ampNum.toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
+    ctx.font='8px Roboto,sans-serif';
+    ctx.fillText(phNum+'°',cx,cy+r*0.42);
+    if(isRef){ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='left';ctx.fillText('REF',cx+r+3,cy-r*0.3);}
+    // Phase arrow
+    const rad=(phNum-90)*Math.PI/180;
+    const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+    const ax2=cx+Math.cos(rad)*(r+ARM),ay2=cy+Math.sin(rad)*(r+ARM);
+    ctx.strokeStyle=tc.ln;ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+    const al=4,aa=0.45;
+    ctx.beginPath();
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));
+    ctx.stroke();
+    ctx.restore();
+    // Register hit rect
+    _bubbleHitRects.push({cx,cy,r,label:isRef?'REF':'',pos:'FB',amp,phase,ref:isRef,axDir:null,severity:fbBubbleSeverity[sevId]||null});
+  }
+
+  _bubbleHitRects=[];
+
+  nodes.forEach((node,ni)=>{
+    const fb=getFBNode(node.id);
+    const cx=HPAD+ni*(CELL_W+COL_GAP)+CELL_W/2;
+
+    fb.locations.forEach((loc,li)=>{
+      const cy=VPAD+60+li*ROW_H+ROW_H/2;
+      if(loc.inaccessible){
+        // Draw a greyed out placeholder
+        ctx.save();
+        ctx.globalAlpha=0.3;
+        ctx.beginPath();ctx.arc(cx-BSLOT/2,cy,BR,0,Math.PI*2);
+        ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
+        ctx.beginPath();ctx.arc(cx+BSLOT/2,cy,BR,0,Math.PI*2);ctx.stroke();
+        ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('N/A',cx,cy);
+        ctx.restore();
+        return;
+      }
+
+      const footId=loc.id*10+1;
+      const baseId=loc.id*10+2;
+
+      // Vertical dashed connector between foot and base
+      ctx.setLineDash([2,3]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
+      ctx.beginPath();ctx.moveTo(cx,cy-ROW_H*0.28+BR);ctx.lineTo(cx,cy+ROW_H*0.28-BR);ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Foot bubble (upper)
+      const footY=cy-ROW_H*0.28;
+      drawFBBubble(ctx,cx,footY,loc.foot.amp,loc.foot.phase,loc.foot.ref,footId,'#1a6bbf');
+      ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+      ctx.fillText('FOOT',cx,footY-BR-4);
+
+      // Base bubble (lower)
+      const baseY=cy+ROW_H*0.28;
+      drawFBBubble(ctx,cx,baseY,loc.base.amp,loc.base.phase,false,baseId,'#888888');
+      ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText('BASE',cx,baseY+BR+4);
+    });
+  });
+
+  // Footer
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
+  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
+
+  // Annotations + logo
+  annotations.forEach(a=>{
+    if(!a.text)return;
+    ctx.save();ctx.font=`bold ${a.size||13}px Roboto,sans-serif`;ctx.textAlign='left';ctx.textBaseline='middle';
+    const m=ctx.measureText(a.text);const tw=m.width+12,th=(a.size||13)+10;
+    ctx.fillStyle='rgba(255,255,255,0.93)';ctx.strokeStyle=a.color||'#1a6bbf';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(a.x,a.y-th/2,tw,th,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=a.color||'#1a6bbf';ctx.beginPath();ctx.arc(a.x,a.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.fillText(a.text,a.x+8,a.y);ctx.restore();
+  });
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    const ih=72,iw=Math.round(_logoImg.naturalWidth*(ih/_logoImg.naturalHeight));
+    const lx=W-iw-28,ly=16;
+    ctx.save();ctx.shadowColor='rgba(0,0,0,0.10)';ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,255,255,0.97)';
+    ctx.beginPath();ctx.roundRect(lx-12,ly-8,iw+24,ih+16,10);ctx.fill();
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;
+    ctx.drawImage(_logoImg,0,0,_logoImg.naturalWidth,_logoImg.naturalHeight,lx,ly,iw,ih);ctx.restore();
+  }
+
+  applyFitScale(W,H);
 }
 
 function drawEmpty(){
@@ -2062,13 +2409,184 @@ function setSev(id,sev){
   }
 }
 
+// ── Foot/Base Severity Map ───────────────────────────────────────────
+let fbBubbleSeverity={};
+
+function runFBDiagnosis(){
+  fbBubbleSeverity={};
+  const results=[];
+  const TOL=30;
+
+  function setFBSev(id,sev){
+    const rank={ok:1,warn:2,fault:3};
+    if(!fbBubbleSeverity[id]||rank[sev]>rank[fbBubbleSeverity[id]])fbBubbleSeverity[id]=sev;
+  }
+
+  let hasData=false;
+  nodes.forEach(node=>{
+    const fb=getFBNode(node.id);
+    fb.locations.forEach(loc=>{
+      if(loc.inaccessible)return;
+      const footId=loc.id*10+1,baseId=loc.id*10+2;
+      const fAmp=parseFloat(loc.foot.amp)||0;
+      const fPh=Math.round(parseFloat(loc.foot.phase)||0);
+      const bAmp=parseFloat(loc.base.amp)||0;
+      const bPh=Math.round(parseFloat(loc.base.phase)||0);
+      if(fAmp>0||fPh!==0||bAmp>0||bPh!==0)hasData=true;
+
+      if(fAmp===0&&fPh===0&&bAmp===0&&bPh===0)return;
+
+      // ── FOOT vs BASE at same location ──────────────────────────────
+      // Key diagnostic: if foot and base are ~180° out of phase,
+      // the machine is moving AWAY from the base = soft foot or
+      // structural flexibility at that corner.
+      // In-phase = machine and base moving together = healthy.
+      if((fAmp>0||fPh!==0)&&(bAmp>0||bPh!==0)){
+        const d=Math.abs(fPh-bPh);
+        const diff=d>180?360-d:d;
+        if(diff>=(180-TOL)){
+          setFBSev(footId,'fault');setFBSev(baseId,'fault');
+          results.push({type:'fault',
+            label:`⚠ Soft Foot / Structural Separation — ${node.name} ${loc.label}`,
+            desc:`Foot (${fPh}°) and base (${bPh}°) at ${node.name} ${loc.label} are ~180° out of phase (diff: ${diff}°). The machine foot is moving in the opposite direction from the base structure — classic soft foot or localized base flexibility. Loosen the hold-down bolt at this corner to confirm: if vibration changes, this is the problem foot. Check for parallel soft foot, pipe strain, or base distortion.`
+          });
+        } else if(diff<=TOL){
+          setFBSev(footId,'ok');setFBSev(baseId,'ok');
+        } else {
+          setFBSev(footId,'warn');setFBSev(baseId,'warn');
+          results.push({type:'warn',
+            label:`⚡ Marginal Foot/Base Phase — ${node.name} ${loc.label}`,
+            desc:`Foot (${fPh}°) and base (${bPh}°) at ${node.name} ${loc.label} show partial phase separation (${diff}°). Neither fully in phase nor fully out of phase. May indicate developing soft foot, slight base flexibility, or foundation movement. Monitor and compare to other corners.`
+          });
+        }
+      } else if(fAmp>0||fPh!==0){
+        setFBSev(footId,'ok');
+      }
+    });
+  });
+
+  // ── CROSS-CORNER FOOT ANALYSIS (same machine) ─────────────────────
+  // Compare foot readings at different corners of the same machine.
+  // Healthy machine: all 4 feet move roughly in phase (machine translates as rigid body).
+  // ~180° between diagonal or adjacent feet = machine rocking = soft foot.
+  nodes.forEach(node=>{
+    const fb=getFBNode(node.id);
+    const activeLocs=fb.locations.filter(loc=>!loc.inaccessible&&(parseFloat(loc.foot.amp)>0||Math.round(parseFloat(loc.foot.phase)||0)!==0));
+    if(activeLocs.length<2)return;
+
+    for(let i=0;i<activeLocs.length-1;i++){
+      for(let j=i+1;j<activeLocs.length;j++){
+        const a=activeLocs[i],b=activeLocs[j];
+        const phA=Math.round(parseFloat(a.foot.phase)||0);
+        const phB=Math.round(parseFloat(b.foot.phase)||0);
+        const d=Math.abs(phA-phB);
+        const diff=d>180?360-d:d;
+        if(diff>=(180-TOL)){
+          setFBSev(a.id*10+1,'fault');setFBSev(b.id*10+1,'fault');
+          // Check if already flagged foot-vs-base — avoid duplicate
+          const alreadyFlagged=results.some(r=>r.label&&r.label.includes(node.name)&&r.label.includes('Soft Foot')&&r.label.includes(a.label));
+          if(!alreadyFlagged){
+            results.push({type:'fault',
+              label:`⚠ Machine Rocking — ${node.name} (${a.label} vs ${b.label})`,
+              desc:`Foot phase at ${a.label} (${phA}°) and ${b.label} (${phB}°) on ${node.name} are ~180° out of phase (diff: ${diff}°). The machine is rocking between these two corners — a definitive soft foot signature. This often indicates a cocked or bent foot, uneven shimming, or a warped base plate. Perform a soft foot correction procedure: loosen all bolts, level the machine, then tighten in sequence.`
+            });
+          }
+        }
+      }
+    }
+  });
+
+  // ── BASE RIGIDITY CHECK ───────────────────────────────────────────
+  // Compare base readings across the same machine.
+  // If two base points are ~180° out of phase = base is flexing/rocking.
+  // This indicates a weak or cracked foundation, not a machine issue.
+  nodes.forEach(node=>{
+    const fb=getFBNode(node.id);
+    const activeBases=fb.locations.filter(loc=>!loc.inaccessible&&(parseFloat(loc.base.amp)>0||Math.round(parseFloat(loc.base.phase)||0)!==0));
+    if(activeBases.length<2)return;
+    for(let i=0;i<activeBases.length-1;i++){
+      for(let j=i+1;j<activeBases.length;j++){
+        const a=activeBases[i],b=activeBases[j];
+        const phA=Math.round(parseFloat(a.base.phase)||0);
+        const phB=Math.round(parseFloat(b.base.phase)||0);
+        const d=Math.abs(phA-phB);
+        const diff=d>180?360-d:d;
+        if(diff>=(180-TOL)){
+          setFBSev(a.id*10+2,'warn');setFBSev(b.id*10+2,'warn');
+          results.push({type:'warn',
+            label:`⚡ Base Flexibility — ${node.name} (${a.label} vs ${b.label})`,
+            desc:`Base structure phase at ${a.label} (${phA}°) and ${b.label} (${phB}°) under ${node.name} are ~180° out of phase (diff: ${diff}°). The foundation or base plate is flexing between these points — this is a structural issue, not a machine problem. Inspect the base plate for cracks, corrosion, grout deterioration, or inadequate anchor bolt torque.`
+          });
+        }
+      }
+    }
+  });
+
+  // ── DRIVER vs DRIVEN COMPARISON ───────────────────────────────────
+  // Compare matching foot locations across the coupling.
+  // If same-position feet are in phase = train moving together = healthy.
+  // ~180° difference = machines moving independently = possible train soft foot or skid issue.
+  if(nodes.length>=2){
+    const A=nodes[0],B=nodes[1];
+    const fbA=getFBNode(A.id),fbB=getFBNode(B.id);
+    for(let li=0;li<4;li++){
+      const locA=fbA.locations[li],locB=fbB.locations[li];
+      if(locA.inaccessible||locB.inaccessible)continue;
+      const phA=Math.round(parseFloat(locA.foot.phase)||0);
+      const phB=Math.round(parseFloat(locB.foot.phase)||0);
+      if((parseFloat(locA.foot.amp)||0)===0&&phA===0)continue;
+      if((parseFloat(locB.foot.amp)||0)===0&&phB===0)continue;
+      const d=Math.abs(phA-phB);
+      const diff=d>180?360-d:d;
+      if(diff>=(180-TOL)){
+        results.push({type:'warn',
+          label:`⚡ Train Foot Phase Mismatch — ${FB_LOCS[li]}`,
+          desc:`${A.name} foot (${phA}°) and ${B.name} foot (${phB}°) at ${FB_LOCS[li]} are ~180° out of phase across the coupling (diff: ${diff}°). The two machines are moving in opposite directions at this corner — may indicate skid soft foot, uneven grout, or differential thermal growth. Verify that both machines are on a common base plate and check anchor bolt torque at this corner on both machines.`
+        });
+      }
+    }
+  }
+
+  // Fill uncolored bubbles with ok
+  nodes.forEach(node=>{
+    const fb=getFBNode(node.id);
+    fb.locations.forEach(loc=>{
+      if(loc.inaccessible)return;
+      const footId=loc.id*10+1,baseId=loc.id*10+2;
+      const fHasData=(parseFloat(loc.foot.amp)||0)>0||Math.round(parseFloat(loc.foot.phase)||0)!==0;
+      const bHasData=(parseFloat(loc.base.amp)||0)>0||Math.round(parseFloat(loc.base.phase)||0)!==0;
+      if(fHasData&&!fbBubbleSeverity[footId])setFBSev(footId,'ok');
+      if(bHasData&&!fbBubbleSeverity[baseId])setFBSev(baseId,'ok');
+    });
+  });
+
+  if(!hasData){
+    results.push({type:'info',
+      label:'Enter foot and base measurements to begin',
+      desc:'Input amplitude and phase values at each foot and base location. The reference sensor stays fixed — typically at NDE-Left of the Driver. Move the roving sensor to each foot bolt and directly to the base/structure below each foot.'
+    });
+  } else if(results.filter(r=>r.type!=='info').length===0){
+    results.push({type:'ok',
+      label:'✓ Foot/Base Phase Normal — All Locations',
+      desc:'All measured foot and base locations are in phase (±30°). No soft foot or structural flexibility indicated from phase data. Machine appears to be rigidly connected to the base structure at all accessible measurement points.'
+    });
+  }
+
+  diagResults=results;
+  renderDiagResults(results);
+  redraw();
+}
+
 function runDiagnosis(){
   bubbleSeverity={};
   diagResults=[];
   const results=diagResults;
   const TOL=30;
 
-  const isVertTrain=document.getElementById('layout').value==='V';
+  const layout=document.getElementById('layout').value;
+  if(layout==='FB'){runFBDiagnosis();return;}
+
+  const isVertTrain=layout==='V';
 
   if(nodes.length<2){
     results.push({type:'info',label:'Need at least 2 components',desc:'Add a driver and driven component connected across a coupling to run cross-channel phase diagnosis.'});
@@ -2672,6 +3190,7 @@ function saveToHistory(){
     severity:getSeverityBadge(),
     nodes:JSON.parse(JSON.stringify(nodes)),
     annotations:JSON.parse(JSON.stringify(annotations)),
+    footBaseData:JSON.parse(JSON.stringify(footBaseData)),
     meta:{
       chartTitle:title,
       globalRpm:rpm,
@@ -2719,6 +3238,8 @@ function loadFromHistory(id){
       // Restore annotations
       annotations=entry.annotations?JSON.parse(JSON.stringify(entry.annotations)):[];
       _annId=annotations.length?Math.max(...annotations.map(a=>a.id))+1:1;
+      // Restore foot/base data
+      footBaseData=entry.footBaseData?JSON.parse(JSON.stringify(entry.footBaseData)):{};
       renderSidebar();
       runDiagnosis();
       showTab('components');
@@ -2777,7 +3298,7 @@ function renderHistory(){
           <span>📅 ${esc(entry.date)}</span>
           <span>⚙️ ${entry.components} component${entry.components!==1?'s':''}</span>
           ${entry.rpm?`<span>🔄 ${esc(entry.rpm)} RPM</span>`:''}
-          <span>📐 ${entry.layout==='V'?'Vertical':'Horizontal'}</span>
+          <span>📐 ${entry.layout==='V'?'Vertical':entry.layout==='FB'?'Foot/Base':'Horizontal'}</span>
           <span>📏 ${esc(entry.unit)}</span>
         <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load Chart</button>`;
     // Swipe to delete
@@ -2829,6 +3350,16 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.2.8':{
+    date:'03/22/2026',
+    items:[
+      'Foot/Base Phase Check layout — new third layout option for measuring machine feet vs base structure',
+      'Foot/Base diagnosis — detects soft foot, machine rocking, base flexibility, and train foot phase mismatch',
+      '4-corner grid view — NDE-Left, NDE-Right, DE-Left, DE-Right per component in top-down orientation',
+      'Inaccessible foot option — mark any foot location as inaccessible to skip it in diagnosis',
+      'Foot/Base data saves with history — measurements persist when chart is saved and reloaded',
+    ]
+  },
   '1.2.7':{
     date:'03/21/2026',
     items:[
