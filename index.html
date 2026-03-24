@@ -248,6 +248,21 @@ body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
 .fb-num{font-size:15px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;width:100%;text-align:center}
 .fb-inaccessible-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--tx3);padding:2px 0}
 .fb-inaccessible-row input[type=checkbox]{width:18px;height:18px;cursor:pointer;accent-color:var(--tx3)}
+/* ── Base/Structure layout ── */
+.bs-card{background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.bs-card-title{font-size:13px;font-weight:700;color:var(--tx)}
+.bs-points-row{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.bs-point-cell{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:130px;flex-shrink:0}
+.bs-point-label-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.bs-point-label{font-size:11px;font-weight:700;color:var(--tx);background:var(--bg2);border:1px solid var(--bd2);border-radius:4px;padding:2px 8px;min-height:28px;font-family:'Roboto',sans-serif;width:52px;text-align:center;-webkit-appearance:none}
+.bs-ref-tag{font-size:9px;background:var(--tx3);color:var(--bg);padding:1px 5px;border-radius:3px;white-space:nowrap}
+.bs-sub-label{font-size:9px;color:var(--tx3);margin-bottom:1px}
+.bs-num{font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:30px;width:100%;text-align:center}
+.bs-input-pair{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+.bs-add-point{background:none;border:1px dashed var(--bd2);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--tx3);cursor:pointer;white-space:nowrap;font-family:'Roboto',sans-serif;touch-action:manipulation;flex-shrink:0;min-height:80px;display:flex;align-items:center;justify-content:center}
+.bs-mode-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:2px}
+.bs-mode-btn{font-size:12px;padding:6px 12px;border-radius:20px;border:1px solid var(--bd2);background:var(--bg3);color:var(--tx3);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation}
+.bs-mode-btn.active{background:var(--tx);color:var(--bg);border-color:var(--tx)}
 /* ── Overflow menu ── */
 .overflow-menu-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:36px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:none;align-items:center;gap:5px}
 .overflow-menu-btn:active{opacity:.6}
@@ -280,6 +295,7 @@ body.navy .diag-item.info  {background:#0d1828;border-left-color:#3b82f6}
       <option value="H">Horizontal</option>
       <option value="V">Vertical</option>
       <option value="FB">Foot/Base</option>
+      <option value="BS">Base/Structure</option>
     </select></label>
     <label>Theme: <select id="theme-sel" onchange="setTheme(this.value)" style="width:52px">
       <option value="light">☀️</option>
@@ -563,7 +579,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.8';
+  return '1.2.9';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -658,6 +674,223 @@ let nodes=[
 let nid=3,mid=20;
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ── Base/Structure data ──────────────────────────────────────────────
+// bsMode: 'single' = one unified base, 'split' = driver base + driven base
+let bsMode = 'single';
+// bsData: { sections: [ { id, label, points: [ {id,dir,base:{amp,phase,ref}, struct:{amp,phase}, inaccessible} ] } ] }
+let bsData = null;
+let bsPointId = 500;
+
+function getDefaultBSData(){
+  // 6 default points: NDE-N, NDE-S, NDE-E, DE-N, DE-S, DE-E
+  // NDE-N is the default reference sensor
+  const makePts = () => [
+    {id:bsPointId++,dir:'NDE-N',base:{amp:0,phase:0,ref:true}, struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'NDE-S',base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'NDE-E',base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'DE-N', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'DE-S', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'DE-E', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+  ];
+  if(bsMode==='single'){
+    return {sections:[{id:1,label:'Base / Skid',points:makePts()}]};
+  } else {
+    return {sections:[
+      {id:1,label:'Driver Base',points:makePts()},
+      {id:2,label:'Driven Base',points:makePts()},
+    ]};
+  }
+}
+
+function getBSData(){
+  if(!bsData) bsData=getDefaultBSData();
+  return bsData;
+}
+
+function setBSMode(mode){
+  bsMode=mode;
+  bsData=getDefaultBSData();
+  renderSidebar();runDiagnosis();
+}
+
+function addBSPoint(sectionId){
+  const d=getBSData();
+  const sec=d.sections.find(s=>s.id===sectionId);
+  if(!sec)return;
+  sec.points.push({id:bsPointId++,dir:'P'+(sec.points.length+1),base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false});
+  renderSidebar();runDiagnosis();
+}
+
+function removeBSPoint(sectionId,pointId){
+  const d=getBSData();
+  const sec=d.sections.find(s=>s.id===sectionId);
+  if(!sec)return;
+  sec.points=sec.points.filter(p=>p.id!==pointId);
+  renderSidebar();runDiagnosis();
+}
+
+function setBSRef(sectionId,pointId){
+  const d=getBSData();
+  // Clear all refs across all sections
+  d.sections.forEach(s=>s.points.forEach(p=>p.base.ref=false));
+  const sec=d.sections.find(s=>s.id===sectionId);
+  if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.base.ref=true;}
+  renderSidebar();runDiagnosis();
+}
+
+function setBSInaccessible(sectionId,pointId,val){
+  const d=getBSData();
+  const sec=d.sections.find(s=>s.id===sectionId);
+  if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.inaccessible=val;}
+  renderSidebar();runDiagnosis();
+}
+
+function handleBSInput(el){
+  const sid=parseInt(el.dataset.sid);
+  const pid=parseInt(el.dataset.pid);
+  const sensor=el.dataset.sensor;
+  const field=el.dataset.field;
+  const raw=el.value;
+  if(raw===''||raw==='-'||raw==='.'||raw==='0.')return;
+  let val=field==='amp'?parseFloat(raw):Math.round(parseFloat(raw));
+  if(isNaN(val))return;
+  if(field==='phase'){if(val>180)val=180;if(val<-180)val=-180;}
+  const d=getBSData();
+  const sec=d.sections.find(s=>s.id===sid);
+  if(sec){const pt=sec.points.find(p=>p.id===pid);if(pt)pt[sensor][field]=val;}
+  runDiagnosis();
+}
+
+function updateBSDir(sectionId,pointId,val){
+  const d=getBSData();
+  const sec=d.sections.find(s=>s.id===sectionId);
+  if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.dir=val;}
+  renderSidebar();
+}
+
+function renderBSSidebar(){
+  const el=document.getElementById('node-list');
+  if(!el)return;
+  el.innerHTML='';
+  const u=getUnit();
+  const d=getBSData();
+  const grpm=document.getElementById('global-rpm').value||'____';
+
+  // Info banner
+  const info=document.createElement('div');
+  info.style.cssText='font-size:11px;color:var(--tx3);background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;line-height:1.6;margin-bottom:4px';
+  info.innerHTML='<strong style="color:var(--tx)">Base/Structure Phase Check</strong><br>All sensors vertical, magnet face down. Reference on base plate. Roving sensor moves to each base and structure location. Use N/S/E/W compass directions for consistent orientation.';
+  el.appendChild(info);
+
+  // RPM display
+  const rpmDiv=document.createElement('div');
+  rpmDiv.style.cssText='font-size:12px;color:var(--tx2);padding:4px 0';
+  rpmDiv.textContent='Running Speed: '+(grpm)+' RPM';
+  el.appendChild(rpmDiv);
+
+  // Mode selector
+  const modeDiv=document.createElement('div');
+  modeDiv.className='bs-mode-row';
+  modeDiv.innerHTML=`
+    <span style="font-size:11px;color:var(--tx3)">Base configuration:</span>
+    <button class="bs-mode-btn ${bsMode==='single'?'active':''}" onclick="setBSMode('single')">Single Base</button>
+    <button class="bs-mode-btn ${bsMode==='split'?'active':''}" onclick="setBSMode('split')">Driver + Driven Base</button>`;
+  el.appendChild(modeDiv);
+
+  const numStyle='font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:Roboto,sans-serif;-webkit-appearance:none;min-height:30px;width:100%;text-align:center';
+
+  d.sections.forEach(sec=>{
+    const card=document.createElement('div');
+    card.className='bs-card';
+    const titleDiv=document.createElement('div');
+    titleDiv.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px';
+    titleDiv.innerHTML=`<div class="bs-card-title">${esc(sec.label)}</div>
+      <span style="font-size:10px;color:var(--tx3)">${sec.points.filter(p=>!p.inaccessible).length} active points</span>`;
+    card.appendChild(titleDiv);
+
+    const row=document.createElement('div');
+    row.className='bs-points-row';
+
+    sec.points.forEach(pt=>{
+      const cell=document.createElement('div');
+      cell.className='bs-point-cell';
+      const isRef=pt.base.ref;
+
+      // Direction label + ref tag + remove btn
+      const labelRow=document.createElement('div');
+      labelRow.className='bs-point-label-row';
+      labelRow.innerHTML=`
+        <input class="bs-point-label" value="${esc(pt.dir)}" maxlength="4" placeholder="N"
+          onchange="updateBSDir(${sec.id},${pt.id},this.value)">
+        ${isRef?'<span class="bs-ref-tag">REF</span>':''}
+        <button class="rm" style="margin-left:auto;font-size:16px" onclick="removeBSPoint(${sec.id},${pt.id})">×</button>`;
+      cell.appendChild(labelRow);
+
+      // Inaccessible checkbox
+      const naRow=document.createElement('div');
+      naRow.className='fb-inaccessible-row';
+      naRow.innerHTML=`<input type="checkbox" id="bs-na-${pt.id}" ${pt.inaccessible?'checked':''}
+        onchange="setBSInaccessible(${sec.id},${pt.id},this.checked)">
+        <label for="bs-na-${pt.id}" style="cursor:pointer;font-size:11px;color:var(--tx3)">Inaccessible</label>`;
+      cell.appendChild(naRow);
+
+      if(!pt.inaccessible){
+        // Base inputs
+        const baseSec=document.createElement('div');
+        baseSec.innerHTML=`<div class="bs-sub-label">📍 BASE${isRef?' (REF)':''}</div>`;
+        const baseGrid=document.createElement('div');
+        baseGrid.className='bs-input-pair';
+        baseGrid.innerHTML=`
+          <div><div class="bs-sub-label">Amp (${u.label})</div>
+            <input type="text" inputmode="decimal" class="bs-num" value="${pt.base.amp||''}" placeholder="0"
+              data-sid="${sec.id}" data-pid="${pt.id}" data-sensor="base" data-field="amp"
+              oninput="handleBSInput(this)" onchange="handleBSInput(this)"></div>
+          <div><div class="bs-sub-label">Phase (°)</div>
+            <input type="text" inputmode="text" class="bs-num" value="${pt.base.phase||''}" placeholder="0"
+              data-sid="${sec.id}" data-pid="${pt.id}" data-sensor="base" data-field="phase"
+              oninput="handleBSInput(this)" onchange="handleBSInput(this)"></div>`;
+        baseSec.appendChild(baseGrid);
+        // Ref checkbox
+        const refRow=document.createElement('div');
+        refRow.className='fb-inaccessible-row';
+        refRow.innerHTML=`<input type="checkbox" id="bs-ref-${pt.id}" ${isRef?'checked':''}
+          onchange="setBSRef(${sec.id},${pt.id})">
+          <label for="bs-ref-${pt.id}" style="cursor:pointer;font-size:11px;color:var(--tx3)">Reference</label>`;
+        baseSec.appendChild(refRow);
+        cell.appendChild(baseSec);
+
+        // Structure inputs
+        const strSec=document.createElement('div');
+        strSec.style.marginTop='4px';
+        strSec.innerHTML=`<div class="bs-sub-label">🏗 STRUCTURE</div>`;
+        const strGrid=document.createElement('div');
+        strGrid.className='bs-input-pair';
+        strGrid.innerHTML=`
+          <div><div class="bs-sub-label">Amp (${u.label})</div>
+            <input type="text" inputmode="decimal" class="bs-num" value="${pt.struct.amp||''}" placeholder="0"
+              data-sid="${sec.id}" data-pid="${pt.id}" data-sensor="struct" data-field="amp"
+              oninput="handleBSInput(this)" onchange="handleBSInput(this)"></div>
+          <div><div class="bs-sub-label">Phase (°)</div>
+            <input type="text" inputmode="text" class="bs-num" value="${pt.struct.phase||''}" placeholder="0"
+              data-sid="${sec.id}" data-pid="${pt.id}" data-sensor="struct" data-field="phase"
+              oninput="handleBSInput(this)" onchange="handleBSInput(this)"></div>`;
+        strSec.appendChild(strGrid);
+        cell.appendChild(strSec);
+      }
+      row.appendChild(cell);
+    });
+
+    // Add point button
+    const addBtn=document.createElement('button');
+    addBtn.className='bs-add-point';
+    addBtn.textContent='+ Add Point';
+    addBtn.addEventListener('click',()=>addBSPoint(sec.id));
+    row.appendChild(addBtn);
+    card.appendChild(row);
+    el.appendChild(card);
+  });
+}
 
 // ── Foot/Base data ────────────────────────────────────────────────────
 // Structure: footBaseData[nodeId] = { locations: [ {id, label, foot:{amp,phase,ref}, base:{amp,phase}, inaccessible} ] }
@@ -839,7 +1072,9 @@ function doUndo(){
 
 // ── Sidebar ───────────────────────────────────────────────
 function renderSidebar(){
-  if(document.getElementById('layout')?.value==='FB'){renderFBSidebar();return;}
+  const _lay=document.getElementById('layout')?.value;
+  if(_lay==='BS'){renderBSSidebar();return;}
+  if(_lay==='FB'){renderFBSidebar();return;}
   const u=getUnit();
   const el=document.getElementById('node-list');
   if(!el)return;
@@ -1069,6 +1304,11 @@ function applyTemplate(tpl){
     {id:nid++,...tpl.driver,ci:0,rpm:'',notes:'',meas:stdDriverMeas()},
     {id:nid++,...tpl.driven,ci:1,rpm:'',notes:'',meas:stdDrivenMeas()},
   ];
+  // Reset foot/base data and switch to Horizontal layout
+  footBaseData={};
+  bsData=null;bsMode='single';
+  const layoutSel=document.getElementById('layout');
+  if(layoutSel&&(layoutSel.value==='FB'||layoutSel.value==='BS')) layoutSel.value='H';
   closeTpl();
   renderSidebar();runDiagnosis();showTab('components');
 }
@@ -1390,7 +1630,10 @@ function buildExportCanvas(){
   const off=document.createElement('canvas');
   off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
   const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
-  renderChart(ctx,W,H,tc);
+  const layout=document.getElementById('layout').value;
+  if(layout==='BS'){renderBSToCanvas(ctx,W,H,tc,false);}
+  else if(layout==='FB'){renderFBToCanvas(ctx,W,H,tc);}
+  else{renderChart(ctx,W,H,tc);}
   return off;
 }
 
@@ -1402,7 +1645,10 @@ function buildExportCanvasLight(){
   const off=document.createElement('canvas');
   off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
   const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
-  renderChart(ctx,W,H,tcLight);
+  const layout=document.getElementById('layout').value;
+  if(layout==='BS'){renderBSToCanvas(ctx,W,H,tcLight,false);}
+  else if(layout==='FB'){renderFBToCanvas(ctx,W,H,tcLight);}
+  else{renderChart(ctx,W,H,tcLight);}
   return off;
 }
 
@@ -1411,7 +1657,9 @@ function redraw(){
   if(!c||c.classList.contains('hidden'))return;
   if(!nodes.length){drawEmpty();return;}
   const layout=document.getElementById('layout').value;
-  if(layout==='FB'){
+  if(layout==='BS'){
+    drawBaseStructure();
+  } else if(layout==='FB'){
     drawFootBase();
   } else if(layout==='V'){
     drawVertical();
@@ -1573,6 +1821,335 @@ function drawVertical(){
     ctx.drawImage(_logoImg,0,0,srcW,srcH,lx,ly,iw,ih);ctx.restore();
   }
   applyFitScale(CW,CH);
+}
+
+// ── Base/Structure renderer ──────────────────────────────────────────
+function drawBaseStructure(){
+  if(!nodes.length&&!bsData){drawEmpty();return;}
+  renderBSToCanvas(document.getElementById('chart'),null,null,getTC(),true);
+}
+
+function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
+  const d=getBSData();
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const u=getUnit();
+  // Layout constants
+  const BR2=24,ARM2=16,BSLOT2=BR2+ARM2+8;
+  const PT_GAP=14;         // gap between point columns
+  const SEC_GAP=48;        // gap between sections
+  const BOX_H=36;          // height of section header box
+  const BUB_ZONE=BSLOT2*2+8; // vertical space for a row of bubbles
+  const HPAD=70,VPAD=72;
+  // Total chart height: title + legend + BASE row + BOX + STRUCT row + footer
+  const BASE_TOP_Y=VPAD+44;    // top of base bubble zone
+  const BOX_Y=BASE_TOP_Y+BUB_ZONE+6;
+  const STRUCT_Y=BOX_Y+BOX_H+6;
+  const CHART_BOT=STRUCT_Y+BUB_ZONE+28;
+
+  const maxPts=Math.max(...d.sections.map(s=>s.points.length),1);
+  const ptW=BR2*2+8;  // width per bubble column
+  const secW=(sec)=>sec.points.length*(ptW+PT_GAP)-PT_GAP;
+  const totalSecW=d.sections.reduce((a,s)=>a+secW(s),0)+(d.sections.length-1)*SEC_GAP;
+  const W=forceW||(HPAD*2+Math.max(totalSecW,400));
+  const H=forceH||(CHART_BOT+16);
+
+  let ctx;
+  if(setupLive){
+    const cv=canvasOrCtx;
+    cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+    cv.style.width=W+'px';cv.style.height=H+'px';
+    ctx=cv.getContext('2d');ctx.scale(DPR,DPR);
+  } else {
+    ctx=canvasOrCtx;
+  }
+
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+  _bubbleHitRects=[];
+
+  // Title + subtitle
+  ctx.font='bold 14px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(title,W/2,VPAD-32);
+  ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Base/Structure Phase Check  |  RPM '+grpm+'  |  All sensors vertical, magnet face down',W/2,VPAD-14);
+
+  // Legend top-left
+  const lgx=HPAD-18,lgy=VPAD+4;
+  ctx.font='bold 9px Roboto,sans-serif';ctx.textBaseline='middle';
+  ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(lgx,lgy,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('Base / Skid',lgx+8,lgy);
+  ctx.fillStyle='#777';ctx.beginPath();ctx.arc(lgx,lgy+15,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Structure / Foundation',lgx+8,lgy+15);
+
+  // Row labels on the left
+  const baseMidY=BASE_TOP_Y+BUB_ZONE/2;
+  const structMidY=STRUCT_Y+BUB_ZONE/2;
+  ctx.save();
+  ctx.translate(HPAD-32,baseMidY);ctx.rotate(-Math.PI/2);
+  ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle='#1a6bbf';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BASE',0,0);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(HPAD-32,structMidY);ctx.rotate(-Math.PI/2);
+  ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle='#777';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STRUCTURE',0,0);
+  ctx.restore();
+
+  // Horizontal guide lines for base and structure rows
+  ctx.setLineDash([2,5]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.5;
+  ctx.beginPath();ctx.moveTo(HPAD-10,baseMidY);ctx.lineTo(W-HPAD+10,baseMidY);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(HPAD-10,structMidY);ctx.lineTo(W-HPAD+10,structMidY);ctx.stroke();
+  ctx.setLineDash([]);
+
+  function drawBSBub(cx,cy,amp,phase,isRef,sevId,accent){
+    const r=BR2;
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+    const sc=bsBubbleSeverity[sevId];
+    const col=sc==='fault'?'#ef4444':sc==='warn'?'#f59e0b':sc==='ok'?'#22c55e':accent||tc.bstr;
+    ctx.strokeStyle=col;ctx.lineWidth=sc?2.5:1.5;
+    if(isRef)ctx.setLineDash([4,3]);
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=0.8;ctx.stroke();
+    const ph=Math.round(parseFloat(phase)||0);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
+    ctx.font='8px Roboto,sans-serif';ctx.fillText(ph+'°',cx,cy+r*0.42);
+    if(isRef){ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('REF',cx+r+3,cy);}
+    const rad=(ph-90)*Math.PI/180;
+    const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+    const ax2=cx+Math.cos(rad)*(r+ARM2),ay2=cy+Math.sin(rad)*(r+ARM2);
+    ctx.strokeStyle=tc.ln;ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+    const al=4,aa=0.45;
+    ctx.beginPath();
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));
+    ctx.stroke();ctx.restore();
+  }
+
+  // Draw each section
+  let secX=HPAD;
+  // Center all sections across the chart width
+  const totalUsed=d.sections.reduce((a,s)=>a+secW(s),0)+(d.sections.length-1)*SEC_GAP;
+  secX=Math.round((W-totalUsed)/2);
+
+  d.sections.forEach((sec,si)=>{
+    const sw=secW(sec);
+    const secCX=secX+sw/2;
+    const nPts=sec.points.length;
+
+    // ── Section header box (center of chart, between base and structure rows) ──
+    ctx.fillStyle=tc.bub;
+    ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(secX,BOX_Y,sw,BOX_H,5);ctx.fill();ctx.stroke();
+    ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sec.label,secCX,BOX_Y+BOX_H/2);
+
+    // Draw each point column
+    sec.points.forEach((pt,pi)=>{
+      const cx=secX+pi*(ptW+PT_GAP)+ptW/2;
+      const baseY=BASE_TOP_Y+BUB_ZONE/2;   // base bubble Y — above box
+      const structY=STRUCT_Y+BUB_ZONE/2;   // structure bubble Y — below box
+
+      // Direction label above base bubble
+      ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+      ctx.textAlign='center';ctx.textBaseline='alphabetic';
+      ctx.fillText(pt.dir,cx,baseY-BR2-5);
+
+      if(pt.inaccessible){
+        ctx.save();ctx.globalAlpha=0.28;
+        ctx.beginPath();ctx.arc(cx,baseY,BR2,0,Math.PI*2);
+        ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
+        ctx.beginPath();ctx.arc(cx,structY,BR2,0,Math.PI*2);ctx.stroke();
+        ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('N/A',cx,baseY);ctx.fillText('N/A',cx,structY);
+        ctx.restore();
+        // Dashed vertical from box to both
+        ctx.setLineDash([2,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(cx,BOX_Y);ctx.lineTo(cx,baseY+BR2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(cx,BOX_Y+BOX_H);ctx.lineTo(cx,structY-BR2);ctx.stroke();
+        ctx.setLineDash([]);
+        return;
+      }
+
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
+
+      // Dashed vertical connectors from box to bubbles
+      ctx.setLineDash([2,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
+      ctx.beginPath();ctx.moveTo(cx,BOX_Y);ctx.lineTo(cx,baseY+BR2+ARM2+2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,BOX_Y+BOX_H);ctx.lineTo(cx,structY-BR2-ARM2-2);ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Base bubble — above box
+      drawBSBub(cx,baseY,pt.base.amp,pt.base.phase,pt.base.ref,baseId,'#1a6bbf');
+
+      // Structure bubble — below box
+      drawBSBub(cx,structY,pt.struct.amp,pt.struct.phase,false,structId,'#777777');
+    });
+
+    // Section separator
+    if(si<d.sections.length-1){
+      const lineX=secX+sw+SEC_GAP/2;
+      ctx.setLineDash([3,5]);ctx.strokeStyle=tc.dash;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(lineX,BASE_TOP_Y);ctx.lineTo(lineX,STRUCT_Y+BUB_ZONE);ctx.stroke();
+      ctx.setLineDash([]);
+      // Label between sections
+      ctx.font='9px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('│',lineX,BOX_Y+BOX_H/2);
+    }
+    secX+=sw+SEC_GAP;
+  });
+
+  // Footer
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
+  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
+
+  // Annotations
+  annotations.forEach(a=>{
+    if(!a.text)return;
+    ctx.save();ctx.font=`bold ${a.size||13}px Roboto,sans-serif`;ctx.textAlign='left';ctx.textBaseline='middle';
+    const m=ctx.measureText(a.text);const tw=m.width+12,th=(a.size||13)+10;
+    ctx.fillStyle='rgba(255,255,255,0.93)';ctx.strokeStyle=a.color||'#1a6bbf';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(a.x,a.y-th/2,tw,th,5);ctx.fill();ctx.stroke();
+    ctx.fillStyle=a.color||'#1a6bbf';ctx.beginPath();ctx.arc(a.x,a.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#111111';ctx.fillText(a.text,a.x+8,a.y);ctx.restore();
+  });
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    const ih=72,iw=Math.round(_logoImg.naturalWidth*(ih/_logoImg.naturalHeight));
+    const lx=W-iw-28,ly=16;
+    ctx.save();ctx.fillStyle='rgba(255,255,255,0.97)';
+    ctx.beginPath();ctx.roundRect(lx-12,ly-8,iw+24,ih+16,10);ctx.fill();
+    ctx.drawImage(_logoImg,0,0,_logoImg.naturalWidth,_logoImg.naturalHeight,lx,ly,iw,ih);ctx.restore();
+  }
+
+  if(setupLive) applyFitScale(W,H);
+  return {W,H};
+}
+
+// ── Foot/Base offscreen renderer (used by export/print/share) ───────
+function renderFBToCanvas(ctx,W,H,tc){
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const u=getUnit();
+  const N=nodes.length;
+  const BR2=24,ARM2=16,BSLOT2=BR2+ARM2+6;
+  const CELL_W=BSLOT2*2+24;
+  const ROW_H=(BSLOT2*4+32)+16;
+  const HPAD2=70,VPAD2=80;
+  const COL_GAP=20;
+  const ROWS=4;
+
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+
+  // Title
+  ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';
+  ctx.fillText(title,W/2,VPAD2-28);
+  ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Foot/Base Phase Check  |  RPM '+grpm,W/2,VPAD2-12);
+
+  // Row labels
+  const rowLabels=['NDE — Left','NDE — Right','DE — Left','DE — Right'];
+  const rowColors=['#1a6bbf','#1a9e75','#c94040','#7a7adc'];
+  rowLabels.forEach((lbl,ri)=>{
+    const cy=VPAD2+60+ri*ROW_H+ROW_H/2;
+    ctx.save();ctx.translate(HPAD2-48,cy);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=rowColors[ri];
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lbl,0,0);ctx.restore();
+    ctx.setLineDash([2,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
+    ctx.beginPath();ctx.moveTo(HPAD2-30,cy);ctx.lineTo(W-HPAD2+30,cy);ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  // Column headers
+  nodes.forEach((node,ni)=>{
+    const p=pal(node.ci);
+    const cx=HPAD2+ni*(CELL_W+COL_GAP)+CELL_W/2;
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=p.fill;ctx.lineWidth=2;
+    ctx.beginPath();ctx.roundRect(cx-CELL_W/2+4,VPAD2+8,CELL_W-8,38,5);ctx.fill();ctx.stroke();
+    ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=p.fill;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(node.name,cx,VPAD2+27);
+  });
+
+  // Legend
+  const lgx=HPAD2-48,lgy=VPAD2+8;
+  ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(lgx,lgy,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.font='bold 9px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('Foot',lgx+9,lgy);
+  ctx.fillStyle='#888';ctx.beginPath();ctx.arc(lgx,lgy+14,5,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Base',lgx+9,lgy+14);
+
+  function drawFBBub(cx,cy,amp,phase,isRef,sevId,accent){
+    const r=BR2;
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+    const sc=fbBubbleSeverity[sevId];
+    const outlineColor=sc==='fault'?'#ef4444':sc==='warn'?'#f59e0b':sc==='ok'?'#22c55e':accent||tc.bstr;
+    ctx.strokeStyle=outlineColor;ctx.lineWidth=sc?2.5:1.5;
+    if(isRef)ctx.setLineDash([4,3]);
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=0.8;ctx.stroke();
+    const ph=Math.round(parseFloat(phase)||0);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((parseFloat(amp)||0).toFixed(u.dec)+' '+u.label,cx,cy-r*0.42);
+    ctx.font='8px Roboto,sans-serif';ctx.fillText(ph+'°',cx,cy+r*0.42);
+    if(isRef){ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='left';ctx.fillText('REF',cx+r+3,cy-r*0.3);}
+    const rad=(ph-90)*Math.PI/180;
+    const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+    const ax2=cx+Math.cos(rad)*(r+ARM2),ay2=cy+Math.sin(rad)*(r+ARM2);
+    ctx.strokeStyle=tc.ln;ctx.lineWidth=1.5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+    const al=4,aa=0.45;
+    ctx.beginPath();
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));
+    ctx.stroke();ctx.restore();
+  }
+
+  nodes.forEach((node,ni)=>{
+    const fb=getFBNode(node.id);
+    const cx=HPAD2+ni*(CELL_W+COL_GAP)+CELL_W/2;
+    fb.locations.forEach((loc,li)=>{
+      const cy=VPAD2+60+li*ROW_H+ROW_H/2;
+      if(loc.inaccessible){
+        ctx.save();ctx.globalAlpha=0.3;
+        ctx.beginPath();ctx.arc(cx,cy,BR2,0,Math.PI*2);
+        ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
+        ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('N/A',cx,cy);ctx.restore();
+        return;
+      }
+      const footId=loc.id*10+1,baseId=loc.id*10+2;
+      ctx.setLineDash([2,3]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
+      ctx.beginPath();ctx.moveTo(cx,cy-ROW_H*0.28+BR2);ctx.lineTo(cx,cy+ROW_H*0.28-BR2);ctx.stroke();
+      ctx.setLineDash([]);
+      const footY=cy-ROW_H*0.28;
+      drawFBBub(cx,footY,loc.foot.amp,loc.foot.phase,loc.foot.ref,footId,'#1a6bbf');
+      ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+      ctx.fillText('FOOT',cx,footY-BR2-4);
+      const baseY=cy+ROW_H*0.28;
+      drawFBBub(cx,baseY,loc.base.amp,loc.base.phase,false,baseId,'#888888');
+      ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textBaseline='top';
+      ctx.fillText('BASE',cx,baseY+BR2+4);
+    });
+  });
+
+  // Footer
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
+  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD2,H-8);
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-8);
+
+  // Logo
+  if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
+    const ih=72,iw=Math.round(_logoImg.naturalWidth*(ih/_logoImg.naturalHeight));
+    const lx=W-iw-28,ly=16;
+    ctx.save();ctx.fillStyle='rgba(255,255,255,0.97)';
+    ctx.beginPath();ctx.roundRect(lx-12,ly-8,iw+24,ih+16,10);ctx.fill();
+    ctx.drawImage(_logoImg,0,0,_logoImg.naturalWidth,_logoImg.naturalHeight,lx,ly,iw,ih);ctx.restore();
+  }
 }
 
 // ── Foot/Base Chart Renderer ─────────────────────────────────────────
@@ -1767,7 +2344,33 @@ function drawEmpty(){
 
 function getChartDims(){
   const N=nodes.length||1;
-  const isV=document.getElementById('layout').value==='V';
+  const layout=document.getElementById('layout').value;
+  if(layout==='BS'){
+    // Match renderBSToCanvas layout math exactly
+    const d=getBSData();
+    const BR2b=24,ARM2b=16,BSLOT2b=BR2b+ARM2b+8;
+    const PT_GAP2=14,SEC_GAP2=48;
+    const BUB_ZONE2=BSLOT2b*2+8;
+    const BOX_H2=36;
+    const HPAD2=70,VPAD2=72;
+    const ptW2=BR2b*2+8;
+    const secW2=(sec)=>sec.points.length*(ptW2+PT_GAP2)-PT_GAP2;
+    const totalSecW2=d.sections.reduce((a,s)=>a+secW2(s),0)+(d.sections.length-1)*SEC_GAP2;
+    const W2=HPAD2*2+Math.max(totalSecW2,400);
+    const H2=VPAD2+44+BUB_ZONE2+6+BOX_H2+6+BUB_ZONE2+28+16;
+    return {W:W2,H:H2};
+  }
+  if(layout==='FB'){
+    // Foot/Base grid dimensions — match drawFootBase layout
+    const BR2=24,ARM2=16,BSLOT2=BR2+ARM2+6;
+    const CELL_W=BSLOT2*2+24;
+    const CELL_H=BSLOT2*4+32;
+    const ROW_H=CELL_H+16;
+    const HPAD2=70,VPAD2=80;
+    const COL_GAP=20;
+    return {W:HPAD2*2+N*CELL_W+(N-1)*COL_GAP+40, H:VPAD2+60+4*ROW_H+40};
+  }
+  const isV=layout==='V';
   if(!isV){
     const AZW=BSLOT*2+4,VAH=BSLOT*2+8,HAH=BSLOT*2+8,RPH=26,RPG=6,TAH=44,NTS=VAH+RPH+RPG+8,NCW=AZW+NW+AZW;
     const W=HPAD*2+N*NCW+(N-1)*CG;
@@ -2081,9 +2684,16 @@ function shareCard(format, action){
     ctx.fillStyle='#888';ctx.font='9px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('Generated by Cross-Channel Phase Analysis App  |  © '+new Date().getFullYear()+' Joel Davis',W/2,H-18);
   } else {
-    // Landscape: chart on left, findings on right
+    // Landscape: chart on left, findings on right — preserve aspect ratio
     const chartOff=buildExportCanvasLight();
-    if(chartOff){ctx.drawImage(chartOff,0,48,460,H-48);}
+    if(chartOff){
+      const srcW=chartOff.width/DPR,srcH=chartOff.height/DPR;
+      const destW=460,destH=H-48-28; // leave room for footer
+      const scale=Math.min(destW/srcW,destH/srcH);
+      const dw=Math.round(srcW*scale),dh=Math.round(srcH*scale);
+      const dx=Math.round((destW-dw)/2); // center horizontally in the left panel
+      ctx.drawImage(chartOff,dx,48,dw,dh);
+    }
     // Right panel
     const rx=470,rw=W-rx-10;
     ctx.fillStyle='#111';ctx.font='bold 14px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='alphabetic';
@@ -2211,37 +2821,60 @@ function desktopPrint(){
   });
 
   // ── Measurement data table ────────────────────────────────
-  const pl={
-    'AX_IB':    'Axial Drive End (DE)',
-    'AX_OB':    'Axial Non-Drive End (NDE)',
-    'VERT_NDE': 'Vertical Non-Drive End (NDE)',
-    'VERT_DE':  'Vertical Drive End (DE)',
-    'HORIZ_NDE':'Horizontal Non-Drive End (NDE)',
-    'HORIZ_DE': 'Horizontal Drive End (DE)',
-  };
-  const dirLabel=(m,n)=>{
-    const isV=document.getElementById('layout').value==='V';
-    if(m.pos==='AX_IB'||m.pos==='AX_OB'){
-      const cs=(n&&n.coupSide)||'R';
-      if(isV) return m.axDir==='in'?'⬇ Downward':'⬆ Upward';
-      if(m.axDir==='in') return cs==='R'?'Inboard ➡':'⬅ Inboard';
-      return cs==='R'?'⬅ Outboard':'Outboard ➡';
-    }
-    return '';
-  };
-  const posLabel=(m)=>pl[m.pos]||m.pos;
+  const isFBLayout=document.getElementById('layout').value==='FB';
   let rows='';
-  nodes.forEach(n=>n.meas.forEach(m=>{
-    rows+=`<tr>
-      <td>${n.name}</td>
-      <td><strong>${m.label}</strong></td>
-      <td>${posLabel(m)}</td>
-      <td style="text-align:center">${dirLabel(m,n)}</td>
-      <td style="text-align:center">${m.ref?'✓':''}</td>
-      <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td>
-      <td style="text-align:right">${Math.round(parseFloat(m.phase)||0)}°</td>
-    </tr>`;
-  }));
+  if(isFBLayout){
+    // Foot/Base measurement table
+    nodes.forEach(n=>{
+      const fb=getFBNode(n.id);
+      fb.locations.forEach(loc=>{
+        if(loc.inaccessible){
+          rows+=`<tr><td>${n.name}</td><td>${loc.label}</td><td colspan="5" style="color:#aaa;text-align:center">Inaccessible</td></tr>`;
+          return;
+        }
+        rows+=`<tr>
+          <td>${n.name}</td><td>${loc.label}</td>
+          <td>Foot${loc.foot.ref?' (REF)':''}</td>
+          <td style="text-align:right">${(parseFloat(loc.foot.amp)||0).toFixed(u.dec)}</td>
+          <td style="text-align:right">${Math.round(parseFloat(loc.foot.phase)||0)}°</td>
+          <td>Base / Structure</td>
+          <td style="text-align:right">${(parseFloat(loc.base.amp)||0).toFixed(u.dec)}</td>
+          <td style="text-align:right">${Math.round(parseFloat(loc.base.phase)||0)}°</td>
+        </tr>`;
+      });
+    });
+  } else {
+    const pl={
+      'AX_IB':    'Axial Drive End (DE)',
+      'AX_OB':    'Axial Non-Drive End (NDE)',
+      'VERT_NDE': 'Vertical Non-Drive End (NDE)',
+      'VERT_DE':  'Vertical Drive End (DE)',
+      'HORIZ_NDE':'Horizontal Non-Drive End (NDE)',
+      'HORIZ_DE': 'Horizontal Drive End (DE)',
+    };
+    const dirLabel=(m,n)=>{
+      const isV=document.getElementById('layout').value==='V';
+      if(m.pos==='AX_IB'||m.pos==='AX_OB'){
+        const cs=(n&&n.coupSide)||'R';
+        if(isV) return m.axDir==='in'?'⬇ Downward':'⬆ Upward';
+        if(m.axDir==='in') return cs==='R'?'Inboard ➡':'⬅ Inboard';
+        return cs==='R'?'⬅ Outboard':'Outboard ➡';
+      }
+      return '';
+    };
+    const posLabel=(m)=>pl[m.pos]||m.pos;
+    nodes.forEach(n=>n.meas.forEach(m=>{
+      rows+=`<tr>
+        <td>${n.name}</td>
+        <td><strong>${m.label}</strong></td>
+        <td>${posLabel(m)}</td>
+        <td style="text-align:center">${dirLabel(m,n)}</td>
+        <td style="text-align:center">${m.ref?'✓':''}</td>
+        <td style="text-align:right">${(parseFloat(m.amp)||0).toFixed(u.dec)}</td>
+        <td style="text-align:right">${Math.round(parseFloat(m.phase)||0)}°</td>
+      </tr>`;
+    }));
+  }
 
   const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
 
@@ -2278,7 +2911,10 @@ function desktopPrint(){
     <div class="section-title">Measurement Points</div>
     <table>
       <thead><tr>
-        <th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp (${u.label})</th><th>Phase (°)</th>
+        ${isFBLayout
+          ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (°)</th>'
+          : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (°)</th>'
+        }
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -2407,6 +3043,145 @@ function setSev(id,sev){
   if(!bubbleSeverity[id]||rank[sev]>rank[bubbleSeverity[id]]){
     bubbleSeverity[id]=sev;
   }
+}
+
+// ── Base/Structure Severity Map ──────────────────────────────────────
+let bsBubbleSeverity={};
+
+function runBSDiagnosis(){
+  bsBubbleSeverity={};
+  const results=[];
+  const TOL=30;
+  const d=getBSData();
+
+  function setBSSev(id,sev){
+    const rank={ok:1,warn:2,fault:3};
+    if(!bsBubbleSeverity[id]||rank[sev]>rank[bsBubbleSeverity[id]])bsBubbleSeverity[id]=sev;
+  }
+
+  let hasData=false;
+
+  d.sections.forEach(sec=>{
+    const active=sec.points.filter(p=>!p.inaccessible);
+
+    active.forEach(pt=>{
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
+      const bAmp=parseFloat(pt.base.amp)||0,bPh=Math.round(parseFloat(pt.base.phase)||0);
+      const sAmp=parseFloat(pt.struct.amp)||0,sPh=Math.round(parseFloat(pt.struct.phase)||0);
+      if(bAmp>0||bPh!==0||sAmp>0||sPh!==0)hasData=true;
+      if(bAmp===0&&bPh===0&&sAmp===0&&sPh===0)return;
+
+      // ── BASE vs STRUCTURE at same location ──────────────────────────
+      if((bAmp>0||bPh!==0)&&(sAmp>0||sPh!==0)){
+        const d2=Math.abs(bPh-sPh);
+        const diff=d2>180?360-d2:d2;
+        if(diff>=(180-TOL)){
+          setBSSev(baseId,'fault');setBSSev(structId,'fault');
+          results.push({type:'fault',
+            label:`⚠ Base/Structure Separation — ${sec.label} ${pt.dir}`,
+            desc:`Base (${bPh}°) and structure (${sPh}°) at ${sec.label} — ${pt.dir} are ~180° out of phase (diff: ${diff}°). The base/skid is moving independently from the foundation at this point — indicates grout failure, loose anchor bolts, cracked foundation, or base plate distortion. Inspect grout integrity and anchor bolt torque at this location.`
+          });
+        } else if(diff<=TOL){
+          setBSSev(baseId,'ok');setBSSev(structId,'ok');
+        } else {
+          setBSSev(baseId,'warn');setBSSev(structId,'warn');
+          results.push({type:'warn',
+            label:`⚡ Marginal Base/Structure Phase — ${sec.label} ${pt.dir}`,
+            desc:`Base (${bPh}°) and structure (${sPh}°) at ${sec.label} — ${pt.dir} show partial phase separation (${diff}°). May indicate developing grout deterioration, loose anchor bolt, or localized foundation flexibility. Monitor and compare to adjacent measurement points.`
+          });
+        }
+      } else if(bAmp>0||bPh!==0){setBSSev(baseId,'ok');}
+    });
+
+    // ── BASE ROCKING CHECK (same section) ────────────────────────────
+    if(active.length>=2){
+      for(let i=0;i<active.length-1;i++){
+        for(let j=i+1;j<active.length;j++){
+          const a=active[i],b=active[j];
+          const phA=Math.round(parseFloat(a.base.phase)||0);
+          const phB=Math.round(parseFloat(b.base.phase)||0);
+          if((parseFloat(a.base.amp)||0)===0&&phA===0)continue;
+          if((parseFloat(b.base.amp)||0)===0&&phB===0)continue;
+          const d2=Math.abs(phA-phB);
+          const diff=d2>180?360-d2:d2;
+          if(diff>=(180-TOL)){
+            setBSSev(a.id*10+1,'fault');setBSSev(b.id*10+1,'fault');
+            results.push({type:'fault',
+              label:`⚠ Base Rocking — ${sec.label} (${a.dir} vs ${b.dir})`,
+              desc:`Base phase at ${a.dir} (${phA}°) and ${b.dir} (${phB}°) in ${sec.label} are ~180° out of phase (diff: ${diff}°). The base/skid is rocking between these two points — indicates uneven support, cracked or missing grout, or differential settlement of the foundation. Inspect grout and foundation between these points.`
+            });
+          }
+        }
+      }
+    }
+
+    // ── STRUCTURE FLEXIBILITY CHECK (same section) ───────────────────
+    const activeSt=active.filter(p=>(parseFloat(p.struct.amp)||0)>0||Math.round(parseFloat(p.struct.phase)||0)!==0);
+    if(activeSt.length>=2){
+      for(let i=0;i<activeSt.length-1;i++){
+        for(let j=i+1;j<activeSt.length;j++){
+          const a=activeSt[i],b=activeSt[j];
+          const phA=Math.round(parseFloat(a.struct.phase)||0);
+          const phB=Math.round(parseFloat(b.struct.phase)||0);
+          const d2=Math.abs(phA-phB);
+          const diff=d2>180?360-d2:d2;
+          if(diff>=(180-TOL)){
+            setBSSev(a.id*10+2,'warn');setBSSev(b.id*10+2,'warn');
+            results.push({type:'warn',
+              label:`⚡ Foundation Flexibility — ${sec.label} (${a.dir} vs ${b.dir})`,
+              desc:`Structure phase at ${a.dir} (${phA}°) and ${b.dir} (${phB}°) in ${sec.label} are ~180° out of phase (diff: ${diff}°). The foundation itself is flexing between these points — indicates a weak, cracked, or poorly designed structural support. This is a civil/structural engineering issue requiring foundation assessment.`
+            });
+          }
+        }
+      }
+    }
+  });
+
+  // ── CROSS-SECTION BASE COMPARISON (split base only) ──────────────
+  if(d.sections.length>=2){
+    const s1=d.sections[0],s2=d.sections[1];
+    const p1=s1.points.filter(p=>!p.inaccessible&&((parseFloat(p.base.amp)||0)>0||Math.round(parseFloat(p.base.phase)||0)!==0));
+    const p2=s2.points.filter(p=>!p.inaccessible&&((parseFloat(p.base.amp)||0)>0||Math.round(parseFloat(p.base.phase)||0)!==0));
+    if(p1.length>0&&p2.length>0){
+      // Compare first active point from each section as overall base-to-base check
+      const phA=Math.round(parseFloat(p1[0].base.phase)||0);
+      const phB=Math.round(parseFloat(p2[0].base.phase)||0);
+      const d2=Math.abs(phA-phB);
+      const diff=d2>180?360-d2:d2;
+      if(diff>=(180-TOL)){
+        results.push({type:'warn',
+          label:`⚡ Driver/Driven Base Phase Mismatch`,
+          desc:`${s1.label} base (${phA}°) and ${s2.label} base (${phB}°) are ~180° out of phase (diff: ${diff}°). The two base sections are moving independently — may indicate the base plate is not a rigid unified structure, or there is differential foundation settlement between the two machine locations.`
+        });
+      }
+    }
+  }
+
+  // Fill uncolored with ok
+  d.sections.forEach(sec=>{
+    sec.points.forEach(pt=>{
+      if(pt.inaccessible)return;
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
+      if(((parseFloat(pt.base.amp)||0)>0||Math.round(parseFloat(pt.base.phase)||0)!==0)&&!bsBubbleSeverity[baseId])setBSSev(baseId,'ok');
+      if(((parseFloat(pt.struct.amp)||0)>0||Math.round(parseFloat(pt.struct.phase)||0)!==0)&&!bsBubbleSeverity[structId])setBSSev(structId,'ok');
+    });
+  });
+
+  if(!hasData){
+    results.push({type:'info',
+      label:'Enter base and structure measurements to begin',
+      desc:'Input amplitude and phase at each compass direction on the base/skid and the underlying structure. Reference sensor stays fixed on the base plate — typically at the North point. All sensors should be vertical with magnet face down on the surface.'
+    });
+  } else if(results.filter(r=>r.type!=='info').length===0){
+    results.push({type:'ok',
+      label:'✓ Base/Structure Phase Normal — All Locations',
+      desc:'All measured base and structure locations are in phase (±30°). No base/structure separation or foundation flexibility indicated. The base/skid appears to be rigidly connected to the foundation at all accessible measurement points.'
+    });
+  }
+
+  diagResults=results;
+  renderDiagResults(results);
+  redraw();
 }
 
 // ── Foot/Base Severity Map ───────────────────────────────────────────
@@ -2584,6 +3359,7 @@ function runDiagnosis(){
   const TOL=30;
 
   const layout=document.getElementById('layout').value;
+  if(layout==='BS'){runBSDiagnosis();return;}
   if(layout==='FB'){runFBDiagnosis();return;}
 
   const isVertTrain=layout==='V';
@@ -3191,6 +3967,8 @@ function saveToHistory(){
     nodes:JSON.parse(JSON.stringify(nodes)),
     annotations:JSON.parse(JSON.stringify(annotations)),
     footBaseData:JSON.parse(JSON.stringify(footBaseData)),
+    bsData:bsData?JSON.parse(JSON.stringify(bsData)):null,
+    bsMode:bsMode,
     meta:{
       chartTitle:title,
       globalRpm:rpm,
@@ -3240,6 +4018,8 @@ function loadFromHistory(id){
       _annId=annotations.length?Math.max(...annotations.map(a=>a.id))+1:1;
       // Restore foot/base data
       footBaseData=entry.footBaseData?JSON.parse(JSON.stringify(entry.footBaseData)):{};
+      bsData=entry.bsData?JSON.parse(JSON.stringify(entry.bsData)):null;
+      bsMode=entry.bsMode||'single';
       renderSidebar();
       runDiagnosis();
       showTab('components');
@@ -3298,7 +4078,7 @@ function renderHistory(){
           <span>📅 ${esc(entry.date)}</span>
           <span>⚙️ ${entry.components} component${entry.components!==1?'s':''}</span>
           ${entry.rpm?`<span>🔄 ${esc(entry.rpm)} RPM</span>`:''}
-          <span>📐 ${entry.layout==='V'?'Vertical':entry.layout==='FB'?'Foot/Base':'Horizontal'}</span>
+          <span>📐 ${entry.layout==='V'?'Vertical':entry.layout==='FB'?'Foot/Base':entry.layout==='BS'?'Base/Structure':'Horizontal'}</span>
           <span>📏 ${esc(entry.unit)}</span>
         <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load Chart</button>`;
     // Swipe to delete
@@ -3350,6 +4130,17 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.2.9':{
+    date:'03/22/2026',
+    items:[
+      'Base/Structure layout — new layout for testing base plate vs foundation/structure phase relationships',
+      'Horizontal grid with compass directions (N/S/E/W) — add as many points as needed per section',
+      'Single base or split Driver/Driven base modes for different equipment configurations',
+      'Diagnosis checks: base/structure separation, base rocking, foundation flexibility, cross-section mismatch',
+      'Inaccessible point option — skip any location that cannot be measured',
+      'Base/Structure data saves and restores with history',
+    ]
+  },
   '1.2.8':{
     date:'03/22/2026',
     items:[
@@ -3491,9 +4282,9 @@ function boot(){
     if(window.innerWidth>700)closeOverflow();
   });
   // One-time clear of any demo history from previous test versions
-  if(!localStorage.getItem('phaseChart_v127_clean')){
+  if(!localStorage.getItem('phaseChart_v128_clean')){
     localStorage.removeItem('phaseChart_history');
-    localStorage.setItem('phaseChart_v127_clean','1');
+    localStorage.setItem('phaseChart_v128_clean','1');
   }
   // Restore theme preference
   const savedTheme=localStorage.getItem('phaseChart_theme')||'light';
