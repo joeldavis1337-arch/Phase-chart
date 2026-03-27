@@ -2999,51 +2999,47 @@ function desktopPrint(){
       var img=document.getElementById('chartimg');
       if(!img.naturalWidth||!img.naturalHeight) return;
 
-      // US Letter printable area at 96dpi with 0.6cm margins (~0.24in each side):
-      // Portrait:  width=7.96in=764px, height=10.51in=1009px (minus 40px title)
-      // Landscape: width=10.51in=1009px, height=7.46in=716px (minus 40px title)
-      var TITLE_H=36; // h1 height approx
-      var MARGIN_PX=23; // 0.6cm at 96dpi
-      var LETTER_W=816; // 8.5in at 96dpi
-      var LETTER_H=1056; // 11in at 96dpi
+      // US Letter dimensions at 96dpi
+      var MARGIN=46; // ~0.5in margins each side
+      var LETTER_W=816; // 8.5in
+      var LETTER_H=1056; // 11in
+      var TITLE_H=32;
 
-      var printW=LETTER_W-MARGIN_PX*2;
-      var printH=LETTER_H-MARGIN_PX*2-TITLE_H;
+      var portraitW=LETTER_W-MARGIN*2;
+      var portraitH=LETTER_H-MARGIN*2-TITLE_H;
+      var landscapeW=LETTER_H-MARGIN*2;
+      var landscapeH=LETTER_W-MARGIN*2-TITLE_H;
 
-      var imgW=img.naturalWidth;
-      var imgH=img.naturalHeight;
-      var imgRatio=imgW/imgH;
+      var iw=img.naturalWidth;
+      var ih=img.naturalHeight;
+      var ratio=iw/ih;
 
-      // Try portrait fit first
-      var fitW=printW;
-      var fitH=fitW/imgRatio;
+      // Try to fill portrait width first
+      var fitW=portraitW;
+      var fitH=Math.round(fitW/ratio);
 
-      // If still too tall, try landscape fit
-      if(fitH>printH){
-        // Scale to fit height
-        fitH=printH;
-        fitW=fitH*imgRatio;
-        // If now too wide even in landscape (very wide chart), scale to width
-        var landscapeW=LETTER_H-MARGIN_PX*2;
-        var landscapeH=LETTER_W-MARGIN_PX*2-TITLE_H;
-        if(fitW>landscapeW){fitW=landscapeW;fitH=fitW/imgRatio;}
-        if(fitH>landscapeH){fitH=landscapeH;fitW=fitH*imgRatio;}
-        // Switch page to landscape
-        document.getElementById('chart-page').style.width=LETTER_H+'px';
-        var style=document.createElement('style');
-        style.textContent='@page{size:landscape}';
-        document.head.appendChild(style);
+      if(fitH<=portraitH){
+        // Fits portrait — use full width
+        img.style.width=fitW+'px';
+        img.style.height=fitH+'px';
+      } else {
+        // Too tall for portrait — try landscape
+        fitW=landscapeW;
+        fitH=Math.round(fitW/ratio);
+        if(fitH>landscapeH){fitH=landscapeH;fitW=Math.round(fitH*ratio);}
+        // Apply landscape
+        var s=document.createElement('style');
+        s.textContent='@page{size:landscape;margin:.5in}body{width:'+LETTER_H+'px}';
+        document.head.appendChild(s);
+        img.style.width=fitW+'px';
+        img.style.height=fitH+'px';
       }
 
-      img.style.width=Math.round(fitW)+'px';
-      img.style.height=Math.round(fitH)+'px';
       img.style.display='block';
-
-      // Small delay to let layout reflow before print dialog
-      setTimeout(function(){window.print();},120);
+      setTimeout(function(){window.print();},150);
     }
     var img=document.getElementById('chartimg');
-    if(img.complete && img.naturalWidth){scaleAndPrint();}
+    if(img.complete&&img.naturalWidth){scaleAndPrint();}
     else{img.onload=scaleAndPrint;}
   <\/script>
   </body></html>`;
