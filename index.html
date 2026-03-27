@@ -2947,10 +2947,11 @@ function desktopPrint(){
     th{background:#f5f5f5;font-weight:700;text-align:left}
     .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
     @media print{
-      @page{margin:.6cm}
+      @page{margin:.5cm}
       body{margin:0}
       .page-break{page-break-before:always}
-      #chart-page{page-break-inside:avoid;page-break-after:always}
+      #chart-page{page-break-inside:avoid;page-break-after:always;overflow:hidden}
+      #chartimg{page-break-inside:avoid;display:block;max-width:100%;height:auto}
     }
   </style>
   </head><body>
@@ -2996,23 +2997,54 @@ function desktopPrint(){
   <script>
     function scaleAndPrint(){
       var img=document.getElementById('chartimg');
-      var page=document.getElementById('chart-page');
-      if(!img.naturalWidth) return;
-      // Available print area: page width minus padding, available height minus title
-      var pageW=page.offsetWidth - 32; // 16px padding each side
-      var pageH=window.innerHeight - 60; // rough title height
-      var imgRatio=img.naturalWidth/img.naturalHeight;
-      // Calculate size that fits both width and height
-      var fitW=pageW;
+      if(!img.naturalWidth||!img.naturalHeight) return;
+
+      // US Letter printable area at 96dpi with 0.6cm margins (~0.24in each side):
+      // Portrait:  width=7.96in=764px, height=10.51in=1009px (minus 40px title)
+      // Landscape: width=10.51in=1009px, height=7.46in=716px (minus 40px title)
+      var TITLE_H=36; // h1 height approx
+      var MARGIN_PX=23; // 0.6cm at 96dpi
+      var LETTER_W=816; // 8.5in at 96dpi
+      var LETTER_H=1056; // 11in at 96dpi
+
+      var printW=LETTER_W-MARGIN_PX*2;
+      var printH=LETTER_H-MARGIN_PX*2-TITLE_H;
+
+      var imgW=img.naturalWidth;
+      var imgH=img.naturalHeight;
+      var imgRatio=imgW/imgH;
+
+      // Try portrait fit first
+      var fitW=printW;
       var fitH=fitW/imgRatio;
-      if(fitH>pageH){fitH=pageH;fitW=fitH*imgRatio;}
+
+      // If still too tall, try landscape fit
+      if(fitH>printH){
+        // Scale to fit height
+        fitH=printH;
+        fitW=fitH*imgRatio;
+        // If now too wide even in landscape (very wide chart), scale to width
+        var landscapeW=LETTER_H-MARGIN_PX*2;
+        var landscapeH=LETTER_W-MARGIN_PX*2-TITLE_H;
+        if(fitW>landscapeW){fitW=landscapeW;fitH=fitW/imgRatio;}
+        if(fitH>landscapeH){fitH=landscapeH;fitW=fitH*imgRatio;}
+        // Switch page to landscape
+        document.getElementById('chart-page').style.width=LETTER_H+'px';
+        var style=document.createElement('style');
+        style.textContent='@page{size:landscape}';
+        document.head.appendChild(style);
+      }
+
       img.style.width=Math.round(fitW)+'px';
       img.style.height=Math.round(fitH)+'px';
-      window.print();
+      img.style.display='block';
+
+      // Small delay to let layout reflow before print dialog
+      setTimeout(function(){window.print();},120);
     }
     var img=document.getElementById('chartimg');
-    img.onload=scaleAndPrint;
-    if(img.complete && img.naturalWidth) scaleAndPrint();
+    if(img.complete && img.naturalWidth){scaleAndPrint();}
+    else{img.onload=scaleAndPrint;}
   <\/script>
   </body></html>`;
 
