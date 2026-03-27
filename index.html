@@ -599,7 +599,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.2.9';
+  return '1.3.0';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -709,12 +709,20 @@ function getDefaultBSData(){
     {id:bsPointId++,dir:'NDE-N',base:{amp:0,phase:0,ref:true}, struct:{amp:0,phase:0},inaccessible:false},
     {id:bsPointId++,dir:'NDE-S',base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
     {id:bsPointId++,dir:'NDE-E',base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'NDE-W',base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
     {id:bsPointId++,dir:'DE-N', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
     {id:bsPointId++,dir:'DE-S', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
     {id:bsPointId++,dir:'DE-E', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
+    {id:bsPointId++,dir:'DE-W', base:{amp:0,phase:0,ref:false},struct:{amp:0,phase:0},inaccessible:false},
   ];
   if(bsMode==='single'){
     return {sections:[{id:1,label:'Base / Skid',points:makePts()}]};
+  } else if(bsMode==='triple'){
+    return {sections:[
+      {id:1,label:'Driver Base',  points:makePts()},
+      {id:2,label:'Middle Base',  points:makePts()},
+      {id:3,label:'Driven Base',  points:makePts()},
+    ]};
   } else {
     return {sections:[
       {id:1,label:'Driver Base',points:makePts()},
@@ -779,14 +787,17 @@ function handleBSInput(el){
   const d=getBSData();
   const sec=d.sections.find(s=>s.id===sid);
   if(sec){const pt=sec.points.find(p=>p.id===pid);if(pt)pt[sensor][field]=val;}
-  runDiagnosis();
+  runDiagnosis();autosave();
 }
 
 function updateBSDir(sectionId,pointId,val){
+  // Update data only — do NOT call renderSidebar() as it destroys the input
+  // and dismisses the keyboard on every keystroke
   const d=getBSData();
   const sec=d.sections.find(s=>s.id===sectionId);
   if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.dir=val;}
-  renderSidebar();
+  // Just redraw the chart without rebuilding the sidebar
+  redraw();autosave();
 }
 
 function renderBSSidebar(){
@@ -815,7 +826,8 @@ function renderBSSidebar(){
   modeDiv.innerHTML=`
     <span style="font-size:11px;color:var(--tx3)">Base configuration:</span>
     <button class="bs-mode-btn ${bsMode==='single'?'active':''}" onclick="setBSMode('single')">Single Base</button>
-    <button class="bs-mode-btn ${bsMode==='split'?'active':''}" onclick="setBSMode('split')">Driver + Driven Base</button>`;
+    <button class="bs-mode-btn ${bsMode==='split'?'active':''}" onclick="setBSMode('split')">Driver + Driven</button>
+    <button class="bs-mode-btn ${bsMode==='triple'?'active':''}" onclick="setBSMode('triple')">3-Base Train</button>`;
   el.appendChild(modeDiv);
 
   const numStyle='font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:5px;padding:4px 6px;color:var(--tx);font-family:Roboto,sans-serif;-webkit-appearance:none;min-height:30px;width:100%;text-align:center';
@@ -841,7 +853,9 @@ function renderBSSidebar(){
       const labelRow=document.createElement('div');
       labelRow.className='bs-point-label-row';
       labelRow.innerHTML=`
-        <input class="bs-point-label" value="${esc(pt.dir)}" maxlength="4" placeholder="N"
+        <input class="bs-point-label" value="${esc(pt.dir)}" maxlength="6" placeholder="N"
+          style="width:62px"
+          oninput="updateBSDir(${sec.id},${pt.id},this.value)"
           onchange="updateBSDir(${sec.id},${pt.id},this.value)">
         ${isRef?'<span class="bs-ref-tag">REF</span>':''}
         <button class="rm" style="margin-left:auto;font-size:16px" onclick="removeBSPoint(${sec.id},${pt.id})">×</button>`;
@@ -1039,7 +1053,7 @@ function handleFBInput(el){
   if(field==='phase'){if(val>180)val=180;if(val<-180)val=-180;}
   const fb=getFBNode(nid);
   if(fb.locations[li])fb.locations[li][sensor][field]=val;
-  runFBDiagnosis();
+  runFBDiagnosis();autosave();
 }
 
 function setFBInaccessible(nid,li,val){
@@ -1245,7 +1259,7 @@ function handleAmpInput(el){
   if(val>u.max)val=u.max;
   const n=nodes.find(x=>x.id===nid2);
   if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.amp=val;}
-  runDiagnosis();
+  runDiagnosis();autosave();
 }
 function handlePhaseInput(el){
   const nid2=parseInt(el.dataset.nid),mid2=parseInt(el.dataset.mid);
@@ -1258,7 +1272,7 @@ function handlePhaseInput(el){
   if(val<-180)val=-180;
   const n=nodes.find(x=>x.id===nid2);
   if(n){const m=n.meas.find(x=>x.id===mid2);if(m)m.phase=val;}
-  runDiagnosis();
+  runDiagnosis();autosave();
 }
 // ── Templates ────────────────────────────────────────────────
 const TEMPLATES=[
@@ -1858,25 +1872,24 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   const title=document.getElementById('chart-title').value||'';
   const grpm=document.getElementById('global-rpm').value||'____';
   const u=getUnit();
-  // Layout constants
-  const BR2=24,ARM2=16,BSLOT2=BR2+ARM2+8;
-  const PT_GAP=14;         // gap between point columns
-  const SEC_GAP=48;        // gap between sections
-  const BOX_H=36;          // height of section header box
-  const BUB_ZONE=BSLOT2*2+8; // vertical space for a row of bubbles
-  const HPAD=70,VPAD=72;
-  // Total chart height: title + legend + BASE row + BOX + STRUCT row + footer
-  const BASE_TOP_Y=VPAD+44;    // top of base bubble zone
-  const BOX_Y=BASE_TOP_Y+BUB_ZONE+6;
-  const STRUCT_Y=BOX_Y+BOX_H+6;
-  const CHART_BOT=STRUCT_Y+BUB_ZONE+28;
 
-  const maxPts=Math.max(...d.sections.map(s=>s.points.length),1);
-  const ptW=BR2*2+8;  // width per bubble column
-  const secW=(sec)=>sec.points.length*(ptW+PT_GAP)-PT_GAP;
-  const totalSecW=d.sections.reduce((a,s)=>a+secW(s),0)+(d.sections.length-1)*SEC_GAP;
-  const W=forceW||(HPAD*2+Math.max(totalSecW,400));
-  const H=forceH||(CHART_BOT+16);
+  // Layout: sections stack VERTICALLY, points go horizontally within each section
+  const BR2=24,ARM2=16;
+  const PT_GAP=14;          // gap between bubble columns
+  const BOX_H=36;           // section label box height
+  const BUB_ZONE=BR2*2+ARM2+16; // vertical zone for one row of bubbles (bubble + arrow + dir label)
+  const SEC_PAD=20;         // vertical gap between sections
+  const HPAD=70,VPAD=72;
+
+  // Per-section height: base zone + box + struct zone + dir labels below struct
+  const SEC_H=BUB_ZONE+8+BOX_H+8+BUB_ZONE+20;
+
+  const ptW=BR2*2+8;        // width per bubble column
+  const secW=(sec)=>Math.max(sec.points.length,1)*(ptW+PT_GAP)-PT_GAP;
+  const maxSecW=Math.max(...d.sections.map(s=>secW(s)),400);
+
+  const W=forceW||(HPAD*2+maxSecW);
+  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+28+16);
 
   let ctx;
   if(setupLive){
@@ -1891,39 +1904,19 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
   _bubbleHitRects=[];
 
-  // Title + subtitle
+  // Title
   ctx.font='bold 14px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='alphabetic';
   ctx.fillText(title,W/2,VPAD-32);
   ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
   ctx.fillText('Base/Structure Phase Check  |  RPM '+grpm+'  |  All sensors vertical, magnet face down',W/2,VPAD-14);
 
   // Legend top-left
-  const lgx=HPAD-18,lgy=VPAD+4;
+  const lgx=HPAD-18,lgy=VPAD+2;
   ctx.font='bold 9px Roboto,sans-serif';ctx.textBaseline='middle';
   ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(lgx,lgy,5,0,Math.PI*2);ctx.fill();
   ctx.fillStyle=tc.tx2;ctx.textAlign='left';ctx.fillText('Base / Skid',lgx+8,lgy);
   ctx.fillStyle='#777';ctx.beginPath();ctx.arc(lgx,lgy+15,5,0,Math.PI*2);ctx.fill();
   ctx.fillStyle=tc.tx2;ctx.fillText('Structure / Foundation',lgx+8,lgy+15);
-
-  // Row labels on the left
-  const baseMidY=BASE_TOP_Y+BUB_ZONE/2;
-  const structMidY=STRUCT_Y+BUB_ZONE/2;
-  ctx.save();
-  ctx.translate(HPAD-32,baseMidY);ctx.rotate(-Math.PI/2);
-  ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle='#1a6bbf';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BASE',0,0);
-  ctx.restore();
-  ctx.save();
-  ctx.translate(HPAD-32,structMidY);ctx.rotate(-Math.PI/2);
-  ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle='#777';
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STRUCTURE',0,0);
-  ctx.restore();
-
-  // Horizontal guide lines for base and structure rows
-  ctx.setLineDash([2,5]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.5;
-  ctx.beginPath();ctx.moveTo(HPAD-10,baseMidY);ctx.lineTo(W-HPAD+10,baseMidY);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(HPAD-10,structMidY);ctx.lineTo(W-HPAD+10,structMidY);ctx.stroke();
-  ctx.setLineDash([]);
 
   function drawBSBub(cx,cy,amp,phase,isRef,sevId,accent){
     const r=BR2;
@@ -1952,29 +1945,47 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
     ctx.stroke();ctx.restore();
   }
 
-  // Draw each section
-  let secX=HPAD;
-  // Center all sections across the chart width
-  const totalUsed=d.sections.reduce((a,s)=>a+secW(s),0)+(d.sections.length-1)*SEC_GAP;
-  secX=Math.round((W-totalUsed)/2);
-
+  // Draw each section stacked vertically
+  let secTopY=VPAD+44;
   d.sections.forEach((sec,si)=>{
     const sw=secW(sec);
-    const secCX=secX+sw/2;
-    const nPts=sec.points.length;
+    // Center section horizontally
+    const secStartX=Math.round((W-sw)/2);
+    const secCX=Math.round(W/2);
 
-    // ── Section header box (center of chart, between base and structure rows) ──
-    ctx.fillStyle=tc.bub;
-    ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.5;
-    ctx.beginPath();ctx.roundRect(secX,BOX_Y,sw,BOX_H,5);ctx.fill();ctx.stroke();
+    // Y positions within this section
+    const baseY=secTopY+BUB_ZONE/2;
+    const boxY=secTopY+BUB_ZONE+8;
+    const structY=boxY+BOX_H+8+BUB_ZONE/2;
+
+    // Horizontal guide lines for base and struct rows
+    ctx.setLineDash([2,5]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(secStartX-8,baseY);ctx.lineTo(secStartX+sw+8,baseY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(secStartX-8,structY);ctx.lineTo(secStartX+sw+8,structY);ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Row labels on left side
+    ctx.save();
+    ctx.translate(secStartX-28,baseY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle='#1a6bbf';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BASE',0,0);
+    ctx.restore();
+    ctx.save();
+    ctx.translate(secStartX-28,structY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle='#777';
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STRUCT',0,0);
+    ctx.restore();
+
+    // Section header box (between base and structure rows)
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=tc.bstr;ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(secStartX,boxY,sw,BOX_H,5);ctx.fill();ctx.stroke();
     ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText(sec.label,secCX,BOX_Y+BOX_H/2);
+    ctx.fillText(sec.label,secCX,boxY+BOX_H/2);
 
-    // Draw each point column
+    // Draw each point
     sec.points.forEach((pt,pi)=>{
-      const cx=secX+pi*(ptW+PT_GAP)+ptW/2;
-      const baseY=BASE_TOP_Y+BUB_ZONE/2;   // base bubble Y — above box
-      const structY=STRUCT_Y+BUB_ZONE/2;   // structure bubble Y — below box
+      const cx=secStartX+pi*(ptW+PT_GAP)+ptW/2;
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
 
       // Direction label above base bubble
       ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
@@ -1987,42 +1998,37 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
         ctx.strokeStyle=tc.tx3;ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.stroke();ctx.setLineDash([]);
         ctx.beginPath();ctx.arc(cx,structY,BR2,0,Math.PI*2);ctx.stroke();
         ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText('N/A',cx,baseY);ctx.fillText('N/A',cx,structY);
-        ctx.restore();
-        // Dashed vertical from box to both
-        ctx.setLineDash([2,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.5;
-        ctx.beginPath();ctx.moveTo(cx,BOX_Y);ctx.lineTo(cx,baseY+BR2);ctx.stroke();
-        ctx.beginPath();ctx.moveTo(cx,BOX_Y+BOX_H);ctx.lineTo(cx,structY-BR2);ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.fillText('N/A',cx,baseY);ctx.fillText('N/A',cx,structY);ctx.restore();
         return;
       }
 
-      const baseId=pt.id*10+1,structId=pt.id*10+2;
-
-      // Dashed vertical connectors from box to bubbles
+      // Dashed connectors through box
       ctx.setLineDash([2,4]);ctx.strokeStyle=tc.dash;ctx.lineWidth=0.6;
-      ctx.beginPath();ctx.moveTo(cx,BOX_Y);ctx.lineTo(cx,baseY+BR2+ARM2+2);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(cx,BOX_Y+BOX_H);ctx.lineTo(cx,structY-BR2-ARM2-2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,boxY);ctx.lineTo(cx,baseY+BR2+ARM2+2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,boxY+BOX_H);ctx.lineTo(cx,structY-BR2-ARM2-2);ctx.stroke();
       ctx.setLineDash([]);
 
-      // Base bubble — above box
+      // Base bubble (above box)
       drawBSBub(cx,baseY,pt.base.amp,pt.base.phase,pt.base.ref,baseId,'#1a6bbf');
 
-      // Structure bubble — below box
+      // Structure bubble (below box)
       drawBSBub(cx,structY,pt.struct.amp,pt.struct.phase,false,structId,'#777777');
+
+      // Direction label below structure bubble
+      ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+      ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText(pt.dir,cx,structY+BR2+ARM2+3);
     });
 
-    // Section separator
+    // Separator line between sections
     if(si<d.sections.length-1){
-      const lineX=secX+sw+SEC_GAP/2;
-      ctx.setLineDash([3,5]);ctx.strokeStyle=tc.dash;ctx.lineWidth=1;
-      ctx.beginPath();ctx.moveTo(lineX,BASE_TOP_Y);ctx.lineTo(lineX,STRUCT_Y+BUB_ZONE);ctx.stroke();
+      const sepY=secTopY+SEC_H+SEC_PAD/2;
+      ctx.setLineDash([4,6]);ctx.strokeStyle=tc.dash;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(HPAD-20,sepY);ctx.lineTo(W-HPAD+20,sepY);ctx.stroke();
       ctx.setLineDash([]);
-      // Label between sections
-      ctx.font='9px Roboto,sans-serif';ctx.fillStyle=tc.tx3;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('│',lineX,BOX_Y+BOX_H/2);
     }
-    secX+=sw+SEC_GAP;
+
+    secTopY+=SEC_H+SEC_PAD;
   });
 
   // Footer
@@ -2370,18 +2376,20 @@ function getChartDims(){
   const N=nodes.length||1;
   const layout=document.getElementById('layout').value;
   if(layout==='BS'){
-    // Match renderBSToCanvas layout math exactly
+    // Match renderBSToCanvas vertical stacking layout
     const d=getBSData();
-    const BR2b=24,ARM2b=16,BSLOT2b=BR2b+ARM2b+8;
-    const PT_GAP2=14,SEC_GAP2=48;
-    const BUB_ZONE2=BSLOT2b*2+8;
+    const BR2b=24,ARM2b=16;
+    const PT_GAP2=14;
     const BOX_H2=36;
+    const BUB_ZONE2=BR2b*2+ARM2b+16;
+    const SEC_H2=BUB_ZONE2+8+BOX_H2+8+BUB_ZONE2+20;
+    const SEC_PAD2=20;
     const HPAD2=70,VPAD2=72;
     const ptW2=BR2b*2+8;
-    const secW2=(sec)=>sec.points.length*(ptW2+PT_GAP2)-PT_GAP2;
-    const totalSecW2=d.sections.reduce((a,s)=>a+secW2(s),0)+(d.sections.length-1)*SEC_GAP2;
-    const W2=HPAD2*2+Math.max(totalSecW2,400);
-    const H2=VPAD2+44+BUB_ZONE2+6+BOX_H2+6+BUB_ZONE2+28+16;
+    const secW2=(sec)=>Math.max(sec.points.length,1)*(ptW2+PT_GAP2)-PT_GAP2;
+    const maxSecW2=Math.max(...d.sections.map(s=>secW2(s)),400);
+    const W2=HPAD2*2+maxSecW2;
+    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+28+16;
     return {W:W2,H:H2};
   }
   if(layout==='FB'){
@@ -3418,6 +3426,60 @@ function runFBDiagnosis(){
   redraw();
 }
 
+// ── Autosave current state to localStorage ───────────────────────────
+function autosave(){
+  try{
+    const state={
+      nodes:JSON.parse(JSON.stringify(nodes)),
+      footBaseData:JSON.parse(JSON.stringify(footBaseData)),
+      bsData:bsData?JSON.parse(JSON.stringify(bsData)):null,
+      bsMode,
+      annotations:JSON.parse(JSON.stringify(annotations)),
+      layout:document.getElementById('layout')?.value||'H',
+      unit:document.getElementById('amp-unit')?.value||'in/s',
+      rpm:document.getElementById('global-rpm')?.value||'',
+      title:document.getElementById('chart-title')?.value||'',
+      date:document.getElementById('doc-date')?.value||'',
+      theme:currentTheme,
+      ts:Date.now(),
+    };
+    localStorage.setItem('phaseChart_autosave',JSON.stringify(state));
+  }catch(e){}
+}
+
+function restoreAutosave(){
+  try{
+    const raw=localStorage.getItem('phaseChart_autosave');
+    if(!raw)return false;
+    const state=JSON.parse(raw);
+    // Only restore if saved within last 2 hours (not stale)
+    if(!state.ts||Date.now()-state.ts>7200000)return false;
+    if(state.nodes&&state.nodes.length){
+      nodes=state.nodes;
+      // Restore IDs
+      let maxNid=0,maxMid=0;
+      nodes.forEach(n=>{maxNid=Math.max(maxNid,n.id);n.meas.forEach(m=>maxMid=Math.max(maxMid,m.id));});
+      nid=maxNid+1;mid=maxMid+1;
+    }
+    if(state.footBaseData)footBaseData=state.footBaseData;
+    if(state.bsData)bsData=state.bsData;
+    if(state.bsMode)bsMode=state.bsMode;
+    if(state.annotations)annotations=state.annotations;
+    // Restore UI fields
+    const layoutSel=document.getElementById('layout');
+    if(layoutSel&&state.layout)layoutSel.value=state.layout;
+    const unitSel=document.getElementById('amp-unit');
+    if(unitSel&&state.unit)unitSel.value=state.unit;
+    const rpmEl=document.getElementById('global-rpm');
+    if(rpmEl&&state.rpm)rpmEl.value=state.rpm;
+    const titleEl=document.getElementById('chart-title');
+    if(titleEl&&state.title)titleEl.value=state.title;
+    const dateEl=document.getElementById('doc-date');
+    if(dateEl&&state.date)dateEl.value=state.date;
+    return true;
+  }catch(e){return false;}
+}
+
 function runDiagnosis(){
   bubbleSeverity={};
   diagResults=[];
@@ -4196,18 +4258,23 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
-  '1.2.9':{
-    date:'03/24/2026',
+  '1.3.0':{
+    date:'03/27/2026',
     items:[
       'Base/Structure layout — new layout for testing base plate vs foundation/structure phase relationships',
-      'Horizontal grid with compass directions — 6 default points (NDE-N/S/E, DE-N/S/E), fully customizable',
-      'Single base or split Driver/Driven base modes for different equipment configurations',
+      'Vertical stacking — multi-section Base/Structure charts now stack sections top to bottom for clarity, each with its own full-width base row, label box, and structure row',
+      'Default 8 compass points per section: NDE-N, NDE-S, NDE-E, NDE-W, DE-N, DE-S, DE-E, DE-W',
+      'Add as many custom measurement points as needed per section',
+      'Single Base, Driver + Driven, and 3-Base Train configuration modes',
       'Diagnosis checks: base/structure separation, base rocking, foundation flexibility, cross-section mismatch',
       'Inaccessible point option — skip any location that cannot be measured',
-      'Base/Structure data saves and restores with history',
-      'High Contrast theme (⚡) — pure black background with maximum contrast, ideal for bright outdoor or industrial environments',
+      'Structure direction labels shown below structure bubbles matching base labels above',
+      'Point label keyboard bug fixed — typing no longer dismisses keyboard on iOS',
+      'Autosave — full app state saved automatically and restored if you navigate away (e.g. after print preview)',
+      'Print report table and share card fully support Base/Structure layout',
+      'High Contrast theme (⚡) — pure black background, ideal for bright outdoor or industrial environments',
       'Forest theme (🌲) — dark green oscilloscope-inspired palette, classic instrumentation feel',
-      'Both new themes fully supported across all layouts, diagnosis cards, and chart exports',
+      'Both themes fully supported across all layouts, diagnosis cards, and exports',
     ]
   },
   '1.2.8':{
@@ -4369,6 +4436,13 @@ function boot(){
   document.getElementById('tpl-modal').addEventListener('click',function(e){if(e.target===this)closeTpl();});
   document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
   document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
+  // Restore autosaved state if navigating back from print window
+  const didRestore=restoreAutosave();
+  if(didRestore){
+    // Restore theme from autosave (already set above, but ensure sidebar matches)
+    const as=JSON.parse(localStorage.getItem('phaseChart_autosave')||'{}');
+    if(as.theme&&as.theme!==currentTheme)setTheme(as.theme);
+  }
   renderSidebar();
   renderHistory();
 }
