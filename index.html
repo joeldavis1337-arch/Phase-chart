@@ -2999,44 +2999,61 @@ function desktopPrint(){
       var img=document.getElementById('chartimg');
       if(!img.naturalWidth||!img.naturalHeight) return;
 
-      // US Letter dimensions at 96dpi
-      var MARGIN=46; // ~0.5in margins each side
-      var LETTER_W=816; // 8.5in
-      var LETTER_H=1056; // 11in
-      var TITLE_H=32;
+      // iOS Safari ignores JS width/height before printing.
+      // The only reliable method: set img to natural size, then
+      // use CSS transform:scale() to fit it into the page.
+      // We also force the page wrapper to Letter width so iOS
+      // knows the intended print width.
 
-      var portraitW=LETTER_W-MARGIN*2;
-      var portraitH=LETTER_H-MARGIN*2-TITLE_H;
-      var landscapeW=LETTER_H-MARGIN*2;
-      var landscapeH=LETTER_W-MARGIN*2-TITLE_H;
+      var MARGIN_IN=0.5; // inches
+      var DPI=96;
+      var LETTER_W_IN=8.5;
+      var LETTER_H_IN=11;
 
-      var iw=img.naturalWidth;
-      var ih=img.naturalHeight;
+      var portraitPrintW=(LETTER_W_IN-MARGIN_IN*2)*DPI; // 672px
+      var portraitPrintH=(LETTER_H_IN-MARGIN_IN*2)*DPI-36; // 924px minus title
+      var landscapePrintW=(LETTER_H_IN-MARGIN_IN*2)*DPI; // 960px
+      var landscapePrintH=(LETTER_W_IN-MARGIN_IN*2)*DPI-36; // 636px minus title
+
+      var iw=img.naturalWidth/window.devicePixelRatio;
+      var ih=img.naturalHeight/window.devicePixelRatio;
       var ratio=iw/ih;
 
-      // Try to fill portrait width first
-      var fitW=portraitW;
-      var fitH=Math.round(fitW/ratio);
+      // Render image at natural (unscaled) size
+      img.style.width=iw+'px';
+      img.style.height=ih+'px';
+      img.style.display='block';
+      img.style.transformOrigin='top left';
 
-      if(fitH<=portraitH){
-        // Fits portrait — use full width
-        img.style.width=fitW+'px';
-        img.style.height=fitH+'px';
-      } else {
-        // Too tall for portrait — try landscape
-        fitW=landscapeW;
-        fitH=Math.round(fitW/ratio);
-        if(fitH>landscapeH){fitH=landscapeH;fitW=Math.round(fitH*ratio);}
-        // Apply landscape
-        var s=document.createElement('style');
-        s.textContent='@page{size:landscape;margin:.5in}body{width:'+LETTER_H+'px}';
-        document.head.appendChild(s);
-        img.style.width=fitW+'px';
-        img.style.height=fitH+'px';
+      var scaleX=portraitPrintW/iw;
+      var scaleY=portraitPrintH/ih;
+      var scale=Math.min(scaleX,scaleY,1); // never upscale beyond natural
+
+      var isLandscape=false;
+      if(scale*ih>portraitPrintH||(scale<0.3&&ratio>1.2)){
+        // Too tall or very wide — go landscape
+        scaleX=landscapePrintW/iw;
+        scaleY=landscapePrintH/ih;
+        scale=Math.min(scaleX,scaleY);
+        isLandscape=true;
       }
 
-      img.style.display='block';
-      setTimeout(function(){window.print();},150);
+      img.style.transform='scale('+scale+')';
+      // Collapsed height after scale — set wrapper to prevent extra whitespace
+      document.getElementById('chart-page').style.height=Math.round(ih*scale+36)+'px';
+      document.getElementById('chart-page').style.overflow='hidden';
+      document.getElementById('chart-page').style.width=Math.round(iw*scale)+'px';
+
+      var styles=[];
+      if(isLandscape) styles.push('@page{size:landscape;margin:0.5in}');
+      else styles.push('@page{size:portrait;margin:0.5in}');
+      styles.push('body{margin:0;padding:0}');
+      styles.push('#chart-page{padding:0!important}');
+      var s=document.createElement('style');
+      s.textContent=styles.join(' ');
+      document.head.appendChild(s);
+
+      setTimeout(function(){window.print();},200);
     }
     var img=document.getElementById('chartimg');
     if(img.complete&&img.naturalWidth){scaleAndPrint();}
