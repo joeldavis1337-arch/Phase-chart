@@ -22,13 +22,15 @@ body.forest .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns
 body.forest .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237ab88a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 body{background:var(--bg);color:var(--tx)}
 .app{display:flex;flex-direction:column;height:100%;height:-webkit-fill-available}
-.topbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
-.topbar label{font-size:12px;color:var(--tx2);display:flex;align-items:center;gap:4px;white-space:nowrap}
-.topbar input[type=text],.topbar input[type=number]{font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px}
-.topbar select{font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:5px 24px 5px 8px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:36px;background-repeat:no-repeat;background-position:right 7px center}
+.topbar{display:flex;align-items:center;gap:0;padding:0 10px;padding-top:env(safe-area-inset-top);background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0;min-height:48px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.topbar-group{display:flex;align-items:center;gap:4px;padding:6px 8px;flex-shrink:0}
+.topbar-divider{width:1px;height:28px;background:var(--bd);flex-shrink:0;margin:0 2px}
+.topbar label{font-size:11px;color:var(--tx3);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.topbar input[type=text],.topbar input[type=number]{font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px}
+.topbar select{font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 22px 4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;background-repeat:no-repeat;background-position:right 6px center}
 body.light .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
 body.dark  .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none'/%3E%3C/svg%3E")}
-.btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:7px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:36px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:inline-flex;align-items:center;gap:5px}
+.btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:6px;padding:5px 11px;font-size:13px;cursor:pointer;color:var(--tx);min-height:32px;white-space:nowrap;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:inline-flex;align-items:center;gap:4px}
 .btn:active{opacity:.6}
 .tab-bar{display:flex;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd)}
 .tab-bar button{flex:1;padding:11px 0;font-size:15px;background:none;border:none;cursor:pointer;color:var(--tx3);border-bottom:3px solid transparent;font-family:'Roboto',sans-serif;touch-action:manipulation;user-select:none;-webkit-appearance:none}
@@ -52,7 +54,15 @@ input[type=range]{flex:1;height:28px;cursor:pointer;-webkit-appearance:none;appe
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:var(--bd);border-radius:2px}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;background:var(--tx);border-radius:50%;margin-top:-11px;border:2px solid var(--bg3)}
 .val{min-width:56px;text-align:right;font-size:11px;color:var(--tx)}
-.mrow{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 8px;display:flex;flex-direction:column;gap:5px}
+.mrow{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:7px 8px;display:flex;flex-direction:column;gap:5px;position:relative;transition:box-shadow .15s,opacity .15s}
+.mrow.drag-over{box-shadow:0 0 0 2px #1a6bbf;background:var(--bg3)}
+.mrow.dragging{opacity:.4;box-shadow:0 4px 16px rgba(0,0,0,.3)}
+.drag-handle{cursor:grab;color:var(--tx4);font-size:16px;padding:0 4px;line-height:1;touch-action:none;user-select:none;flex-shrink:0;display:flex;align-items:center}
+.drag-handle:active{cursor:grabbing}
+.bs-point-cell.drag-over{box-shadow:0 0 0 2px #1a6bbf;background:var(--bg3)}
+.bs-point-cell.dragging{opacity:.4}
+.fb-foot-cell.drag-over{box-shadow:0 0 0 2px #1a6bbf;background:var(--bg3)}
+.fb-foot-cell.dragging{opacity:.4}
 .mhdr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .mhdr input.mlabel{width:30px;font-size:16px;font-weight:700;background:transparent;border:none;border-bottom:1px solid var(--bd);outline:none;text-align:center;color:var(--tx);font-family:'Roboto',sans-serif;padding:2px 0;-webkit-appearance:none;min-height:28px}
 .nc-sel{font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:4px;padding:4px 24px 4px 7px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;background-repeat:no-repeat;background-position:right 6px center}
@@ -115,6 +125,14 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
 .hist-card-meta{font-size:11px;color:var(--tx3);display:flex;gap:10px;flex-wrap:wrap}
 .hist-card-load{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--tx2);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;-webkit-appearance:none;align-self:flex-start;margin-top:2px}
 .hist-card-load:active{opacity:.6}
+.hist-card-share{background:none;border:1px solid var(--bd);border-radius:6px;padding:6px 10px;font-size:12px;color:var(--tx3);cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;-webkit-appearance:none;margin-top:2px}
+.hist-card-share:active{opacity:.6}
+.import-banner{position:fixed;top:0;left:0;right:0;z-index:800;background:#1a6bbf;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 12px rgba(0,0,0,.3);animation:slideDown .3s ease}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.import-banner-text{flex:1;font-size:13px;font-weight:500;line-height:1.4}
+.import-banner-btn{background:#fff;color:#1a6bbf;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Roboto',sans-serif;touch-action:manipulation;white-space:nowrap}
+.import-banner-btn:active{opacity:.7}
+.import-banner-dismiss{background:none;border:none;color:rgba(255,255,255,.7);font-size:22px;cursor:pointer;padding:0 4px;line-height:1;touch-action:manipulation}
 .hist-empty{font-size:13px;color:var(--tx3);text-align:center;padding:32px 16px;line-height:1.6}
 .hist-save-btn{background:var(--bg3);border:1px solid var(--bd2);border-radius:8px;padding:11px;font-size:14px;font-weight:700;color:var(--tx);cursor:pointer;text-align:center;min-height:44px;width:100%;font-family:'Roboto',sans-serif;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:flex;align-items:center;justify-content:center;gap:6px}
 .hist-save-btn:active{opacity:.6}
@@ -291,7 +309,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
 }
 .overflow-dropdown{position:fixed;top:0;left:0;right:0;bottom:0;z-index:900;display:none}
 .overflow-dropdown.show{display:block}
-.overflow-panel{position:absolute;top:calc(var(--topbar-h,100px) + 2px);right:8px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:901}
+.overflow-panel{position:absolute;top:calc(var(--topbar-h,56px) + 2px);right:8px;background:var(--bg3);border:1px solid var(--bd);border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:901}
 .overflow-item{background:none;border:none;padding:11px 14px;font-size:14px;font-family:'Roboto',sans-serif;color:var(--tx);cursor:pointer;text-align:left;border-radius:8px;touch-action:manipulation;display:flex;align-items:center;gap:8px;-webkit-appearance:none}
 .overflow-item:active,.overflow-item:hover{background:var(--bg2)}
 .overflow-sep{height:1px;background:var(--bd);margin:4px 0}
@@ -300,49 +318,66 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
 <body class="light">
 <div class="app">
   <div class="topbar">
-    <label>Title: <input type="text" id="chart-title" value="Cross-Channel Phase Analysis" style="width:138px" oninput="redraw()"></label>
-    <label>RPM: <input type="number" id="global-rpm" placeholder="1780" style="width:68px" inputmode="numeric" oninput="redraw()"></label>
-    <label>Units: <select id="amp-unit" onchange="onUnitChange()">
-      <option value="mils">mils</option>
-      <option value="in/s" selected>in/s</option>
-      <option value="mm/s">mm/s</option>
-      <option value="G">G's</option>
-      <option value="µm">µm</option>
-    </select></label>
-    <label>Layout: <select id="layout" onchange="renderSidebar();redraw()">
-      <option value="H">Horizontal</option>
-      <option value="V">Vertical</option>
-      <option value="FB">Foot/Base</option>
-      <option value="BS">Base/Structure</option>
-    </select></label>
-    <label>Theme: <select id="theme-sel" onchange="setTheme(this.value)" style="width:52px">
-      <option value="light">☀️</option>
-      <option value="dark">🌙</option>
-      <option value="navy">⚓</option>
-      <option value="hicon">⚡</option>
-      <option value="forest">🌲</option>
-    </select></label>
-    <button class="btn topbar-collapsible" id="print-btn">🖨 Print / Share</button>
-    <button class="btn topbar-collapsible" id="sc-btn-top" onclick="openShareCard()">📋 Share Card</button>
-    <button class="btn topbar-collapsible" onclick="openTemplates()">📐 Templates</button>
-    <button class="btn topbar-collapsible" id="wn-btn" onclick="openWN()">✨ What's New</button>
-    <label class="topbar-collapsible">Date: <input type="text" id="doc-date" value="" placeholder="auto" style="width:96px" oninput="redraw()"></label>
-    <button class="btn topbar-collapsible" onclick="openHelp()">❓ Help</button>
-    <button class="btn topbar-collapsible" onclick="openBugReport()">🐛 Report</button>
-    <button class="overflow-menu-btn" id="overflow-btn" onclick="toggleOverflow()">⋯ More</button>
+    <!-- Group 1: Chart identity -->
+    <div class="topbar-group">
+      <label>Title <input type="text" id="chart-title" value="Cross-Channel Phase Analysis" style="width:130px" oninput="redraw()"></label>
+      <label>RPM <input type="number" id="global-rpm" placeholder="—" style="width:62px" inputmode="numeric" oninput="redraw()"></label>
+    </div>
+    <div class="topbar-divider"></div>
+    <!-- Group 2: Chart config -->
+    <div class="topbar-group">
+      <label>Units <select id="amp-unit" onchange="onUnitChange()">
+        <option value="mils">mils</option>
+        <option value="in/s" selected>in/s</option>
+        <option value="mm/s">mm/s</option>
+        <option value="G">G's</option>
+        <option value="µm">µm</option>
+      </select></label>
+      <label>Layout <select id="layout" onchange="renderSidebar();redraw()">
+        <option value="H">Horizontal</option>
+        <option value="V">Vertical</option>
+        <option value="FB">Foot/Base</option>
+        <option value="BS">Base/Structure</option>
+      </select></label>
+      <label>Theme <select id="theme-sel" onchange="setTheme(this.value)" style="width:48px">
+        <option value="light">☀️</option>
+        <option value="dark">🌙</option>
+        <option value="navy">⚓</option>
+        <option value="hicon">⚡</option>
+        <option value="forest">🌲</option>
+      </select></label>
+    </div>
+    <div class="topbar-divider"></div>
+    <!-- Group 3: Actions -->
+    <div class="topbar-group topbar-collapsible">
+      <button class="btn" id="print-btn">🖨 Print</button>
+      <button class="btn" id="sc-btn-top" onclick="openShareCard()">📤 Share</button>
+      <button class="btn" onclick="openTemplates()">📐 Templates</button>
+    </div>
+    <div class="topbar-divider topbar-collapsible"></div>
+    <!-- Group 4: Utility -->
+    <div class="topbar-group topbar-collapsible">
+      <label style="font-size:11px;color:var(--tx3)">Date <input type="text" id="doc-date" value="" placeholder="auto" style="width:82px" oninput="redraw()"></label>
+      <button class="btn" id="wn-btn" onclick="openWN()">✨</button>
+      <button class="btn" onclick="openHelp()">❓</button>
+      <button class="btn" onclick="openBugReport()">🐛</button>
+    </div>
+    <!-- Mobile overflow -->
+    <div style="flex:1"></div>
+    <button class="overflow-menu-btn" id="overflow-btn" onclick="toggleOverflow()">⋯</button>
   </div>
   <!-- Overflow dropdown (mobile only) -->
   <div class="overflow-dropdown" id="overflow-dropdown" onclick="closeOverflow()">
     <div class="overflow-panel" onclick="event.stopPropagation()">
       <button class="overflow-item" onclick="closeOverflow();document.getElementById('print-btn').click()">🖨 Print / Share</button>
-      <button class="overflow-item" onclick="closeOverflow();openShareCard()">📋 Share Card</button>
+      <button class="overflow-item" onclick="closeOverflow();openShareCard()">📤 Share Card</button>
       <button class="overflow-item" onclick="closeOverflow();openTemplates()">📐 Templates</button>
+      <div class="overflow-sep"></div>
+      <label class="overflow-item" style="cursor:pointer;gap:8px">📅 Date <input type="text" id="doc-date-mobile" value="" placeholder="auto" style="flex:1;font-size:13px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif;" oninput="syncDate(this)"></label>
       <div class="overflow-sep"></div>
       <button class="overflow-item" onclick="closeOverflow();openWN()">✨ What's New</button>
       <button class="overflow-item" onclick="closeOverflow();openHelp()">❓ Help</button>
-      <button class="overflow-item" onclick="closeOverflow();openBugReport()">🐛 Report</button>
-      <div class="overflow-sep"></div>
-      <label class="overflow-item" style="cursor:pointer">Date: <input type="text" id="doc-date-mobile" value="" placeholder="auto" style="flex:1;font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif;margin-left:6px" oninput="syncDate(this)"></label>
+      <button class="overflow-item" onclick="closeOverflow();openBugReport()">🐛 Report a Bug</button>
     </div>
   </div>
   <div class="tab-bar">
@@ -599,7 +634,7 @@ function getDocDate(){
   return (v&&v.value.trim())||getTodayStr();
 }
 function getDocVersion(){
-  return '1.3.0';
+  return '1.3.1';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -853,6 +888,7 @@ function renderBSSidebar(){
       const labelRow=document.createElement('div');
       labelRow.className='bs-point-label-row';
       labelRow.innerHTML=`
+        <span class="drag-handle" title="Drag to reorder" style="cursor:grab;color:var(--tx4);font-size:16px;padding:0 2px;touch-action:none;user-select:none">⠿</span>
         <input class="bs-point-label" value="${esc(pt.dir)}" maxlength="6" placeholder="N"
           style="width:62px"
           oninput="updateBSDir(${sec.id},${pt.id},this.value)"
@@ -923,6 +959,8 @@ function renderBSSidebar(){
     row.appendChild(addBtn);
     card.appendChild(row);
     el.appendChild(card);
+    // Wire horizontal drag-to-reorder after row is in DOM
+    initBSDrag(row, sec.id);
   });
 }
 
@@ -978,9 +1016,9 @@ function renderFBSidebar(){
       cell.className='fb-foot-cell';
       const isRef=loc.foot.ref;
       cell.innerHTML=`
-        <div class="fb-foot-label">
-          ${esc(loc.label)}
-          ${isRef?'<span class="fb-ref-tag">REF</span>':''}
+        <div class="fb-foot-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span>${esc(loc.label)}${isRef?' <span class="fb-ref-tag">REF</span>':''}</span>
+          <span class="drag-handle fb-drag-handle" title="Drag to reorder" style="cursor:grab;color:var(--tx4);font-size:14px;touch-action:none;user-select:none">⠿</span>
         </div>
         <div class="fb-inaccessible-row">
           <input type="checkbox" id="fb-na-${loc.id}" ${loc.inaccessible?'checked':''}
@@ -1038,6 +1076,8 @@ function renderFBSidebar(){
     });
     card.appendChild(grid);
     el.appendChild(card);
+    // Wire drag-to-reorder for this node's locations
+    initFBDrag(grid, n.id);
   });
 }
 
@@ -1160,6 +1200,8 @@ function renderSidebar(){
       md.innerHTML=measHTML(n.id,m,u,n.coupSide||'R');
       mEl.appendChild(md);
     });
+    // Wire drag-to-reorder after all rows are in the DOM
+    initMeasDrag(mEl, n.id);
   });
   if(nodes.length<2){
     const ab=document.createElement('button');
@@ -1219,6 +1261,7 @@ function measHTML(nid,m,u,coupSide){
 
   return `
     <div class="mhdr">
+      <span class="drag-handle" title="Drag to reorder">⠿</span>
       <input class="mlabel" value="${esc(m.label)}" onchange="upM(${nid},${m.id},'label',this.value)">
       <select class="nc-sel" style="flex:1" onchange="upM(${nid},${m.id},'pos',this.value);renderSidebar();redraw()">
         ${posOpts.map(o=>`<option value="${o.v}"${o.v===m.pos?' selected':''}>${o.l}</option>`).join('')}
@@ -1510,7 +1553,8 @@ function hitAnnotation(x,y){
   for(let i=annotations.length-1;i>=0;i--){
     const a=annotations[i];
     const dx=lx-a.x,dy=ly-a.y;
-    if(Math.abs(dx)<60&&Math.abs(dy)<20)return a;
+    // Generous hit area — annotation pin dot + label box
+    if(dx>-8&&dx<140&&Math.abs(dy)<22)return a;
   }
   return null;
 }
@@ -1608,25 +1652,98 @@ function hideBubblePopup(){
   document.getElementById('bubble-popup').classList.remove('show');
 }
 
+// Annotation drag state
+let _annDrag=null; // {ann, startScreenX, startScreenY, origX, origY}
+
+function getCanvasScale(){
+  const vp=document.getElementById('chart-viewport');
+  if(!vp)return 1;
+  const m=vp.style.transform.match(/scale\(([^)]+)\)/);
+  return m?parseFloat(m[1]):1;
+}
+function screenToCanvas(sx,sy){
+  const vp=document.getElementById('chart-viewport');
+  if(!vp)return{x:sx,y:sy};
+  const r=vp.getBoundingClientRect();
+  const s=getCanvasScale();
+  return{x:(sx-r.left)/s,y:(sy-r.top)/s};
+}
+
 function initChartInteraction(){
   const cv=document.getElementById('chart');
   if(!cv)return;
-  cv.addEventListener('touchstart',e=>{
-    const t=e.touches[0];
+
+  function startInteraction(sx,sy){
     hideBubblePopup();
-    startPress(t.clientX,t.clientY);
-  },{passive:true});
-  cv.addEventListener('touchend',e=>{cancelPress();},{passive:true});
-  cv.addEventListener('touchmove',e=>{
-    const t=e.touches[0];
-    const dx=t.clientX-_pressX,dy=t.clientY-_pressY;
+    // Check if touching an annotation — if so start drag immediately
+    const ann=hitAnnotation(sx,sy);
+    if(ann){
+      const cp=screenToCanvas(sx,sy);
+      _annDrag={ann,startScreenX:sx,startScreenY:sy,origX:ann.x,origY:ann.y,moved:false};
+      return; // Don't start long-press timer for annotations
+    }
+    startPress(sx,sy);
+  }
+
+  function moveInteraction(sx,sy){
+    if(_annDrag){
+      const cp=screenToCanvas(sx,sy);
+      const origCP=screenToCanvas(_annDrag.startScreenX,_annDrag.startScreenY);
+      _annDrag.ann.x=_annDrag.origX+(cp.x-origCP.x);
+      _annDrag.ann.y=_annDrag.origY+(cp.y-origCP.y);
+      _annDrag.moved=true;
+      redraw();
+      return;
+    }
+    const dx=sx-_pressX,dy=sy-_pressY;
     if(dx*dx+dy*dy>100)cancelPress();
+  }
+
+  function endInteraction(sx,sy){
+    if(_annDrag){
+      if(!_annDrag.moved){
+        // Tap on annotation without moving = open edit modal
+        openAnnModal(_annDrag.ann.x,_annDrag.ann.y,_annDrag.ann.id);
+      } else {
+        autosave();
+      }
+      _annDrag=null;
+      return;
+    }
+    cancelPress();
+  }
+
+  cv.addEventListener('touchstart',e=>{
+    if(e.touches.length>1){
+      // Multi-touch (pinch zoom) — cancel any pending interaction immediately
+      cancelPress();
+      _annDrag=null;
+      return;
+    }
+    const t=e.touches[0];
+    startInteraction(t.clientX,t.clientY);
   },{passive:true});
-  cv.addEventListener('mousedown',e=>{hideBubblePopup();startPress(e.clientX,e.clientY);});
-  cv.addEventListener('mouseup',cancelPress);
-  cv.addEventListener('mouseleave',cancelPress);
+  cv.addEventListener('touchmove',e=>{
+    if(e.touches.length>1){
+      // Second finger appeared mid-gesture — cancel everything
+      cancelPress();
+      _annDrag=null;
+      return;
+    }
+    const t=e.touches[0];
+    moveInteraction(t.clientX,t.clientY);
+  },{passive:true});
+  cv.addEventListener('touchend',e=>{
+    // If any touches still active, don't fire end interaction
+    if(e.touches.length>0)return;
+    const t=e.changedTouches[0];
+    endInteraction(t.clientX,t.clientY);
+  },{passive:true});
+  cv.addEventListener('mousedown',e=>{startInteraction(e.clientX,e.clientY);});
+  cv.addEventListener('mouseup',e=>{endInteraction(e.clientX,e.clientY);});
+  cv.addEventListener('mouseleave',()=>{if(_annDrag){_annDrag=null;}cancelPress();});
   cv.addEventListener('mousemove',e=>{
-    if(_pressTimer){const dx=e.clientX-_pressX,dy=e.clientY-_pressY;if(dx*dx+dy*dy>100)cancelPress();}
+    if(_annDrag||_pressTimer)moveInteraction(e.clientX,e.clientY);
   });
 }
 
@@ -2657,7 +2774,11 @@ function shareCard(format, action){
   const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'};
   const sevLabel={fault:'⚠ FAULT — Action Required',warn:'⚡ WARNING — Monitor Closely',ok:'✓ NORMAL — No Issues',info:'ℹ INFO'};
   const overallSev=diagResults.some(r=>r.type==='fault')?'fault':diagResults.some(r=>r.type==='warn')?'warn':diagResults.some(r=>r.type==='ok')?'ok':'info';
-  const findings=diagResults.filter(r=>r.type!=='info').slice(0,4);
+  // Sort: faults first, then warnings, then ok — so most critical always visible
+  const findings=diagResults.filter(r=>r.type!=='info').sort((a,b)=>{
+    const rank={fault:0,warn:1,ok:2};
+    return (rank[a.type]||2)-(rank[b.type]||2);
+  }).slice(0,4);
 
   const DPR=3;  // High res for sharing — always 3x regardless of screen
   let W,H;
@@ -2737,7 +2858,7 @@ function shareCard(format, action){
     ctx.fillStyle='#fff';ctx.font='bold 11px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText(sl,rx+rw/2,115);
     let fy=148;ctx.textAlign='left';ctx.textBaseline='alphabetic';
-    findings.slice(0,3).forEach(r=>{
+    findings.slice(0,4).forEach(r=>{
       const fc=sevColor[r.type]||'#888';
       ctx.fillStyle=fc;ctx.fillRect(rx,fy-11,3,48);
       ctx.fillStyle='#111';ctx.font='bold 10px Roboto,sans-serif';
@@ -2747,7 +2868,7 @@ function shareCard(format, action){
       const words=r.desc.split(' ');let line='';let ly=fy+13;
       words.forEach(w=>{const test=line?line+' '+w:w;if(ctx.measureText(test).width<rw-12){line=test;}else{if(ly<fy+36){ctx.fillText(line,rx+8,ly);line=w;ly+=11;}}});
       if(line&&ly<fy+38)ctx.fillText(line,rx+8,ly);
-      fy+=58;
+      fy+=52;
     });
     ctx.fillStyle='#f0eeea';ctx.fillRect(0,H-28,W,28);
     ctx.fillStyle='#888';ctx.font='9px Roboto,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -4087,9 +4208,304 @@ function renderDiagResults(results){
 const HIST_KEY='phaseChart_history';
 const HIST_MAX=20;
 
+// ── Drag-to-reorder measurement points ──────────────────────────────
+// Works for both mouse (desktop) and touch (mobile) via pointer events
+
+let _dragState=null; // {nodeId, measId, el, startX, startY, clone}
+
+function initMeasDrag(container, nodeId){
+  // Called after meas rows are rendered — wire up pointer events on handles
+  container.querySelectorAll('.mrow').forEach(row=>{
+    const handle=row.querySelector('.drag-handle');
+    if(!handle)return;
+    handle.addEventListener('pointerdown', e=>{
+      e.preventDefault();
+      const rows=[...container.querySelectorAll('.mrow')];
+      const idx=rows.indexOf(row);
+      _dragState={type:'meas',nodeId,idx,el:row,container,startY:e.clientY,lastY:e.clientY,rows};
+      row.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener('pointermove', e=>{
+      if(!_dragState||_dragState.el!==row)return;
+      const dy=e.clientY-_dragState.lastY;
+      _dragState.lastY=e.clientY;
+      // Find which row we're hovering over
+      const allRows=[..._dragState.container.querySelectorAll('.mrow')];
+      let targetIdx=_dragState.idx;
+      const rowH=row.offsetHeight+8;
+      const totalDy=e.clientY-_dragState.startY;
+      targetIdx=Math.max(0,Math.min(allRows.length-1,_dragState.idx+Math.round(totalDy/rowH)));
+      allRows.forEach((r,i)=>{r.classList.toggle('drag-over',i===targetIdx&&r!==row);});
+    });
+    handle.addEventListener('pointerup', e=>{
+      if(!_dragState||_dragState.el!==row)return;
+      const allRows=[..._dragState.container.querySelectorAll('.mrow')];
+      let targetIdx=_dragState.idx;
+      const rowH=row.offsetHeight+8;
+      const totalDy=e.clientY-_dragState.startY;
+      targetIdx=Math.max(0,Math.min(allRows.length-1,_dragState.idx+Math.round(totalDy/rowH)));
+      allRows.forEach(r=>r.classList.remove('drag-over','dragging'));
+      if(targetIdx!==_dragState.idx){
+        // Reorder in data
+        const n=nodes.find(x=>x.id===nodeId);
+        if(n){
+          const moved=n.meas.splice(_dragState.idx,1)[0];
+          n.meas.splice(targetIdx,0,moved);
+          renderSidebar();runDiagnosis();
+        }
+      }
+      _dragState=null;
+    });
+    handle.addEventListener('pointercancel',()=>{
+      if(_dragState){_dragState.el.classList.remove('dragging');_dragState=null;}
+    });
+  });
+}
+
+function initFBDrag(grid, nodeId){
+  // Drag-to-reorder FB foot cells — horizontal (left/right) in 2-column grid
+  grid.querySelectorAll('.fb-foot-cell').forEach(cell=>{
+    const handle=cell.querySelector('.fb-drag-handle');
+    if(!handle)return;
+    let startX=0,startY=0,dragging=false,origIdx=-1;
+    const cells=()=>[...grid.querySelectorAll('.fb-foot-cell')];
+
+    handle.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      origIdx=cells().indexOf(cell);
+      startX=e.clientX;startY=e.clientY;dragging=true;
+      cell.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+
+    handle.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      const all=cells();
+      // Find cell under pointer
+      const cellW=cell.offsetWidth+8;
+      const cellH=cell.offsetHeight+8;
+      const dx=e.clientX-startX;
+      const dy=e.clientY-startY;
+      // Determine target index based on both axes (2-col grid)
+      const cols=2;
+      const dCol=Math.round(dx/cellW);
+      const dRow=Math.round(dy/cellH);
+      let target=Math.max(0,Math.min(all.length-1,origIdx+dCol+dRow*cols));
+      all.forEach((c,i)=>c.classList.toggle('drag-over',i===target&&c!==cell));
+    });
+
+    handle.addEventListener('pointerup',e=>{
+      if(!dragging)return;
+      dragging=false;
+      const all=cells();
+      const cellW=cell.offsetWidth+8;
+      const cellH=cell.offsetHeight+8;
+      const dx=e.clientX-startX;
+      const dy=e.clientY-startY;
+      const cols=2;
+      const dCol=Math.round(dx/cellW);
+      const dRow=Math.round(dy/cellH);
+      let target=Math.max(0,Math.min(all.length-1,origIdx+dCol+dRow*cols));
+      all.forEach(c=>c.classList.remove('drag-over','dragging'));
+      if(target!==origIdx){
+        const fb=getFBNode(nodeId);
+        const moved=fb.locations.splice(origIdx,1)[0];
+        fb.locations.splice(target,0,moved);
+        renderFBSidebar();runFBDiagnosis();
+      }
+      cell.classList.remove('dragging');
+    });
+
+    handle.addEventListener('pointercancel',()=>{
+      dragging=false;
+      cell.classList.remove('dragging');
+      cells().forEach(c=>c.classList.remove('drag-over'));
+    });
+  });
+}
+
+function initBSDrag(row, sectionId){
+  // Wire drag for BS point cells (horizontal reorder)
+  row.querySelectorAll('.bs-point-cell').forEach(cell=>{
+    const handle=cell.querySelector('.drag-handle');
+    if(!handle)return;
+    handle.addEventListener('pointerdown',e=>{
+      e.preventDefault();
+      const cells=[...row.querySelectorAll('.bs-point-cell')];
+      const idx=cells.indexOf(cell);
+      _dragState={type:'bs',sectionId,idx,el:cell,container:row,startX:e.clientX,lastX:e.clientX,cells};
+      cell.classList.add('dragging');
+      handle.setPointerCapture(e.pointerId);
+    });
+    handle.addEventListener('pointermove',e=>{
+      if(!_dragState||_dragState.el!==cell)return;
+      const allCells=[..._dragState.container.querySelectorAll('.bs-point-cell')];
+      const cellW=cell.offsetWidth+8;
+      const totalDx=e.clientX-_dragState.startX;
+      const targetIdx=Math.max(0,Math.min(allCells.length-1,_dragState.idx+Math.round(totalDx/cellW)));
+      allCells.forEach((c,i)=>c.classList.toggle('drag-over',i===targetIdx&&c!==cell));
+    });
+    handle.addEventListener('pointerup',e=>{
+      if(!_dragState||_dragState.el!==cell)return;
+      const allCells=[..._dragState.container.querySelectorAll('.bs-point-cell')];
+      const cellW=cell.offsetWidth+8;
+      const totalDx=e.clientX-_dragState.startX;
+      const targetIdx=Math.max(0,Math.min(allCells.length-1,_dragState.idx+Math.round(totalDx/cellW)));
+      allCells.forEach(c=>c.classList.remove('drag-over','dragging'));
+      if(targetIdx!==_dragState.idx){
+        const d=getBSData();
+        const sec=d.sections.find(s=>s.id===sectionId);
+        if(sec){
+          const moved=sec.points.splice(_dragState.idx,1)[0];
+          sec.points.splice(targetIdx,0,moved);
+          renderSidebar();runDiagnosis();
+        }
+      }
+      _dragState=null;
+    });
+    handle.addEventListener('pointercancel',()=>{
+      if(_dragState){_dragState.el.classList.remove('dragging');_dragState=null;}
+    });
+  });
+}
+
 function histLoad(){
   try{return JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}
   catch(e){return [];}
+}
+
+// ── URL Share / Import ──────────────────────────────────────────────
+
+// Compress a string using deflate-raw via CompressionStream (supported iOS 16.4+, all modern browsers)
+async function compressToBase64(str){
+  try{
+    const bytes=new TextEncoder().encode(str);
+    const cs=new CompressionStream('deflate-raw');
+    const writer=cs.writable.getWriter();
+    writer.write(bytes);writer.close();
+    const chunks=[];
+    const reader=cs.readable.getReader();
+    while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+    const compressed=new Uint8Array(chunks.reduce((a,c)=>a+c.length,0));
+    let offset=0;chunks.forEach(c=>{compressed.set(c,offset);offset+=c.length;});
+    // Base64url encode (URL-safe, no padding issues)
+    return btoa(String.fromCharCode(...compressed)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  } catch(e){
+    // Fallback: just base64 without compression (older browsers)
+    return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  }
+}
+
+async function decompressFromBase64(b64){
+  try{
+    const bin=atob(b64.replace(/-/g,'+').replace(/_/g,'/'));
+    const bytes=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    const ds=new DecompressionStream('deflate-raw');
+    const writer=ds.writable.getWriter();
+    writer.write(bytes);writer.close();
+    const chunks=[];
+    const reader=ds.readable.getReader();
+    while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+    const all=new Uint8Array(chunks.reduce((a,c)=>a+c.length,0));
+    let off=0;chunks.forEach(c=>{all.set(c,off);off+=c.length;});
+    return new TextDecoder().decode(all);
+  } catch(e){
+    // Fallback: straight base64 decode
+    return decodeURIComponent(escape(atob(b64.replace(/-/g,'+').replace(/_/g,'/'))));
+  }
+}
+
+async function shareChartLink(id){
+  const entries=histLoad();
+  const entry=entries.find(e=>e.id===id);
+  if(!entry){alert('Chart not found.');return;}
+  // Strip large blob data (logo) before encoding to keep URL short
+  const clean=JSON.parse(JSON.stringify(entry));
+  clean._shared=true;
+  const json=JSON.stringify(clean);
+  const compressed=await compressToBase64(json);
+  const url=location.origin+location.pathname+'#chart='+compressed;
+  const title=entry.title||'Phase Analysis Chart';
+  if(navigator.share){
+    try{
+      await navigator.share({title,text:'Cross-Channel Phase Analysis — '+title,url});
+      return;
+    } catch(e){if(e.name==='AbortError')return;}
+  }
+  // Fallback: copy to clipboard
+  try{
+    await navigator.clipboard.writeText(url);
+    showToast('Link copied to clipboard!');
+  } catch(e){
+    // Last fallback: show URL in prompt
+    prompt('Copy this link to share:',url);
+  }
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#333;color:#fff;border-radius:10px;padding:10px 18px;font-size:13px;z-index:900;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;pointer-events:none';
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2800);
+}
+
+async function checkImportFromURL(){
+  const hash=location.hash;
+  if(!hash.startsWith('#chart='))return;
+  const encoded=hash.slice(7);
+  if(!encoded)return;
+  // Clear hash from URL so it doesn't re-trigger on reload
+  history.replaceState(null,'',location.pathname+location.search);
+  try{
+    const json=await decompressFromBase64(encoded);
+    const entry=JSON.parse(json);
+    if(!entry||!entry.title)throw new Error('Invalid chart data');
+    // Show import banner
+    showImportBanner(entry);
+  } catch(e){
+    console.warn('Chart import failed:',e);
+  }
+}
+
+function showImportBanner(entry){
+  // Remove any existing banner
+  const existing=document.getElementById('import-banner');
+  if(existing)existing.remove();
+  const sev={fault:'🔴',warn:'🟡',ok:'🟢',info:'⚪'}[entry.severity||'info'];
+  const banner=document.createElement('div');
+  banner.className='import-banner';
+  banner.id='import-banner';
+  const layout={H:'Horizontal',V:'Vertical',FB:'Foot/Base',BS:'Base/Structure'}[entry.layout]||entry.layout||'';
+  banner.innerHTML=`
+    <div class="import-banner-text">
+      ${sev} <strong>${esc(entry.title)}</strong><br>
+      <span style="font-size:11px;opacity:.85">${esc(entry.date)} · ${layout} · ${esc(entry.unit)}</span>
+    </div>
+    <button class="import-banner-btn" onclick="importSharedChart(this._entry)">📥 Add to History</button>
+    <button class="import-banner-dismiss" onclick="this.parentElement.remove()" title="Dismiss">×</button>`;
+  banner.querySelector('.import-banner-btn')._entry=entry;
+  document.body.appendChild(banner);
+}
+
+function importSharedChart(entry){
+  const banner=document.getElementById('import-banner');
+  if(banner)banner.remove();
+  const entries=histLoad();
+  // Assign a new unique ID so it doesn't collide with existing entries
+  const maxId=entries.reduce((m,e)=>Math.max(m,e.id||0),0);
+  const imported=JSON.parse(JSON.stringify(entry));
+  imported.id=maxId+1;
+  imported._shared=undefined;
+  // Mark title with (Shared) if not already
+  if(!imported.title.includes('(Shared)'))imported.title=imported.title+' (Shared)';
+  entries.unshift(imported);
+  histSave(entries);
+  renderHistory();
+  showTab('history');
+  showToast('Chart added to your history!');
 }
 
 let _histFilter='all';
@@ -4253,18 +4669,26 @@ function renderHistory(){
           ${entry.rpm?`<span>🔄 ${esc(entry.rpm)} RPM</span>`:''}
           <span>📐 ${entry.layout==='V'?'Vertical':entry.layout==='FB'?'Foot/Base':entry.layout==='BS'?'Base/Structure':'Horizontal'}</span>
           <span>📏 ${esc(entry.unit)}</span>
-        <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load Chart</button>`;
+        </div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <button class="hist-card-load" onclick="loadFromHistory(${entry.id})">↩ Load</button>
+        <button class="hist-card-share" onclick="shareChartLink(${entry.id})" title="Share link">🔗 Share Link</button>
+      </div>`;
     // Swipe to delete
-    let startX=0,dx=0,swiping=false;
-    const onStart=e=>{startX=(e.touches?e.touches[0]:e).clientX;dx=0;swiping=false;card.classList.remove('swiping');};
+    let startX=0,dx=0,swiping=false,swipeBlocked=false;
+    const onStart=e=>{
+      // Don't start swipe if touch began on a button or anchor
+      swipeBlocked=!!(e.target&&(e.target.closest('button')||e.target.closest('a')));
+      startX=(e.touches?e.touches[0]:e).clientX;dx=0;swiping=false;card.classList.remove('swiping');
+    };
     const onMove=e=>{
-      if(!e.touches)return;
+      if(!e.touches||swipeBlocked)return;
       dx=(e.touches?e.touches[0]:e).clientX-startX;
       if(Math.abs(dx)>8){swiping=true;card.classList.add('swiping');card.style.transform=`translateX(${Math.min(0,dx)}px)`;card.style.opacity=Math.max(0.3,1+dx/200);}
     };
     const onEnd=e=>{
       card.classList.remove('swiping');
-      if(dx<-100){
+      if(!swipeBlocked&&dx<-100){
         // Animate out then delete
         card.style.transition='transform .2s,opacity .2s,height .2s';
         card.style.transform='translateX(-110%)';card.style.opacity='0';card.style.height='0';card.style.overflow='hidden';card.style.padding='0';card.style.margin='0';
@@ -4303,6 +4727,19 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.3.1':{
+    date:'03/30/2026',
+    items:[
+      'Topbar redesigned — clean grouped layout with dividers separating chart identity, configuration, and actions',
+      'Foot/Base measurement points now support drag-to-reorder — drag the ⠿ handle to rearrange foot locations',
+      'Annotation drag-to-move — tap and drag any chart annotation to reposition it anywhere on the chart',
+      'iOS zoom bug fixed — pinch-to-zoom on chart no longer accidentally triggers annotation interactions',
+      'Chart sharing via URL — tap Share Link on any history card to generate a shareable link; recipient taps to import into their history',
+      'Swipe-to-delete now ignores button taps — Load, Share Link, and Delete buttons no longer accidentally trigger card swipe',
+      'Share card findings sorted by severity — fault findings always appear first regardless of detection order',
+      'Share card landscape now shows up to 4 findings instead of 3',
+    ]
+  },
   '1.3.0':{
     date:'03/27/2026',
     items:[
@@ -4317,6 +4754,7 @@ const CHANGELOG={
       'Point label keyboard bug fixed — typing no longer dismisses keyboard on iOS',
       'Autosave — full app state saved automatically and restored if you navigate away (e.g. after print preview)',
       'Print report table and share card fully support Base/Structure layout',
+      'Chart sharing — tap Share Link on any history card to generate a shareable URL; recipient taps link and sees an import prompt to add it to their own history',
       'High Contrast theme (⚡) — pure black background, ideal for bright outdoor or industrial environments',
       'Forest theme (🌲) — dark green oscilloscope-inspired palette, classic instrumentation feel',
       'Both themes fully supported across all layouts, diagnosis cards, and exports',
@@ -4490,6 +4928,8 @@ function boot(){
   }
   renderSidebar();
   renderHistory();
+  // Check if app was opened via a shared chart link
+  checkImportFromURL();
 }
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
 else{boot();}
