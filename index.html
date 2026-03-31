@@ -2950,15 +2950,37 @@ function desktopPrint(){
   closeModal();
   // Open the print window FIRST synchronously (required by iOS Safari)
   // before any async canvas work — user gesture must be active
-  const w=window.open('','_blank');
+  const w=window.open('about:blank','_blank');
   if(!w){alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');return;}
-  // Show loading state while we build the report
-  w.document.write('<html><head><title>Preparing report...</title></head><body style="font-family:Arial,sans-serif;padding:40px;color:#666;text-align:center"><p style="margin-top:120px;font-size:16px">⏳ Preparing report...</p></body></html>');
+  w.document.write('<html><head><title>Report</title></head><body style="font-family:Arial,sans-serif;padding:40px;color:#666;text-align:center"><p style="margin-top:120px;font-size:16px">⏳ Preparing report...</p></body></html>');
   const off=buildExportCanvasLight();
   if(!off){w.close();alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
-  const imgData=off.toDataURL('image/png');
+
+  // Pre-scale the canvas image to exactly fit one print page
+  // This is the only reliable approach on iOS Safari — no CSS tricks needed
+  const DPR=window.devicePixelRatio||1;
+  const srcW=off.width/DPR, srcH=off.height/DPR; // logical dimensions
+  // US Letter printable at 96dpi with 0.4in margins
+  const M=38;
+  const PW=816-M*2, PH=1056-M*2-32; // portrait: 740 x 986
+  const LW=1056-M*2, LH=816-M*2-32; // landscape: 980 x 710
+  const scaleP=Math.min(PW/srcW, PH/srcH);
+  const scaleL=Math.min(LW/srcW, LH/srcH);
+  const useLandscape=scaleL>scaleP;
+  const finalScale=useLandscape?scaleL:scaleP;
+  const finalW=Math.round(srcW*finalScale);
+  const finalH=Math.round(srcH*finalScale);
+  // Draw onto a pre-scaled canvas
+  const scaled=document.createElement('canvas');
+  scaled.width=Math.round(finalW*DPR);
+  scaled.height=Math.round(finalH*DPR);
+  const sctx=scaled.getContext('2d');
+  sctx.scale(DPR,DPR);
+  sctx.drawImage(off,0,0,off.width,off.height,0,0,finalW,finalH);
+  const imgData=scaled.toDataURL('image/png');
+  const pageOrientation=useLandscape?'landscape':'portrait';
 
   // ── Build diagnosis HTML for page 2 ──────────────────────
   // Run a fresh diagnosis pass to make sure results are current
@@ -3067,21 +3089,25 @@ function desktopPrint(){
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:Arial,sans-serif;color:#111;background:#fff}
-    .page{width:100%;padding:16px}
-    h1{font-size:15px;font-weight:700;margin-bottom:4px}
+    .page{padding:16px}
+    h1{font-size:15px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;max-width:100%;height:auto}
+    #chartimg{display:block;width:100%;height:auto}
     table{border-collapse:collapse;width:100%;font-size:11px}
     td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
     .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
     @media print{
-      @page{margin:.5cm}
+      @page{size:${pageOrientation};margin:0.4in}
       body{margin:0}
       .page-break{page-break-before:always}
-      #chart-page{page-break-inside:avoid;page-break-after:always;overflow:hidden}
-      #chartimg{page-break-inside:avoid;display:block;max-width:100%;height:auto}
+      #chart-page{page-break-after:always}
+      #chartimg{display:block;width:100%;height:auto}
+    }
+    @page{
+      /* Suppress browser-injected URL and title headers/footers */
+      margin-header:0;margin-footer:0;
     }
   </style>
   </head><body>
@@ -3125,57 +3151,11 @@ function desktopPrint(){
   </div>
 
   <script>
-    function scaleAndPrint(){
-      var img=document.getElementById('chartimg');
-      if(!img.naturalWidth||!img.naturalHeight) return;
-
-      // Use CSS transform:scale() — the only method iOS Safari respects for print
-      var dpr=window.devicePixelRatio||1;
-      var iw=img.naturalWidth/dpr;  // logical px width
-      var ih=img.naturalHeight/dpr; // logical px height
-
-      // Printable area: US Letter at 96dpi, 0.4in margins each side
-      var M=38; // 0.4in * 96dpi
-      var PW=816-M*2;  // portrait width  = 740px
-      var PH=1056-M*2-28; // portrait height = 942px minus title row
-      var LW=1056-M*2; // landscape width = 980px
-      var LH=816-M*2-28;  // landscape height = 702px minus title row
-
-      // Calculate best fit — always fill the page
-      var scaleP=Math.min(PW/iw, PH/ih);
-      var scaleL=Math.min(LW/iw, LH/ih);
-
-      // Use landscape if it gives ANY more space, or if portrait scale is too small
-      var isLandscape=(scaleL>scaleP)||(scaleP<0.55);
-      var scale=isLandscape?scaleL:scaleP;
-
-      // Apply transform scaling from top-left
-      img.style.width=iw+'px';
-      img.style.height=ih+'px';
-      img.style.display='block';
-      img.style.transformOrigin='top left';
-      img.style.transform='scale('+scale+')';
-
-      // Shrink wrapper to scaled dimensions so no blank space below
-      var chartPage=document.getElementById('chart-page');
-      chartPage.style.width=Math.ceil(iw*scale)+'px';
-      chartPage.style.height=Math.ceil(ih*scale+40)+'px';
-      chartPage.style.overflow='hidden';
-      chartPage.style.padding='0';
-
-      // Apply page size
-      var s=document.createElement('style');
-      s.textContent=(isLandscape
-        ? '@page{size:11in 8.5in;margin:0.4in}'
-        : '@page{size:8.5in 11in;margin:0.4in}')
-        + ' body{margin:0;padding:0} .page{padding:12px!important}';
-      document.head.appendChild(s);
-
-      setTimeout(function(){window.print();},250);
-    }
+    // Image is pre-scaled to fit exactly one page — just print
     var img=document.getElementById('chartimg');
-    if(img.complete&&img.naturalWidth){scaleAndPrint();}
-    else{img.onload=scaleAndPrint;}
+    function doPrint(){window.print();}
+    if(img.complete){setTimeout(doPrint,150);}
+    else{img.onload=function(){setTimeout(doPrint,150);};}
   <\/script>
   </body></html>`;
 
