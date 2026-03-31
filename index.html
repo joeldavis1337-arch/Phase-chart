@@ -2006,7 +2006,7 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   const maxSecW=Math.max(...d.sections.map(s=>secW(s)),400);
 
   const W=forceW||(HPAD*2+maxSecW);
-  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+28+16);
+  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+44+16); // extra footer clearance
 
   let ctx;
   if(setupLive){
@@ -2506,7 +2506,7 @@ function getChartDims(){
     const secW2=(sec)=>Math.max(sec.points.length,1)*(ptW2+PT_GAP2)-PT_GAP2;
     const maxSecW2=Math.max(...d.sections.map(s=>secW2(s)),400);
     const W2=HPAD2*2+maxSecW2;
-    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+28+16;
+    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+44+16; // extra footer clearance
     return {W:W2,H:H2};
   }
   if(layout==='FB'){
@@ -2948,8 +2948,14 @@ function downloadImage(){
 // Desktop print: data URL in new tab, auto-print
 function desktopPrint(){
   closeModal();
+  // Open the print window FIRST synchronously (required by iOS Safari)
+  // before any async canvas work — user gesture must be active
+  const w=window.open('','_blank');
+  if(!w){alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');return;}
+  // Show loading state while we build the report
+  w.document.write('<html><head><title>Preparing report...</title></head><body style="font-family:Arial,sans-serif;padding:40px;color:#666;text-align:center"><p style="margin-top:120px;font-size:16px">⏳ Preparing report...</p></body></html>');
   const off=buildExportCanvasLight();
-  if(!off){alert('Add components first.');return;}
+  if(!off){w.close();alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
   const imgData=off.toDataURL('image/png');
@@ -3123,61 +3129,49 @@ function desktopPrint(){
       var img=document.getElementById('chartimg');
       if(!img.naturalWidth||!img.naturalHeight) return;
 
-      // iOS Safari ignores JS width/height before printing.
-      // The only reliable method: set img to natural size, then
-      // use CSS transform:scale() to fit it into the page.
-      // We also force the page wrapper to Letter width so iOS
-      // knows the intended print width.
+      // Use CSS transform:scale() — the only method iOS Safari respects for print
+      var dpr=window.devicePixelRatio||1;
+      var iw=img.naturalWidth/dpr;  // logical px width
+      var ih=img.naturalHeight/dpr; // logical px height
 
-      var MARGIN_IN=0.5; // inches
-      var DPI=96;
-      var LETTER_W_IN=8.5;
-      var LETTER_H_IN=11;
+      // Printable area: US Letter at 96dpi, 0.4in margins each side
+      var M=38; // 0.4in * 96dpi
+      var PW=816-M*2;  // portrait width  = 740px
+      var PH=1056-M*2-28; // portrait height = 942px minus title row
+      var LW=1056-M*2; // landscape width = 980px
+      var LH=816-M*2-28;  // landscape height = 702px minus title row
 
-      var portraitPrintW=(LETTER_W_IN-MARGIN_IN*2)*DPI; // 672px
-      var portraitPrintH=(LETTER_H_IN-MARGIN_IN*2)*DPI-36; // 924px minus title
-      var landscapePrintW=(LETTER_H_IN-MARGIN_IN*2)*DPI; // 960px
-      var landscapePrintH=(LETTER_W_IN-MARGIN_IN*2)*DPI-36; // 636px minus title
+      // Calculate best fit — always fill the page
+      var scaleP=Math.min(PW/iw, PH/ih);
+      var scaleL=Math.min(LW/iw, LH/ih);
 
-      var iw=img.naturalWidth/window.devicePixelRatio;
-      var ih=img.naturalHeight/window.devicePixelRatio;
-      var ratio=iw/ih;
+      // Use portrait unless landscape gives significantly more space (10% better)
+      var isLandscape=(scaleL>scaleP*1.1);
+      var scale=isLandscape?scaleL:scaleP;
 
-      // Render image at natural (unscaled) size
+      // Apply transform scaling from top-left
       img.style.width=iw+'px';
       img.style.height=ih+'px';
       img.style.display='block';
       img.style.transformOrigin='top left';
-
-      var scaleX=portraitPrintW/iw;
-      var scaleY=portraitPrintH/ih;
-      var scale=Math.min(scaleX,scaleY,1); // never upscale beyond natural
-
-      var isLandscape=false;
-      if(scale*ih>portraitPrintH||(scale<0.3&&ratio>1.2)){
-        // Too tall or very wide — go landscape
-        scaleX=landscapePrintW/iw;
-        scaleY=landscapePrintH/ih;
-        scale=Math.min(scaleX,scaleY);
-        isLandscape=true;
-      }
-
       img.style.transform='scale('+scale+')';
-      // Collapsed height after scale — set wrapper to prevent extra whitespace
-      document.getElementById('chart-page').style.height=Math.round(ih*scale+36)+'px';
-      document.getElementById('chart-page').style.overflow='hidden';
-      document.getElementById('chart-page').style.width=Math.round(iw*scale)+'px';
 
-      var styles=[];
-      if(isLandscape) styles.push('@page{size:landscape;margin:0.5in}');
-      else styles.push('@page{size:portrait;margin:0.5in}');
-      styles.push('body{margin:0;padding:0}');
-      styles.push('#chart-page{padding:0!important}');
+      // Shrink wrapper to scaled dimensions so no blank space below
+      var chartPage=document.getElementById('chart-page');
+      chartPage.style.width=Math.ceil(iw*scale)+'px';
+      chartPage.style.height=Math.ceil(ih*scale+32)+'px';
+      chartPage.style.overflow='hidden';
+      chartPage.style.padding='0';
+
+      // Apply page size
       var s=document.createElement('style');
-      s.textContent=styles.join(' ');
+      s.textContent=(isLandscape
+        ? '@page{size:11in 8.5in;margin:0.4in}'
+        : '@page{size:8.5in 11in;margin:0.4in}')
+        + ' body{margin:0;padding:0} .page{padding:12px!important}';
       document.head.appendChild(s);
 
-      setTimeout(function(){window.print();},200);
+      setTimeout(function(){window.print();},250);
     }
     var img=document.getElementById('chartimg');
     if(img.complete&&img.naturalWidth){scaleAndPrint();}
@@ -3185,9 +3179,10 @@ function desktopPrint(){
   <\/script>
   </body></html>`;
 
-  const w=window.open('','_blank');
-  if(w){w.document.write(html);w.document.close();}
-  else{alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');}
+  // Write the fully built HTML into the already-open window
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
 }
 
 // ── Phase normalization for axial orientation ─────────────
