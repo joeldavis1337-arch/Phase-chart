@@ -1796,17 +1796,138 @@ function buildExportCanvas(){
 function buildExportCanvasLight(){
   const N=nodes.length;if(!N)return null;
   const tcLight={bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
-  const {W,H}=getChartDims();
-  // Use 3x scale for print — crisp on all screens regardless of device DPR
+  const layout=document.getElementById('layout').value;
+  // For BS layout use compact dimensions so 3-section charts fit one print page
+  let W,H;
+  if(layout==='BS'){
+    const d=getBSData();
+    const BR2c=20,ARM2c=12,BOX_Hc=26,SEC_PADc=10;
+    const BUB_ZONEc=BR2c*2+ARM2c+10;
+    const SEC_Hc=BUB_ZONEc+5+BOX_Hc+5+BUB_ZONEc+14;
+    const ptWc=BR2c*2+6;
+    const PT_GAPc=10;
+    const maxPts=Math.max(...d.sections.map(s=>s.points.length),1);
+    W=Math.max(60*2+maxPts*(ptWc+PT_GAPc)-PT_GAPc,380);
+    H=60+40+d.sections.length*(SEC_Hc+SEC_PADc)-SEC_PADc+40;
+    const off=document.createElement('canvas');
+    const ES=3;
+    off.width=Math.round(W*ES);off.height=Math.round(H*ES);
+    const ctx=off.getContext('2d');ctx.scale(ES,ES);
+    renderBSCompact(ctx,W,H,tcLight,d,BR2c,ARM2c,BOX_Hc,SEC_PADc,SEC_Hc,BUB_ZONEc,ptWc,PT_GAPc);
+    return off;
+  }
+  const dims=getChartDims();W=dims.W;H=dims.H;
   const EXPORT_SCALE=3;
   const off=document.createElement('canvas');
   off.width=Math.round(W*EXPORT_SCALE);off.height=Math.round(H*EXPORT_SCALE);
   const ctx=off.getContext('2d');ctx.scale(EXPORT_SCALE,EXPORT_SCALE);
-  const layout=document.getElementById('layout').value;
-  if(layout==='BS'){renderBSToCanvas(ctx,W,H,tcLight,false);}
-  else if(layout==='FB'){renderFBToCanvas(ctx,W,H,tcLight);}
+  if(layout==='FB'){renderFBToCanvas(ctx,W,H,tcLight);}
   else{renderChart(ctx,W,H,tcLight);}
   return off;
+}
+
+function renderBSCompact(ctx,W,H,tc,d,BR2,ARM2,BOX_H,SEC_PAD,SEC_H,BUB_ZONE,ptW,PT_GAP){
+  const u=getUnit();
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const VPAD=60,HPAD=60;
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+  // Title
+  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(title,W/2,VPAD-22);
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Base/Structure Phase Check  |  RPM '+grpm,W/2,VPAD-10);
+  // Legend
+  ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(HPAD-14,VPAD+4,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.font='8px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('Base',HPAD-8,VPAD+4);
+  ctx.fillStyle='#777';ctx.beginPath();ctx.arc(HPAD-14,VPAD+16,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Structure',HPAD-8,VPAD+16);
+
+  function drawBub(cx,cy,amp,phase,isRef,sevId,accent){
+    const r=BR2;
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+    const sc=bsBubbleSeverity[sevId];
+    const col=sc==='fault'?'#ef4444':sc==='warn'?'#f59e0b':sc==='ok'?'#22c55e':accent||tc.bstr;
+    ctx.strokeStyle=col;ctx.lineWidth=sc?2:1.2;
+    if(isRef)ctx.setLineDash([3,2]);
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=0.6;ctx.stroke();
+    const ph=Math.round(parseFloat(phase)||0);
+    ctx.font='bold 6px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((parseFloat(amp)||0).toFixed(u.dec),cx,cy-r*0.42);
+    ctx.font='6px Roboto,sans-serif';ctx.fillText(ph+'°',cx,cy+r*0.42);
+    const rad=(ph-90)*Math.PI/180;
+    const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+    const ax2=cx+Math.cos(rad)*(r+ARM2),ay2=cy+Math.sin(rad)*(r+ARM2);
+    ctx.strokeStyle=tc.ln;ctx.lineWidth=1.2;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+    const al=3,aa=0.45;
+    ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
+    ctx.restore();
+  }
+
+  let secTopY=VPAD+36;
+  d.sections.forEach((sec,si)=>{
+    const nPts=sec.points.length;
+    const sw=nPts*(ptW+PT_GAP)-PT_GAP;
+    const secStartX=Math.round((W-sw)/2);
+    const secCX=Math.round(W/2);
+    const baseY=secTopY+BUB_ZONE/2;
+    const boxY=secTopY+BUB_ZONE+5;
+    const structY=boxY+BOX_H+5+BUB_ZONE/2;
+    // Row labels
+    ctx.save();ctx.translate(secStartX-20,baseY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle='#1a6bbf';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BASE',0,0);ctx.restore();
+    ctx.save();ctx.translate(secStartX-20,structY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle='#777';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STRUCT',0,0);ctx.restore();
+    // Box
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=tc.bstr;ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(secStartX,boxY,sw,BOX_H,4);ctx.fill();ctx.stroke();
+    ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sec.label,secCX,boxY+BOX_H/2);
+    // Guide lines
+    ctx.setLineDash([2,4]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.4;
+    ctx.beginPath();ctx.moveTo(secStartX-8,baseY);ctx.lineTo(secStartX+sw+8,baseY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(secStartX-8,structY);ctx.lineTo(secStartX+sw+8,structY);ctx.stroke();
+    ctx.setLineDash([]);
+    sec.points.forEach((pt,pi)=>{
+      const cx=secStartX+pi*(ptW+PT_GAP)+ptW/2;
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
+      if(pt.inaccessible){
+        ctx.save();ctx.globalAlpha=0.25;
+        ctx.beginPath();ctx.arc(cx,baseY,BR2,0,Math.PI*2);ctx.strokeStyle='#aaa';ctx.lineWidth=1;ctx.setLineDash([2,2]);ctx.stroke();ctx.setLineDash([]);
+        ctx.font='6px Roboto,sans-serif';ctx.fillStyle='#aaa';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N/A',cx,baseY);ctx.restore();
+        return;
+      }
+      // Direction label
+      ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+      ctx.fillText(pt.dir,cx,baseY-BR2-3);
+      // Connectors
+      ctx.setLineDash([2,3]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.moveTo(cx,boxY);ctx.lineTo(cx,baseY+BR2+ARM2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,boxY+BOX_H);ctx.lineTo(cx,structY-BR2-ARM2);ctx.stroke();
+      ctx.setLineDash([]);
+      drawBub(cx,baseY,pt.base.amp,pt.base.phase,pt.base.ref,baseId,'#1a6bbf');
+      drawBub(cx,structY,pt.struct.amp,pt.struct.phase,false,structId,'#777777');
+      // Dir label below struct
+      ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText(pt.dir,cx,structY+BR2+ARM2+2);
+    });
+    if(si<d.sections.length-1){
+      ctx.setLineDash([3,5]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.8;
+      ctx.beginPath();ctx.moveTo(HPAD-20,secTopY+SEC_H+SEC_PAD/2);ctx.lineTo(W-HPAD+20,secTopY+SEC_H+SEC_PAD/2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    secTopY+=SEC_H+SEC_PAD;
+  });
+  // Footer
+  ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
+  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  '+u.label+' | degrees',HPAD,H-8);
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
 }
 
 function redraw(){
@@ -3129,7 +3250,15 @@ function desktopPrint(){
 
   <script>
     var img=document.getElementById('chartimg');
-    function doPrint(){window.print();}
+    function doPrint(){
+      // Debug: show dimensions before printing
+      var info=document.getElementById('debug-info');
+      if(info){
+        info.textContent='Canvas: '+img.naturalWidth+'x'+img.naturalHeight+'px | Display: '+img.offsetWidth+'x'+img.offsetHeight+'px | DPR: '+window.devicePixelRatio;
+        info.style.display='block';
+      }
+      setTimeout(function(){window.print();},800);
+    }
     if(img.complete){setTimeout(doPrint,150);}
     else{img.onload=function(){setTimeout(doPrint,150);};}
   <\/script>
