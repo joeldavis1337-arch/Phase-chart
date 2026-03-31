@@ -793,12 +793,12 @@ function removeBSPoint(sectionId,pointId){
   renderSidebar();runDiagnosis();
 }
 
-function setBSRef(sectionId,pointId){
+function setBSRef(sectionId,pointId,val){
   const d=getBSData();
-  // Clear all refs across all sections
-  d.sections.forEach(s=>s.points.forEach(p=>p.base.ref=false));
+  // BS layout allows multiple reference sensors for large split-reference surveys
+  // Just toggle this individual point — do NOT clear other refs
   const sec=d.sections.find(s=>s.id===sectionId);
-  if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.base.ref=true;}
+  if(sec){const pt=sec.points.find(p=>p.id===pointId);if(pt)pt.base.ref=val;}
   renderSidebar();runDiagnosis();
 }
 
@@ -925,8 +925,8 @@ function renderBSSidebar(){
         const refRow=document.createElement('div');
         refRow.className='fb-inaccessible-row';
         refRow.innerHTML=`<input type="checkbox" id="bs-ref-${pt.id}" ${isRef?'checked':''}
-          onchange="setBSRef(${sec.id},${pt.id})">
-          <label for="bs-ref-${pt.id}" style="cursor:pointer;font-size:11px;color:var(--tx3)">Reference</label>`;
+          onchange="setBSRef(${sec.id},${pt.id},this.checked)">
+          <label for="bs-ref-${pt.id}" style="cursor:pointer;font-size:11px;color:var(--tx3)" title="Multiple refs allowed">Reference</label>`;
         baseSec.appendChild(refRow);
         cell.appendChild(baseSec);
 
@@ -4905,7 +4905,7 @@ function boot(){
     localStorage.removeItem('phaseChart_history');
     localStorage.setItem('phaseChart_v128_clean','1');
   }
-  // Restore theme preference
+  // Restore theme preference — always use localStorage as source of truth
   const savedTheme=localStorage.getItem('phaseChart_theme')||'light';
   setTheme(savedTheme);
   // Restore logo
@@ -4920,12 +4920,8 @@ function boot(){
   document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
   document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
   // Restore autosaved state if navigating back from print window
-  const didRestore=restoreAutosave();
-  if(didRestore){
-    // Restore theme from autosave (already set above, but ensure sidebar matches)
-    const as=JSON.parse(localStorage.getItem('phaseChart_autosave')||'{}');
-    if(as.theme&&as.theme!==currentTheme)setTheme(as.theme);
-  }
+  // NOTE: theme is intentionally NOT restored from autosave — localStorage theme is the preference
+  restoreAutosave();
   renderSidebar();
   renderHistory();
   // Check if app was opened via a shared chart link
