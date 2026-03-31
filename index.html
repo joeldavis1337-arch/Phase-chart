@@ -3145,8 +3145,8 @@ function desktopPrint(){
       var scaleP=Math.min(PW/iw, PH/ih);
       var scaleL=Math.min(LW/iw, LH/ih);
 
-      // Use portrait unless landscape gives significantly more space (10% better)
-      var isLandscape=(scaleL>scaleP*1.1);
+      // Use landscape if it gives ANY more space, or if portrait scale is too small
+      var isLandscape=(scaleL>scaleP)||(scaleP<0.55);
       var scale=isLandscape?scaleL:scaleP;
 
       // Apply transform scaling from top-left
@@ -3159,7 +3159,7 @@ function desktopPrint(){
       // Shrink wrapper to scaled dimensions so no blank space below
       var chartPage=document.getElementById('chart-page');
       chartPage.style.width=Math.ceil(iw*scale)+'px';
-      chartPage.style.height=Math.ceil(ih*scale+32)+'px';
+      chartPage.style.height=Math.ceil(ih*scale+40)+'px';
       chartPage.style.overflow='hidden';
       chartPage.style.padding='0';
 
