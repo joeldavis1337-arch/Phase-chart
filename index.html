@@ -2289,7 +2289,7 @@ function renderFBToCanvas(ctx,W,H,tc){
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD2,H-8);
   const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-8);
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-14);
 
   // Logo
   if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
@@ -2682,7 +2682,7 @@ function renderChart(ctx,W,H,tc){
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
     ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
     const ver='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-8);
+    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-14);
   } else {
     const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
     const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
@@ -3073,7 +3073,8 @@ function desktopPrint(){
     h1{font-size:15px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;max-width:100%;height:auto}
+    #chartimg{display:block;width:100%;height:auto;max-width:100%}
+    #chart-page{width:100%}
     table{border-collapse:collapse;width:100%;font-size:11px}
     td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
