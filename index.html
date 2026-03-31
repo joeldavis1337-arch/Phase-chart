@@ -3073,8 +3073,7 @@ function desktopPrint(){
     h1{font-size:15px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;width:100%;height:auto;max-width:100%}
-    #chart-page{width:100%}
+    #chartimg{display:block;width:100%;height:auto}
     table{border-collapse:collapse;width:100%;font-size:11px}
     td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
@@ -3088,10 +3087,12 @@ function desktopPrint(){
   </style>
   </head><body>
 
-  <!-- PAGE 1: Chart — JS scales image to fit one page before printing -->
+  <!-- PAGE 1: Chart -->
   <div class="page" id="chart-page">
     <h1>${title}</h1>
-    <img src="${imgData}" id="chartimg">
+    <div style="width:100%;line-height:0">
+      <img src="${imgData}" id="chartimg" style="width:100%;height:auto;display:block">
+    </div>
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
