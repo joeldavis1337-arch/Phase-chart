@@ -2965,7 +2965,10 @@ function desktopPrint(){
   };
   const typeIcons={fault:'⚠ ',warn:'⚡ ',ok:'✓ ',info:'ℹ '};
   let diagRows='';
-  diagResults.forEach(r=>{
+  // Sort: faults first, then warnings, then ok, then info
+  const _printRank={fault:0,warn:1,ok:2,info:3};
+  const _sortedDiag=[...diagResults].sort((a,b)=>(_printRank[a.type]||3)-(_printRank[b.type]||3));
+  _sortedDiag.forEach(r=>{
     const s=typeStyles[r.type]||typeStyles.info;
     diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;background:${s.bg};border-left:4px solid ${s.border}">
       <div style="font-size:12px;font-weight:700;color:${s.tx};margin-bottom:4px">${typeIcons[r.type]||''}${r.label}</div>
@@ -4190,7 +4193,10 @@ function renderDiagResults(results){
   const el=document.getElementById('diag-results');
   if(!el)return;
   el.innerHTML='';
-  results.forEach(r=>{
+  // Always show faults first, then warnings, then normal, then info
+  const rank={fault:0,warn:1,ok:2,info:3};
+  const sorted=[...results].sort((a,b)=>(rank[a.type]||3)-(rank[b.type]||3));
+  sorted.forEach(r=>{
     const div=document.createElement('div');
     div.className='diag-item '+r.type;
     div.innerHTML=`<div class="diag-label">${r.label}</div><div class="diag-desc">${r.desc}</div>`;
