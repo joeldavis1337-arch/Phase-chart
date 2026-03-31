@@ -559,8 +559,8 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
     <div class="bug-body">
       Found an issue or have an idea for a new feature?<br>
       Send an email directly to the developer:
-      <a class="bug-email" href="mailto:joel.davis@johnhcarter.com?subject=Phase Analysis App — Bug/Feature Request">
-        joel.davis@johnhcarter.com
+      <a class="bug-email" href="/cdn-cgi/l/email-protection#a4cecbc1c88ac0c5d2cdd7e4cecbcccaccc7c5d6d0c1d68ac7cbc99bd7d1c6cec1c7d099f4ccc5d7c184e5cac5c8ddd7cdd784e5d4d48446243084e6d1c38be2c1c5d0d1d6c184f6c1d5d1c1d7d0">
+        <span class="__cf_email__" data-cfemail="0d6762686123696c7b647e4d67626563656e6c7f79687f236e6260">[email&#160;protected]</span>
       </a>
       <span style="font-size:11px;color:var(--tx3);display:block;margin-top:8px">Please describe the issue or feature request in as much detail as possible. Screenshots are helpful!</span>
     </div>
@@ -626,7 +626,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── Version / Date ───────────────────────────────────────
 function getTodayStr(){
   const d=new Date();
@@ -648,7 +648,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '1.3.1';
+  return '1.3.2';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -2917,8 +2917,10 @@ function shareCard(format, action){
   const overallSev=diagResults.some(r=>r.type==='fault')?'fault':diagResults.some(r=>r.type==='warn')?'warn':diagResults.some(r=>r.type==='ok')?'ok':'info';
   // Sort: faults first, then warnings, then ok — so most critical always visible
   const findings=diagResults.filter(r=>r.type!=='info').sort((a,b)=>{
-    const rank={fault:0,warn:1,ok:2};
-    return (rank[a.type]||2)-(rank[b.type]||2);
+    const _sr={fault:0,warn:1,ok:2};
+    const ra=_sr[a.type]!==undefined?_sr[a.type]:2;
+    const rb=_sr[b.type]!==undefined?_sr[b.type]:2;
+    return ra-rb;
   }).slice(0,4);
 
   const DPR=3;  // High res for sharing — always 3x regardless of screen
@@ -3108,7 +3110,11 @@ function desktopPrint(){
   let diagRows='';
   // Sort: faults first, then warnings, then ok, then info
   const _printRank={fault:0,warn:1,ok:2,info:3};
-  const _sortedDiag=[...diagResults].sort((a,b)=>(_printRank[a.type]||3)-(_printRank[b.type]||3));
+  const _sortedDiag=[...diagResults].sort((a,b)=>{
+    const ra=_printRank[a.type]!==undefined?_printRank[a.type]:3;
+    const rb=_printRank[b.type]!==undefined?_printRank[b.type]:3;
+    return ra-rb;
+  });
   _sortedDiag.forEach(r=>{
     const s=typeStyles[r.type]||typeStyles.info;
     diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;background:${s.bg};border-left:4px solid ${s.border}">
@@ -4255,7 +4261,11 @@ function renderDiagResults(results){
   el.innerHTML='';
   // Always show faults first, then warnings, then normal, then info
   const rank={fault:0,warn:1,ok:2,info:3};
-  const sorted=[...results].sort((a,b)=>(rank[a.type]||3)-(rank[b.type]||3));
+  const sorted=[...results].sort((a,b)=>{
+    const ra=rank[a.type]!==undefined?rank[a.type]:3;
+    const rb=rank[b.type]!==undefined?rank[b.type]:3;
+    return ra-rb;
+  });
   sorted.forEach(r=>{
     const div=document.createElement('div');
     div.className='diag-item '+r.type;
@@ -4827,6 +4837,15 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.3.2':{
+    date:'03/31/2026',
+    items:[
+      'Diagnosis sort fixed — Fault findings now correctly appear at the top of the Diagnosis tab, print report, and share card in all layouts (was a JavaScript falsy-zero bug where fault rank of 0 was treated as unranked)',
+      'Technician name field — add your name to the chart; appears in footer stamp on chart, print report, and saved history',
+      'Clear Values button — reset all amplitude and phase readings to zero while keeping component names and structure; useful when re-taking readings on a duplicated chart',
+      'Multiple reference sensors allowed in Base/Structure layout — check any combination of points as reference for split-reference survey workflows',
+    ]
+  },
   '1.3.1':{
     date:'03/30/2026',
     items:[
@@ -5022,15 +5041,4 @@ function boot(){
   document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
   document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
   // Restore autosaved state if navigating back from print window
-  // NOTE: theme is intentionally NOT restored from autosave — localStorage theme is the preference
-  restoreAutosave();
-  renderSidebar();
-  renderHistory();
-  // Check if app was opened via a shared chart link
-  checkImportFromURL();
-}
-if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
-else{boot();}
-</script>
-</body>
-</html>
+  // NOTE: theme is intentionally NOT restored from autosave 
