@@ -2958,27 +2958,32 @@ function desktopPrint(){
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
 
-  // Pre-scale the canvas image to exactly fit one print page
-  // This is the only reliable approach on iOS Safari — no CSS tricks needed
-  const DPR=window.devicePixelRatio||1;
-  const srcW=off.width/DPR, srcH=off.height/DPR; // logical dimensions
-  // US Letter printable at 96dpi with 0.4in margins
-  const M=38;
-  const PW=816-M*2, PH=1056-M*2-32; // portrait: 740 x 986
-  const LW=1056-M*2, LH=816-M*2-32; // landscape: 980 x 710
-  const scaleP=Math.min(PW/srcW, PH/srcH);
-  const scaleL=Math.min(LW/srcW, LH/srcH);
+  // Pre-scale image to fit exactly one print page
+  // Key insight: iOS prints the image at its natural pixel size / 96dpi
+  // So we must produce a PNG whose pixel dimensions match the printable area at 96dpi
+  // US Letter at 96dpi = 816x1056px. iOS Safari reserves ~80px for its own header/footer.
+  const PRINT_DPI=96;
+  const LETTER_W=816, LETTER_H=1056;
+  const MARGIN=Math.round(0.45*PRINT_DPI); // 0.45in margins
+  const IOS_CHROME=90; // iOS header+footer chrome in print view
+  const PW=LETTER_W-MARGIN*2;
+  const PH=LETTER_H-MARGIN*2-IOS_CHROME; // safe portrait height
+  const LW=LETTER_H-MARGIN*2;
+  const LH=LETTER_W-MARGIN*2-IOS_CHROME; // safe landscape height
+  // Image natural pixel dimensions (already at DPR)
+  const imgPxW=off.width, imgPxH=off.height;
+  // We want final PNG to be exactly PW or LW pixels wide at 96dpi
+  // so iOS renders it at exactly the right size without scaling
+  const scaleP=Math.min(PW/imgPxW, PH/imgPxH);
+  const scaleL=Math.min(LW/imgPxW, LH/imgPxH);
   const useLandscape=scaleL>scaleP;
   const finalScale=useLandscape?scaleL:scaleP;
-  const finalW=Math.round(srcW*finalScale);
-  const finalH=Math.round(srcH*finalScale);
-  // Draw onto a pre-scaled canvas
+  const finalW=Math.round(imgPxW*finalScale);
+  const finalH=Math.round(imgPxH*finalScale);
   const scaled=document.createElement('canvas');
-  scaled.width=Math.round(finalW*DPR);
-  scaled.height=Math.round(finalH*DPR);
+  scaled.width=finalW; scaled.height=finalH;
   const sctx=scaled.getContext('2d');
-  sctx.scale(DPR,DPR);
-  sctx.drawImage(off,0,0,off.width,off.height,0,0,finalW,finalH);
+  sctx.drawImage(off,0,0,imgPxW,imgPxH,0,0,finalW,finalH);
   const imgData=scaled.toDataURL('image/png');
   const pageOrientation=useLandscape?'landscape':'portrait';
 
