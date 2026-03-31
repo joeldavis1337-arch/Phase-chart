@@ -1796,15 +1796,138 @@ function buildExportCanvas(){
 function buildExportCanvasLight(){
   const N=nodes.length;if(!N)return null;
   const tcLight={bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
-  const {W,H}=getChartDims();
-  const off=document.createElement('canvas');
-  off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
-  const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
   const layout=document.getElementById('layout').value;
-  if(layout==='BS'){renderBSToCanvas(ctx,W,H,tcLight,false);}
-  else if(layout==='FB'){renderFBToCanvas(ctx,W,H,tcLight);}
+  // For BS layout use compact dimensions so 3-section charts fit one print page
+  let W,H;
+  if(layout==='BS'){
+    const d=getBSData();
+    const BR2c=20,ARM2c=12,BOX_Hc=26,SEC_PADc=10;
+    const BUB_ZONEc=BR2c*2+ARM2c+10;
+    const SEC_Hc=BUB_ZONEc+5+BOX_Hc+5+BUB_ZONEc+14;
+    const ptWc=BR2c*2+6;
+    const PT_GAPc=10;
+    const maxPts=Math.max(...d.sections.map(s=>s.points.length),1);
+    W=Math.max(60*2+maxPts*(ptWc+PT_GAPc)-PT_GAPc,380);
+    H=60+40+d.sections.length*(SEC_Hc+SEC_PADc)-SEC_PADc+40;
+    const off=document.createElement('canvas');
+    const ES=3;
+    off.width=Math.round(W*ES);off.height=Math.round(H*ES);
+    const ctx=off.getContext('2d');ctx.scale(ES,ES);
+    renderBSCompact(ctx,W,H,tcLight,d,BR2c,ARM2c,BOX_Hc,SEC_PADc,SEC_Hc,BUB_ZONEc,ptWc,PT_GAPc);
+    return off;
+  }
+  const dims=getChartDims();W=dims.W;H=dims.H;
+  const EXPORT_SCALE=3;
+  const off=document.createElement('canvas');
+  off.width=Math.round(W*EXPORT_SCALE);off.height=Math.round(H*EXPORT_SCALE);
+  const ctx=off.getContext('2d');ctx.scale(EXPORT_SCALE,EXPORT_SCALE);
+  if(layout==='FB'){renderFBToCanvas(ctx,W,H,tcLight);}
   else{renderChart(ctx,W,H,tcLight);}
   return off;
+}
+
+function renderBSCompact(ctx,W,H,tc,d,BR2,ARM2,BOX_H,SEC_PAD,SEC_H,BUB_ZONE,ptW,PT_GAP){
+  const u=getUnit();
+  const title=document.getElementById('chart-title').value||'';
+  const grpm=document.getElementById('global-rpm').value||'____';
+  const VPAD=60,HPAD=60;
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+  // Title
+  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  ctx.fillText(title,W/2,VPAD-22);
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Base/Structure Phase Check  |  RPM '+grpm,W/2,VPAD-10);
+  // Legend
+  ctx.fillStyle='#1a6bbf';ctx.beginPath();ctx.arc(HPAD-14,VPAD+4,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.font='8px Roboto,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText('Base',HPAD-8,VPAD+4);
+  ctx.fillStyle='#777';ctx.beginPath();ctx.arc(HPAD-14,VPAD+16,4,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=tc.tx2;ctx.fillText('Structure',HPAD-8,VPAD+16);
+
+  function drawBub(cx,cy,amp,phase,isRef,sevId,accent){
+    const r=BR2;
+    ctx.save();
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=tc.bub;ctx.fill();
+    const sc=bsBubbleSeverity[sevId];
+    const col=sc==='fault'?'#ef4444':sc==='warn'?'#f59e0b':sc==='ok'?'#22c55e':accent||tc.bstr;
+    ctx.strokeStyle=col;ctx.lineWidth=sc?2:1.2;
+    if(isRef)ctx.setLineDash([3,2]);
+    ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.moveTo(cx-r,cy);ctx.lineTo(cx+r,cy);ctx.strokeStyle=tc.ln;ctx.lineWidth=0.6;ctx.stroke();
+    const ph=Math.round(parseFloat(phase)||0);
+    ctx.font='bold 6px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText((parseFloat(amp)||0).toFixed(u.dec),cx,cy-r*0.42);
+    ctx.font='6px Roboto,sans-serif';ctx.fillText(ph+'°',cx,cy+r*0.42);
+    const rad=(ph-90)*Math.PI/180;
+    const ax1=cx+Math.cos(rad)*r,ay1=cy+Math.sin(rad)*r;
+    const ax2=cx+Math.cos(rad)*(r+ARM2),ay2=cy+Math.sin(rad)*(r+ARM2);
+    ctx.strokeStyle=tc.ln;ctx.lineWidth=1.2;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(ax1,ay1);ctx.lineTo(ax2,ay2);ctx.stroke();
+    const al=3,aa=0.45;
+    ctx.beginPath();ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad-aa),ay2-al*Math.sin(rad-aa));
+    ctx.moveTo(ax2,ay2);ctx.lineTo(ax2-al*Math.cos(rad+aa),ay2-al*Math.sin(rad+aa));ctx.stroke();
+    ctx.restore();
+  }
+
+  let secTopY=VPAD+36;
+  d.sections.forEach((sec,si)=>{
+    const nPts=sec.points.length;
+    const sw=nPts*(ptW+PT_GAP)-PT_GAP;
+    const secStartX=Math.round((W-sw)/2);
+    const secCX=Math.round(W/2);
+    const baseY=secTopY+BUB_ZONE/2;
+    const boxY=secTopY+BUB_ZONE+5;
+    const structY=boxY+BOX_H+5+BUB_ZONE/2;
+    // Row labels
+    ctx.save();ctx.translate(secStartX-20,baseY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle='#1a6bbf';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('BASE',0,0);ctx.restore();
+    ctx.save();ctx.translate(secStartX-20,structY);ctx.rotate(-Math.PI/2);
+    ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle='#777';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('STRUCT',0,0);ctx.restore();
+    // Box
+    ctx.fillStyle=tc.bub;ctx.strokeStyle=tc.bstr;ctx.lineWidth=1;
+    ctx.beginPath();ctx.roundRect(secStartX,boxY,sw,BOX_H,4);ctx.fill();ctx.stroke();
+    ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(sec.label,secCX,boxY+BOX_H/2);
+    // Guide lines
+    ctx.setLineDash([2,4]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.4;
+    ctx.beginPath();ctx.moveTo(secStartX-8,baseY);ctx.lineTo(secStartX+sw+8,baseY);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(secStartX-8,structY);ctx.lineTo(secStartX+sw+8,structY);ctx.stroke();
+    ctx.setLineDash([]);
+    sec.points.forEach((pt,pi)=>{
+      const cx=secStartX+pi*(ptW+PT_GAP)+ptW/2;
+      const baseId=pt.id*10+1,structId=pt.id*10+2;
+      if(pt.inaccessible){
+        ctx.save();ctx.globalAlpha=0.25;
+        ctx.beginPath();ctx.arc(cx,baseY,BR2,0,Math.PI*2);ctx.strokeStyle='#aaa';ctx.lineWidth=1;ctx.setLineDash([2,2]);ctx.stroke();ctx.setLineDash([]);
+        ctx.font='6px Roboto,sans-serif';ctx.fillStyle='#aaa';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('N/A',cx,baseY);ctx.restore();
+        return;
+      }
+      // Direction label
+      ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='alphabetic';
+      ctx.fillText(pt.dir,cx,baseY-BR2-3);
+      // Connectors
+      ctx.setLineDash([2,3]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.5;
+      ctx.beginPath();ctx.moveTo(cx,boxY);ctx.lineTo(cx,baseY+BR2+ARM2);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(cx,boxY+BOX_H);ctx.lineTo(cx,structY-BR2-ARM2);ctx.stroke();
+      ctx.setLineDash([]);
+      drawBub(cx,baseY,pt.base.amp,pt.base.phase,pt.base.ref,baseId,'#1a6bbf');
+      drawBub(cx,structY,pt.struct.amp,pt.struct.phase,false,structId,'#777777');
+      // Dir label below struct
+      ctx.font='bold 7px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText(pt.dir,cx,structY+BR2+ARM2+2);
+    });
+    if(si<d.sections.length-1){
+      ctx.setLineDash([3,5]);ctx.strokeStyle='#ccc';ctx.lineWidth=0.8;
+      ctx.beginPath();ctx.moveTo(HPAD-20,secTopY+SEC_H+SEC_PAD/2);ctx.lineTo(W-HPAD+20,secTopY+SEC_H+SEC_PAD/2);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    secTopY+=SEC_H+SEC_PAD;
+  });
+  // Footer
+  ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
+  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  '+u.label+' | degrees',HPAD,H-8);
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
 }
 
 function redraw(){
@@ -1951,7 +2074,7 @@ function drawVertical(){
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees | Vertical Equipment Train',HPAD,CH-4);
   var stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-4);
+  ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-10);
   // Annotations
   annotations.forEach(function(a){
     if(!a.text)return;
@@ -2150,9 +2273,9 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
 
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
-  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
   const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
 
   // Annotations
   annotations.forEach(a=>{
@@ -2287,7 +2410,7 @@ function renderFBToCanvas(ctx,W,H,tc){
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD2,H-8);
   const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-8);
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-14);
 
   // Logo
   if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
@@ -2453,9 +2576,9 @@ function drawFootBase(){
 
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
   const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
+  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
 
   // Annotations + logo
   annotations.forEach(a=>{
@@ -2678,9 +2801,9 @@ function renderChart(ctx,W,H,tc){
       axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by,cs);});
     });
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-    ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-8);
+    ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
     const ver='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-8);
+    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-14);
   } else {
     const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
     const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
@@ -2706,7 +2829,7 @@ function renderChart(ctx,W,H,tc){
     });
     // Version / date stamp bottom center
     const vstamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
-    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textAlign='center';ctx.fillText(vstamp,W/2,H-8);
+    ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textAlign='center';ctx.fillText(vstamp,W/2,H-14);
   }
   // ── Draw annotations (both layouts) ────────────────────────
   annotations.forEach(a=>{
@@ -2948,17 +3071,11 @@ function downloadImage(){
 // Desktop print: data URL in new tab, auto-print
 function desktopPrint(){
   closeModal();
-  // Open the print window FIRST synchronously (required by iOS Safari)
-  // before any async canvas work — user gesture must be active
-  const w=window.open('about:blank','_blank');
-  if(!w){alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');return;}
-  w.document.write('<html><head><title>Report</title></head><body style="font-family:Arial,sans-serif;padding:40px;color:#666;text-align:center"><p style="margin-top:120px;font-size:16px">⏳ Preparing report...</p></body></html>');
   const off=buildExportCanvasLight();
-  if(!off){w.close();alert('Add components first.');return;}
+  if(!off){alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
   const imgData=off.toDataURL('image/png');
-  const pageOrientation='portrait';
 
   // ── Build diagnosis HTML for page 2 ──────────────────────
   // Run a fresh diagnosis pass to make sure results are current
@@ -3061,80 +3178,54 @@ function desktopPrint(){
     }));
   }
 
-  const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
 
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;color:#111;background:#fff}
-    .page{padding:16px}
-    h1{font-size:15px;font-weight:700;margin-bottom:6px}
-    .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
-    .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;max-width:100%;height:auto}
-    table{border-collapse:collapse;width:100%;font-size:11px}
-    td,th{border:1px solid #ddd;padding:5px 8px}
-    th{background:#f5f5f5;font-weight:700;text-align:left}
-    .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
-    @media print{
-      @page{margin:0.4in}
-      body{margin:0}
-      .page-break{page-break-before:always}
-      #chart-page{page-break-after:always}
-    }
-  </style>
-  </head><body>
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<style>'
+    +'body{margin:16px;font-family:Arial,sans-serif;color:#111}'
+    +'h1{font-size:15px;font-weight:700;margin-bottom:6px}'
+    +'.subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}'
+    +'.st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}'
+    +'img{max-width:100%;display:block;margin-bottom:14px}'
+    +'table{border-collapse:collapse;width:100%;font-size:11px}'
+    +'td,th{border:1px solid #ccc;padding:4px 8px}'
+    +'th{background:#f5f5f5}'
+    +'.footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}'
+    +'.pb{page-break-before:always;margin-top:16px}'
+    +'@media print{@page{size:portrait;margin:.8cm}body{margin:0}}'
+    +'</style></head><body>'
+    +'<h1>'+title+'</h1>'
+    +'<img src="'+imgData+'">'
+    +'<div class="pb">'
+    +'<h1>'+title+' \u2014 Measurement Data</h1>'
+    +'<div class="st">Measurement Points</div>'
+    +'<table><thead><tr>'
+    +(isBSLayout
+      ? '<th>Section</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th><th>Structure</th><th>Struct Amp ('+u.label+')</th><th>Struct Phase (\u00b0)</th>'
+      : isFBLayout
+        ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (\u00b0)</th>'
+        : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th>'
+    )
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="pb">'
+    +'<h1>'+title+' \u2014 Diagnosis Report</h1>'
+    +'<div class="subtitle">'+(isBSLayout?'Base/Structure phase analysis. ':isFBLayout?'Foot/Base phase analysis. ':'Cross-channel phase analysis. ')+'\u00b130\u00b0 tolerance. Always correlate with spectrum data and visual inspection.</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:6px 10px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px">'
+    +'<span style="font-size:10px"><span style="color:#ef4444">\u25a0</span> <b style="color:#ef4444">Fault</b> \u2014 action required</span>'
+    +'<span style="font-size:10px"><span style="color:#f59e0b">\u25a0</span> <b style="color:#f59e0b">Warning</b> \u2014 monitor closely</span>'
+    +'<span style="font-size:10px"><span style="color:#22c55e">\u25a0</span> <b style="color:#22c55e">Normal</b></span>'
+    +'<span style="font-size:10px"><span style="color:#3b82f6">\u25a0</span> <b style="color:#3b82f6">Info</b></span>'
+    +'</div>'
+    +'<div class="st">Findings</div>'
+    +(diagRows||'<div style="font-size:12px;color:#888">No diagnosis findings.</div>')
+    +'<div class="footer">'+stamp+'</div>'
+    +'</div>'
+    +'<script>var i=document.querySelector("img");i.onload=function(){window.print();};if(i.complete&&i.naturalWidth)window.print();<\/script>'
+    +'</body></html>';
 
-  <!-- PAGE 1: Chart — JS scales image to fit one page before printing -->
-  <div class="page" id="chart-page">
-    <h1>${title}</h1>
-    <img src="${imgData}" id="chartimg">
-  </div>
-
-  <!-- PAGE 2: Measurement Data Table -->
-  <div class="page page-break">
-    <h1>${title} — Measurement Data</h1>
-    <div class="section-title">Measurement Points</div>
-    <table>
-      <thead><tr>
-        ${isBSLayout
-          ? '<th>Section</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Structure</th><th>Struct Amp ('+u.label+')</th><th>Struct Phase (°)</th>'
-          : isFBLayout
-            ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (°)</th>'
-            : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (°)</th>'
-        }
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>
-
-  <!-- PAGE 3: Diagnosis -->
-  <div class="page page-break">
-    <h1>${title} — Diagnosis Report</h1>
-    <div class="subtitle">${isBSLayout ? 'Base/Structure phase analysis. ' : isFBLayout ? 'Foot/Base phase analysis. ' : 'Cross-channel phase analysis — Emerson/CSI principles. Sensor orientation corrections applied. '}±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;align-items:center">
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#ef4444;display:inline-block"></div><strong style="color:#ef4444">Fault</strong> — action required</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block"></div><strong style="color:#f59e0b">Warning</strong> — monitor closely</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></div><strong style="color:#22c55e">Normal</strong> — no issue indicated</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#3b82f6;display:inline-block"></div><strong style="color:#3b82f6">Info</strong> — additional context</div>
-    </div>
-    <div class="section-title">Findings</div>
-    ${diagRows||'<div style="font-size:12px;color:#888;padding:8px 0">No diagnosis findings — enter measurement data to generate results.</div>'}
-    <div class="footer">${stamp}</div>
-  </div>
-
-  <script>
-    var img=document.getElementById('chartimg');
-    function doPrint(){window.print();}
-    if(img.complete){setTimeout(doPrint,150);}
-    else{img.onload=function(){setTimeout(doPrint,150);};}
-  <\/script>
-  </body></html>`;
-
-  // Write the fully built HTML into the already-open window
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+  else{alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');}
 }
 
 // ── Phase normalization for axial orientation ─────────────
