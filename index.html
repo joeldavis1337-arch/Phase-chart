@@ -3071,11 +3071,7 @@ function downloadImage(){
 // Desktop print: data URL in new tab, auto-print
 function desktopPrint(){
   closeModal();
-  // Open the print window FIRST synchronously (required by iOS Safari)
-  // before any async canvas work — user gesture must be active
-  const w=window.open('about:blank','_blank');
-  if(!w){alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');return;}
-  w.document.write('<html><head><title>Report</title></head><body style="font-family:Arial,sans-serif;padding:40px;color:#666;text-align:center"><p style="margin-top:120px;font-size:16px">⏳ Preparing report...</p></body></html>');
+
   const off=buildExportCanvasLight();
   if(!off){w.close();alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
@@ -3189,21 +3185,20 @@ function desktopPrint(){
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;color:#111;background:#fff}
-    .page{padding:16px}
+    body{font-family:Arial,sans-serif;color:#111;background:#fff;margin:16px}
+    .page{margin-bottom:16px}
     h1{font-size:15px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;width:100%;height:auto}
+    #chartimg{max-width:100%;display:block;margin-bottom:14px}
     table{border-collapse:collapse;width:100%;font-size:11px}
-    td,th{border:1px solid #ddd;padding:5px 8px}
-    th{background:#f5f5f5;font-weight:700;text-align:left}
+    td,th{border:1px solid #ccc;padding:4px 8px}
+    th{background:#f5f5f5}
     .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
     @media print{
-      @page{margin:0.4in}
+      @page{size:portrait;margin:.8cm}
       body{margin:0}
       .page-break{page-break-before:always}
-      #chart-page{page-break-after:always}
     }
   </style>
   </head><body>
@@ -3211,9 +3206,7 @@ function desktopPrint(){
   <!-- PAGE 1: Chart -->
   <div class="page" id="chart-page">
     <h1>${title}</h1>
-    <div style="width:100%;line-height:0">
-      <img src="${imgData}" id="chartimg" style="width:100%;height:auto;display:block">
-    </div>
+    <img src="${imgData}" id="chartimg">
   </div>
 
   <!-- PAGE 2: Measurement Data Table -->
@@ -3249,25 +3242,16 @@ function desktopPrint(){
   </div>
 
   <script>
-    var img=document.getElementById('chartimg');
-    function doPrint(){
-      // Debug: show dimensions before printing
-      var info=document.getElementById('debug-info');
-      if(info){
-        info.textContent='Canvas: '+img.naturalWidth+'x'+img.naturalHeight+'px | Display: '+img.offsetWidth+'x'+img.offsetHeight+'px | DPR: '+window.devicePixelRatio;
-        info.style.display='block';
-      }
-      setTimeout(function(){window.print();},800);
-    }
-    if(img.complete){setTimeout(doPrint,150);}
-    else{img.onload=function(){setTimeout(doPrint,150);};}
+    var i=document.getElementById('chartimg');
+    function doPrint(){window.print();}
+    if(i.complete&&i.naturalWidth){doPrint();}
+    else{i.onload=doPrint;}
   <\/script>
   </body></html>`;
 
-  // Write the fully built HTML into the already-open window
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+  else{alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');}
 }
 
 // ── Phase normalization for axial orientation ─────────────
