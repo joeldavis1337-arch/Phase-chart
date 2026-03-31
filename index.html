@@ -4259,11 +4259,12 @@ function renderDiagResults(results){
   const el=document.getElementById('diag-results');
   if(!el)return;
   el.innerHTML='';
-  // Always show faults first, then warnings, then normal, then info
-  const rank={fault:0,warn:1,ok:2,info:3};
+  // Sort: fault=0 (top), warn=1, ok=2, info=3
+  // Must use explicit Map not object to avoid JS falsy-zero issues
+  const sevOrder=new Map([['fault',0],['warn',1],['ok',2],['info',3]]);
   const sorted=[...results].sort((a,b)=>{
-    const ra=rank[a.type]!==undefined?rank[a.type]:3;
-    const rb=rank[b.type]!==undefined?rank[b.type]:3;
+    const ra=sevOrder.has(a.type)?sevOrder.get(a.type):3;
+    const rb=sevOrder.has(b.type)?sevOrder.get(b.type):3;
     return ra-rb;
   });
   sorted.forEach(r=>{
