@@ -322,6 +322,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
     <div class="topbar-group">
       <label>Title <input type="text" id="chart-title" value="Cross-Channel Phase Analysis" style="width:130px" oninput="redraw()"></label>
       <label>RPM <input type="number" id="global-rpm" placeholder="—" style="width:62px" inputmode="numeric" oninput="redraw()"></label>
+      <label>Tech <input type="text" id="tech-name" placeholder="Technician" style="width:96px" oninput="redraw()"></label>
     </div>
     <div class="topbar-divider"></div>
     <!-- Group 2: Chart config -->
@@ -374,6 +375,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
       <button class="overflow-item" onclick="closeOverflow();openTemplates()">📐 Templates</button>
       <div class="overflow-sep"></div>
       <label class="overflow-item" style="cursor:pointer;gap:8px">📅 Date <input type="text" id="doc-date-mobile" value="" placeholder="auto" style="flex:1;font-size:13px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif;" oninput="syncDate(this)"></label>
+      <label class="overflow-item" style="gap:8px">👤 Tech <input type="text" id="tech-name-mobile" placeholder="Technician name" style="flex:1;font-size:13px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 8px;color:var(--tx);font-family:'Roboto',sans-serif;" oninput="syncTech(this)"></label>
       <div class="overflow-sep"></div>
       <button class="overflow-item" onclick="closeOverflow();openWN()">✨ What's New</button>
       <button class="overflow-item" onclick="closeOverflow();openHelp()">❓ Help</button>
@@ -408,6 +410,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
         <h3 style="margin:0">Components &amp; Measurements</h3>
         <div style="display:flex;gap:6px">
           <button class="btn" id="undo-visible-btn" onclick="doUndo()" style="font-size:12px;padding:5px 10px;display:none">↩ Undo</button>
+          <button class="btn" onclick="confirmClearValues()" style="font-size:12px;padding:5px 10px;color:#c00;border-color:#f99" title="Clear all amplitude and phase values, keep structure">🗑 Clear Values</button>
         </div>
       </div>
       <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px">
@@ -632,6 +635,17 @@ function getTodayStr(){
 function getDocDate(){
   const v=document.getElementById('doc-date');
   return (v&&v.value.trim())||getTodayStr();
+}
+function getTechName(){
+  const v=document.getElementById('tech-name');
+  return (v&&v.value.trim())||'';
+}
+function syncTech(el){
+  const main=document.getElementById('tech-name');
+  if(main&&main!==el)main.value=el.value;
+  const mob=document.getElementById('tech-name-mobile');
+  if(mob&&mob!==el)mob.value=el.value;
+  redraw();
 }
 function getDocVersion(){
   return '1.3.1';
@@ -1926,7 +1940,8 @@ function renderBSCompact(ctx,W,H,tc,d,BR2,ARM2,BOX_H,SEC_PAD,SEC_H,BUB_ZONE,ptW,
   // Footer
   ctx.font='8px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
   ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  '+u.label+' | degrees',HPAD,H-8);
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  const _tech=getTechName();
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-8);
 }
 
@@ -2073,7 +2088,7 @@ function drawVertical(){
 
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees | Vertical Equipment Train',HPAD,CH-4);
-  var stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  var _tn3=getTechName();var stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tn3?' | Tech: '+_tn3:'')+' | © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,CW-20,CH-10);
   // Annotations
   annotations.forEach(function(a){
@@ -2274,7 +2289,8 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
   ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  const _tech=getTechName();
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
 
   // Annotations
@@ -2409,7 +2425,8 @@ function renderFBToCanvas(ctx,W,H,tc){
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD2,H-8);
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  const _tech=getTechName();
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-14);
 
   // Logo
@@ -2577,7 +2594,8 @@ function drawFootBase(){
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
   ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  const _tech=getTechName();
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
   ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
 
   // Annotations + logo
@@ -2802,7 +2820,7 @@ function renderChart(ctx,W,H,tc){
     });
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
     ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
-    const ver='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+    const _tn2=getTechName();const ver='v'+getDocVersion()+'  |  '+getDocDate()+(_tn2?' | Tech: '+_tn2:'')+' | © '+new Date().getFullYear()+' Joel Davis';
     ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-14);
   } else {
     const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
@@ -3178,7 +3196,8 @@ function desktopPrint(){
     }));
   }
 
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+'  |  © '+new Date().getFullYear()+' Joel Davis';
+  const _tech=getTechName();
+  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
 
   const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
     +'<style>'
@@ -3646,6 +3665,7 @@ function autosave(){
       unit:document.getElementById('amp-unit')?.value||'in/s',
       rpm:document.getElementById('global-rpm')?.value||'',
       title:document.getElementById('chart-title')?.value||'',
+      tech:document.getElementById('tech-name')?.value||'',
       date:document.getElementById('doc-date')?.value||'',
       theme:currentTheme,
       ts:Date.now(),
@@ -3681,6 +3701,8 @@ function restoreAutosave(){
     if(rpmEl&&state.rpm)rpmEl.value=state.rpm;
     const titleEl=document.getElementById('chart-title');
     if(titleEl&&state.title)titleEl.value=state.title;
+    const techEl=document.getElementById('tech-name');
+    if(techEl&&state.tech)techEl.value=state.tech;
     const dateEl=document.getElementById('doc-date');
     if(dateEl&&state.date)dateEl.value=state.date;
     return true;
@@ -4572,6 +4594,39 @@ function getSeverityBadge(){
   if(diagResults.some(r=>r.type==='ok'))    return 'ok';
   return 'info';
 }
+function confirmClearValues(){
+  showConfirm(
+    'Clear all values?',
+    'This will reset all amplitude and phase readings to zero. Component names, positions, and structure are kept.',
+    clearAllValues
+  );
+}
+
+function clearAllValues(){
+  // Save undo snapshot (nodes only — covers H/V layouts)
+  takeSnapshot('Values cleared');
+  const layout=document.getElementById('layout')?.value||'H';
+  if(layout==='BS'){
+    const d=getBSData();
+    d.sections.forEach(sec=>sec.points.forEach(pt=>{
+      pt.base.amp=0;pt.base.phase=0;
+      pt.struct.amp=0;pt.struct.phase=0;
+    }));
+  } else if(layout==='FB'){
+    nodes.forEach(n=>{
+      const fb=getFBNode(n.id);
+      fb.locations.forEach(loc=>{
+        loc.foot.amp=0;loc.foot.phase=0;
+        loc.base.amp=0;loc.base.phase=0;
+      });
+    });
+  } else {
+    nodes.forEach(n=>n.meas.forEach(m=>{m.amp=0;m.phase=0;}));
+  }
+  renderSidebar();runDiagnosis();autosave();
+  showUndoToast('All values cleared');
+}
+
 function duplicateChart(){
   // Deep clone nodes and reset all ids to avoid collisions
   const cloned=JSON.parse(JSON.stringify(nodes));
@@ -4589,6 +4644,7 @@ function duplicateChart(){
 function saveToHistory(){
   const title=document.getElementById('chart-title').value.trim()||'Untitled';
   const rpm=document.getElementById('global-rpm').value||'';
+  const tech=document.getElementById('tech-name')?.value?.trim()||'';
   const unit=document.getElementById('amp-unit').value;
   const layout=document.getElementById('layout').value;
   const date=getDocDate();
@@ -4779,6 +4835,8 @@ const CHANGELOG={
       'Annotation drag-to-move — tap and drag any chart annotation to reposition it anywhere on the chart',
       'iOS zoom bug fixed — pinch-to-zoom on chart no longer accidentally triggers annotation interactions',
       'Chart sharing via URL — tap Share Link on any history card to generate a shareable link; recipient taps to import into their history',
+      'Technician name field — add your name to the chart header; appears in canvas footer stamp, print report, and saved history',
+      'Clear Values button — reset all amplitude and phase readings to zero while keeping component names, positions, and structure intact; useful when re-taking readings on a duplicated chart',
       'Swipe-to-delete now ignores button taps — Load, Share Link, and Delete buttons no longer accidentally trigger card swipe',
       'Share card findings sorted by severity — fault findings always appear first regardless of detection order',
       'Share card landscape now shows up to 4 findings instead of 3',
