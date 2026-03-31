@@ -3071,13 +3071,11 @@ function downloadImage(){
 // Desktop print: data URL in new tab, auto-print
 function desktopPrint(){
   closeModal();
-
   const off=buildExportCanvasLight();
-  if(!off){w.close();alert('Add components first.');return;}
+  if(!off){alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
   const imgData=off.toDataURL('image/png');
-  const pageOrientation='portrait';
 
   // ── Build diagnosis HTML for page 2 ──────────────────────
   // Run a fresh diagnosis pass to make sure results are current
@@ -3182,72 +3180,50 @@ function desktopPrint(){
 
   const stamp=`v${getDocVersion()} &nbsp;|&nbsp; ${getDocDate()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis`;
 
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:Arial,sans-serif;color:#111;background:#fff;margin:16px}
-    .page{margin-bottom:16px}
-    h1{font-size:15px;font-weight:700;margin-bottom:6px}
-    .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
-    .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{max-width:100%;display:block;margin-bottom:14px}
-    table{border-collapse:collapse;width:100%;font-size:11px}
-    td,th{border:1px solid #ccc;padding:4px 8px}
-    th{background:#f5f5f5}
-    .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
-    @media print{
-      @page{size:portrait;margin:.8cm}
-      body{margin:0}
-      .page-break{page-break-before:always}
-    }
-  </style>
-  </head><body>
+  const stamp=`v${getDocVersion()}  |  ${getDocDate()}  |  © ${new Date().getFullYear()} Joel Davis`;
 
-  <!-- PAGE 1: Chart -->
-  <div class="page" id="chart-page">
-    <h1>${title}</h1>
-    <img src="${imgData}" id="chartimg">
-  </div>
-
-  <!-- PAGE 2: Measurement Data Table -->
-  <div class="page page-break">
-    <h1>${title} — Measurement Data</h1>
-    <div class="section-title">Measurement Points</div>
-    <table>
-      <thead><tr>
-        ${isBSLayout
-          ? '<th>Section</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Structure</th><th>Struct Amp ('+u.label+')</th><th>Struct Phase (°)</th>'
-          : isFBLayout
-            ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (°)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (°)</th>'
-            : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (°)</th>'
-        }
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  </div>
-
-  <!-- PAGE 3: Diagnosis -->
-  <div class="page page-break">
-    <h1>${title} — Diagnosis Report</h1>
-    <div class="subtitle">${isBSLayout ? 'Base/Structure phase analysis. ' : isFBLayout ? 'Foot/Base phase analysis. ' : 'Cross-channel phase analysis — Emerson/CSI principles. Sensor orientation corrections applied. '}±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:#f8f8f8;border:1px solid #ddd;border-radius:6px;align-items:center">
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#ef4444;display:inline-block"></div><strong style="color:#ef4444">Fault</strong> — action required</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block"></div><strong style="color:#f59e0b">Warning</strong> — monitor closely</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#22c55e;display:inline-block"></div><strong style="color:#22c55e">Normal</strong> — no issue indicated</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:#333"><div style="width:12px;height:12px;border-radius:3px;background:#3b82f6;display:inline-block"></div><strong style="color:#3b82f6">Info</strong> — additional context</div>
-    </div>
-    <div class="section-title">Findings</div>
-    ${diagRows||'<div style="font-size:12px;color:#888;padding:8px 0">No diagnosis findings — enter measurement data to generate results.</div>'}
-    <div class="footer">${stamp}</div>
-  </div>
-
-  <script>
-    var i=document.getElementById('chartimg');
-    function doPrint(){window.print();}
-    if(i.complete&&i.naturalWidth){doPrint();}
-    else{i.onload=doPrint;}
-  <\/script>
-  </body></html>`;
+  const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<style>'
+    +'body{margin:16px;font-family:Arial,sans-serif;color:#111}'
+    +'h1{font-size:15px;font-weight:700;margin-bottom:6px}'
+    +'.subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}'
+    +'.st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}'
+    +'img{max-width:100%;display:block;margin-bottom:14px}'
+    +'table{border-collapse:collapse;width:100%;font-size:11px}'
+    +'td,th{border:1px solid #ccc;padding:4px 8px}'
+    +'th{background:#f5f5f5}'
+    +'.footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}'
+    +'.pb{page-break-before:always;margin-top:16px}'
+    +'@media print{@page{size:portrait;margin:.8cm}body{margin:0}}'
+    +'</style></head><body>'
+    +'<h1>'+title+'</h1>'
+    +'<img src="'+imgData+'">'
+    +'<div class="pb">'
+    +'<h1>'+title+' \u2014 Measurement Data</h1>'
+    +'<div class="st">Measurement Points</div>'
+    +'<table><thead><tr>'
+    +(isBSLayout
+      ? '<th>Section</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th><th>Structure</th><th>Struct Amp ('+u.label+')</th><th>Struct Phase (\u00b0)</th>'
+      : isFBLayout
+        ? '<th>Component</th><th>Location</th><th>Sensor</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th><th>Base/Struct</th><th>Base Amp ('+u.label+')</th><th>Base Phase (\u00b0)</th>'
+        : '<th>Component</th><th>Point</th><th>Position</th><th>Sensor Orientation</th><th>Ref</th><th>Amp ('+u.label+')</th><th>Phase (\u00b0)</th>'
+    )
+    +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'<div class="pb">'
+    +'<h1>'+title+' \u2014 Diagnosis Report</h1>'
+    +'<div class="subtitle">'+(isBSLayout?'Base/Structure phase analysis. ':isFBLayout?'Foot/Base phase analysis. ':'Cross-channel phase analysis. ')+'\u00b130\u00b0 tolerance. Always correlate with spectrum data and visual inspection.</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:6px 10px;background:#f8f8f8;border:1px solid #ddd;border-radius:4px">'
+    +'<span style="font-size:10px"><span style="color:#ef4444">\u25a0</span> <b style="color:#ef4444">Fault</b> \u2014 action required</span>'
+    +'<span style="font-size:10px"><span style="color:#f59e0b">\u25a0</span> <b style="color:#f59e0b">Warning</b> \u2014 monitor closely</span>'
+    +'<span style="font-size:10px"><span style="color:#22c55e">\u25a0</span> <b style="color:#22c55e">Normal</b></span>'
+    +'<span style="font-size:10px"><span style="color:#3b82f6">\u25a0</span> <b style="color:#3b82f6">Info</b></span>'
+    +'</div>'
+    +'<div class="st">Findings</div>'
+    +(diagRows||'<div style="font-size:12px;color:#888">No diagnosis findings.</div>')
+    +'<div class="footer">'+stamp+'</div>'
+    +'</div>'
+    +'<script>var i=document.querySelector("img");i.onload=function(){window.print();};if(i.complete&&i.naturalWidth)window.print();<\/script>'
+    +'</body></html>';
 
   const w=window.open('','_blank');
   if(w){w.document.write(html);w.document.close();}
