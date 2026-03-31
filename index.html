@@ -2006,7 +2006,7 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   const maxSecW=Math.max(...d.sections.map(s=>secW(s)),400);
 
   const W=forceW||(HPAD*2+maxSecW);
-  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+44+16); // extra footer clearance
+  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+56+16); // extra footer clearance
 
   let ctx;
   if(setupLive){
@@ -2320,7 +2320,7 @@ function drawFootBase(){
   const COLS=N;
 
   const W=HPAD*2+COLS*CELL_W+(COLS-1)*COL_GAP+40;
-  const H=VPAD+60+ROWS*ROW_H+40;
+  const H=VPAD+60+ROWS*ROW_H+56;
 
   const ctx=setupCanvas(W,H);
   ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
@@ -2506,7 +2506,7 @@ function getChartDims(){
     const secW2=(sec)=>Math.max(sec.points.length,1)*(ptW2+PT_GAP2)-PT_GAP2;
     const maxSecW2=Math.max(...d.sections.map(s=>secW2(s)),400);
     const W2=HPAD2*2+maxSecW2;
-    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+44+16; // extra footer clearance
+    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+56+16; // extra footer clearance
     return {W:W2,H:H2};
   }
   if(layout==='FB'){
@@ -2957,32 +2957,8 @@ function desktopPrint(){
   if(!off){w.close();alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
-
-  // iOS Safari prints HTML at 72dpi (CSS points = 1/72 inch).
-  // An embedded PNG prints at 1px = 1pt = 1/72in.
-  // US Letter = 612 x 792 pts. 0.4in margin = 28.8pts each side.
-  // iOS adds ~90pts of header/footer chrome to every print page.
-  const PT=72; // iOS print resolution in points per inch
-  const MARGIN_PT=Math.round(0.4*PT);  // 28.8 -> 29pts
-  const CHROME_PT=90; // iOS Safari header+footer
-  const PW=Math.round(8.5*PT)-MARGIN_PT*2;         // 554pts portrait width
-  const PH=Math.round(11*PT)-MARGIN_PT*2-CHROME_PT; // 634pts portrait height
-  const LW=Math.round(11*PT)-MARGIN_PT*2;           // 734pts landscape width
-  const LH=Math.round(8.5*PT)-MARGIN_PT*2-CHROME_PT;// 554pts landscape height
-  const imgPxW=off.width, imgPxH=off.height;
-  // Scale the raw canvas pixels down to fit within the printable point area
-  const scaleP=Math.min(PW/imgPxW, PH/imgPxH);
-  const scaleL=Math.min(LW/imgPxW, LH/imgPxH);
-  const useLandscape=scaleL>scaleP;
-  const finalScale=useLandscape?scaleL:scaleP;
-  const finalW=Math.round(imgPxW*finalScale);
-  const finalH=Math.round(imgPxH*finalScale);
-  const scaled=document.createElement('canvas');
-  scaled.width=finalW; scaled.height=finalH;
-  const sctx=scaled.getContext('2d');
-  sctx.drawImage(off,0,0,imgPxW,imgPxH,0,0,finalW,finalH);
-  const imgData=scaled.toDataURL('image/png');
-  const pageOrientation=useLandscape?'landscape':'portrait';
+  const imgData=off.toDataURL('image/png');
+  const pageOrientation='portrait';
 
   // ── Build diagnosis HTML for page 2 ──────────────────────
   // Run a fresh diagnosis pass to make sure results are current
@@ -3095,21 +3071,16 @@ function desktopPrint(){
     h1{font-size:15px;font-weight:700;margin-bottom:6px}
     .subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}
     .section-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}
-    #chartimg{display:block;width:100%;height:auto}
+    #chartimg{display:block;max-width:100%;height:auto}
     table{border-collapse:collapse;width:100%;font-size:11px}
     td,th{border:1px solid #ddd;padding:5px 8px}
     th{background:#f5f5f5;font-weight:700;text-align:left}
     .footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}
     @media print{
-      @page{size:${pageOrientation};margin:0.4in}
+      @page{margin:0.4in}
       body{margin:0}
       .page-break{page-break-before:always}
       #chart-page{page-break-after:always}
-      #chartimg{display:block;width:100%;height:auto}
-    }
-    @page{
-      /* Suppress browser-injected URL and title headers/footers */
-      margin-header:0;margin-footer:0;
     }
   </style>
   </head><body>
@@ -3153,7 +3124,6 @@ function desktopPrint(){
   </div>
 
   <script>
-    // Image is pre-scaled to fit exactly one page — just print
     var img=document.getElementById('chartimg');
     function doPrint(){window.print();}
     if(img.complete){setTimeout(doPrint,150);}
