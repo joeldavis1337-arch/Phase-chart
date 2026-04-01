@@ -559,8 +559,8 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
     <div class="bug-body">
       Found an issue or have an idea for a new feature?<br>
       Send an email directly to the developer:
-      <a class="bug-email" href="mailto:joel.davis@johnhcarter.com?subject=Phase Analysis App — Bug/Feature Request">
-        joel.davis@johnhcarter.com
+      <a class="bug-email" href="/cdn-cgi/l/email-protection#1872777d74367c796e716b5872777076707b796a6c7d6a367b7775276b6d7a727d7b6c254870796b7d3859767974616b716b3859686838fa988c385a6d7f375e7d796c6d6a7d384a7d696d7d6b6c">
+        <span class="__cf_email__" data-cfemail="1973767c75377d786f706a5973767177717a786b6d7c6b377a7674">[email&#160;protected]</span>
       </a>
       <span style="font-size:11px;color:var(--tx3);display:block;margin-top:8px">Please describe the issue or feature request in as much detail as possible. Screenshots are helpful!</span>
     </div>
@@ -626,7 +626,7 @@ body.forest .diag-item.info  {background:#0a1020;border-left-color:#5090c0}
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── Version / Date ───────────────────────────────────────
 function getTodayStr(){
   const d=new Date();
@@ -648,7 +648,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '1.3.2';
+  return '1.3.3';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -1814,9 +1814,9 @@ function buildExportCanvasLight(){
   // For BS layout use compact dimensions so 3-section charts fit one print page
   let W,H;
   if(layout==='BS'){
-    // Use the full renderer for crisp print quality — same as screen
+    // Use 2x scale for BS — crisp but not so large Chrome delays rendering
     const dims=getChartDims();W=dims.W;H=dims.H;
-    const EXPORT_SCALE=3;
+    const EXPORT_SCALE=2;
     const off=document.createElement('canvas');
     off.width=Math.round(W*EXPORT_SCALE);off.height=Math.round(H*EXPORT_SCALE);
     const ctx=off.getContext('2d');ctx.scale(EXPORT_SCALE,EXPORT_SCALE);
@@ -2280,11 +2280,10 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   });
 
   // Footer
-  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
-  ctx.textAlign='left';ctx.fillText('Base/Structure Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=tc.foot;ctx.textBaseline='alphabetic';
   const _tech=getTechName();
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
+  const stamp='Base/Structure  |  '+u.label+' | degrees  |  v'+getDocVersion()+'  |  '+getDocDate()+(_tech?'  |  '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='center';ctx.fillText(stamp,W/2,H-10);
 
   // Annotations
   annotations.forEach(a=>{
@@ -2417,10 +2416,9 @@ function renderFBToCanvas(ctx,W,H,tc){
 
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD2,H-8);
   const _tech=getTechName();
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD2,H-14);
+  const stamp='Foot/Base  |  '+u.label+' | degrees  |  v'+getDocVersion()+'  |  '+getDocDate()+(_tech?'  |  '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='center';ctx.fillText(stamp,W/2,H-10);
 
   // Logo
   if(chartLogoDataURL&&_logoImg&&_logoImg.complete&&_logoImg.naturalWidth){
@@ -2586,10 +2584,9 @@ function drawFootBase(){
 
   // Footer
   ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-  ctx.textAlign='left';ctx.fillText('Foot/Base Phase Check  |  Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
   const _tech=getTechName();
-  const stamp='v'+getDocVersion()+'  |  '+getDocDate()+(_tech?' | Tech: '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
-  ctx.textAlign='right';ctx.fillText(stamp,W-HPAD,H-14);
+  const stamp='Foot/Base  |  '+u.label+' | degrees  |  v'+getDocVersion()+'  |  '+getDocDate()+(_tech?'  |  '+_tech:'')+' | © '+new Date().getFullYear()+' Joel Davis';
+  ctx.textAlign='center';ctx.fillText(stamp,W/2,H-10);
 
   // Annotations + logo
   annotations.forEach(a=>{
@@ -2812,9 +2809,8 @@ function renderChart(ctx,W,H,tc){
       axR.forEach((m,i)=>{const sh=axR.length*(BSLOT*2+4)-4;const by=yM-sh/2+i*(BSLOT*2+4)+BSLOT,bx=cX+NCW-AZW/2;dash(xNR,yM,bx-BSLOT,by);bubble(m,bx,by,cs);});
     });
     ctx.font='10px Roboto,sans-serif';ctx.fillStyle=tc.foot;
-    ctx.textAlign='left';ctx.fillText('Amplitude in '+u.label+' | Phase in degrees',HPAD,H-14);
-    const _tn2=getTechName();const ver='v'+getDocVersion()+'  |  '+getDocDate()+(_tn2?' | Tech: '+_tn2:'')+' | © '+new Date().getFullYear()+' Joel Davis';
-    ctx.textAlign='right';ctx.fillText(ver,W-HPAD,H-14);
+    const _tn2=getTechName();const ver=u.label+' | degrees  |  v'+getDocVersion()+'  |  '+getDocDate()+(_tn2?'  |  '+_tn2:'')+' | © '+new Date().getFullYear()+' Joel Davis';
+    ctx.textAlign='center';ctx.fillText(ver,W/2,H-10);
   } else {
     const AZH=BSLOT*2+6,VZW=BSLOT*2+6,HZW=BSLOT*2+6,nCH=AZH+NH+AZH;
     const xNL=HPAD+VZW,xNR=xNL+NW,xC=xNL+NW/2;
@@ -3082,13 +3078,18 @@ function downloadImage(){
 }
 
 // Desktop print: data URL in new tab, auto-print
-function desktopPrint(){
+async function desktopPrint(){
   closeModal();
   const off=buildExportCanvasLight();
   if(!off){alert('Add components first.');return;}
   const title=document.getElementById('chart-title').value||'Phase Bubble Chart';
   const u=getUnit();
-  const imgData=off.toDataURL('image/png');
+  // Use blob URL instead of data URL — much faster for Chrome print preview
+  // Data URLs embed ~2MB of base64 in HTML; blob URLs are loaded by reference
+  let imgData='';
+  const _blob=await new Promise(r=>off.toBlob(r,'image/png'));
+  if(_blob){imgData=URL.createObjectURL(_blob);}
+  else{imgData=off.toDataURL('image/png');}
 
   // ── Build diagnosis HTML for page 2 ──────────────────────
   // Run a fresh diagnosis pass to make sure results are current
@@ -3210,10 +3211,12 @@ function desktopPrint(){
     +'th{background:#f5f5f5}'
     +'.footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}'
     +'.pb{page-break-before:always;margin-top:16px}'
-    +'@media print{@page{size:portrait;margin:.8cm}body{margin:0}img{page-break-inside:avoid;page-break-after:avoid}.pb{page-break-before:always}h1+img{display:block}}'
+    +(isBSLayout
+      ? '@media print{@page{size:auto;margin:.8cm}body{margin:0;padding:0}img{max-width:100%;max-height:90vh;width:auto;display:block;page-break-inside:avoid;page-break-after:avoid}#chart-pg{page-break-after:always;overflow:hidden}.pb{page-break-before:always;margin-top:0}h1{margin-bottom:8px}}'
+      : '@media print{@page{size:portrait;margin:.8cm}body{margin:0;padding:0}img{max-width:100%;display:block;page-break-inside:avoid;page-break-after:avoid}#chart-pg{page-break-after:always;overflow:hidden}.pb{page-break-before:always;margin-top:0}h1{margin-bottom:8px}}')
     +'</style></head><body>'
-    +'<h1>'+title+'</h1>'
-    +'<img src="'+imgData+'">'
+    +'<div id="chart-pg"><h1>'+title+'</h1>'
+    +'<img src="'+imgData+'"></div>'
     +'<div class="pb">'
     +'<h1>'+title+' \u2014 Measurement Data</h1>'
     +'<div class="st">Measurement Points</div>'
@@ -4835,6 +4838,12 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.3.3':{
+    date:'04/01/2026',
+    items:[
+      'Print fix — Base/Structure 3-section layout no longer generates blank pages; print CSS now uses auto page size with max-height constraint for BS layout so the chart image always fits on one page',
+    ]
+  },
   '1.3.2':{
     date:'03/31/2026',
     items:[
@@ -5039,7 +5048,7 @@ function boot(){
   document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
   document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
   // Restore autosaved state if navigating back from print window
-  // NOTE: theme is intentionally NOT restored from autosave — localStorage theme is the preference
+  // NOTE: theme is intentionally NOT restored from autosave  e — localStorage theme is the preference
   restoreAutosave();
   renderSidebar();
   renderHistory();
