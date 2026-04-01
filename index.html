@@ -1814,20 +1814,13 @@ function buildExportCanvasLight(){
   // For BS layout use compact dimensions so 3-section charts fit one print page
   let W,H;
   if(layout==='BS'){
-    const d=getBSData();
-    const BR2c=20,ARM2c=12,BOX_Hc=26,SEC_PADc=10;
-    const BUB_ZONEc=BR2c*2+ARM2c+10;
-    const SEC_Hc=BUB_ZONEc+5+BOX_Hc+5+BUB_ZONEc+14;
-    const ptWc=BR2c*2+6;
-    const PT_GAPc=10;
-    const maxPts=Math.max(...d.sections.map(s=>s.points.length),1);
-    W=Math.max(60*2+maxPts*(ptWc+PT_GAPc)-PT_GAPc,380);
-    H=60+40+d.sections.length*(SEC_Hc+SEC_PADc)-SEC_PADc+40;
+    // Use the full renderer for crisp print quality — same as screen
+    const dims=getChartDims();W=dims.W;H=dims.H;
+    const EXPORT_SCALE=3;
     const off=document.createElement('canvas');
-    const ES=3;
-    off.width=Math.round(W*ES);off.height=Math.round(H*ES);
-    const ctx=off.getContext('2d');ctx.scale(ES,ES);
-    renderBSCompact(ctx,W,H,tcLight,d,BR2c,ARM2c,BOX_Hc,SEC_PADc,SEC_Hc,BUB_ZONEc,ptWc,PT_GAPc);
+    off.width=Math.round(W*EXPORT_SCALE);off.height=Math.round(H*EXPORT_SCALE);
+    const ctx=off.getContext('2d');ctx.scale(EXPORT_SCALE,EXPORT_SCALE);
+    renderBSToCanvas(ctx,W,H,tcLight,false);
     return off;
   }
   const dims=getChartDims();W=dims.W;H=dims.H;
@@ -2144,7 +2137,7 @@ function renderBSToCanvas(canvasOrCtx,forceW,forceH,tc,setupLive){
   const maxSecW=Math.max(...d.sections.map(s=>secW(s)),400);
 
   const W=forceW||(HPAD*2+maxSecW);
-  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+56+16); // extra footer clearance
+  const H=forceH||(VPAD+44+d.sections.length*(SEC_H+SEC_PAD)-SEC_PAD+64+16); // extra footer clearance
 
   let ctx;
   if(setupLive){
@@ -2647,7 +2640,7 @@ function getChartDims(){
     const secW2=(sec)=>Math.max(sec.points.length,1)*(ptW2+PT_GAP2)-PT_GAP2;
     const maxSecW2=Math.max(...d.sections.map(s=>secW2(s)),400);
     const W2=HPAD2*2+maxSecW2;
-    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+56+16; // extra footer clearance
+    const H2=VPAD2+44+d.sections.length*(SEC_H2+SEC_PAD2)-SEC_PAD2+64+16; // extra footer clearance
     return {W:W2,H:H2};
   }
   if(layout==='FB'){
@@ -3211,13 +3204,13 @@ function desktopPrint(){
     +'h1{font-size:15px;font-weight:700;margin-bottom:6px}'
     +'.subtitle{font-size:11px;color:#666;margin-bottom:14px;line-height:1.5}'
     +'.st{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:0 0 8px}'
-    +'img{max-width:100%;display:block;margin-bottom:14px}'
+    +'img{max-width:100%;display:block;margin-bottom:14px;page-break-inside:avoid}'
     +'table{border-collapse:collapse;width:100%;font-size:11px}'
     +'td,th{border:1px solid #ccc;padding:4px 8px}'
     +'th{background:#f5f5f5}'
     +'.footer{font-size:9px;color:#aaa;text-align:right;margin-top:14px}'
     +'.pb{page-break-before:always;margin-top:16px}'
-    +'@media print{@page{size:portrait;margin:.8cm}body{margin:0}}'
+    +'@media print{@page{size:portrait;margin:.8cm}body{margin:0}img{page-break-inside:avoid;page-break-after:avoid}.pb{page-break-before:always}h1+img{display:block}}'
     +'</style></head><body>'
     +'<h1>'+title+'</h1>'
     +'<img src="'+imgData+'">'
@@ -3245,7 +3238,12 @@ function desktopPrint(){
     +(diagRows||'<div style="font-size:12px;color:#888">No diagnosis findings.</div>')
     +'<div class="footer">'+stamp+'</div>'
     +'</div>'
-    +'<script>var i=document.querySelector("img");i.onload=function(){window.print();};if(i.complete&&i.naturalWidth)window.print();<\/script>'
+    +'<script>'
+    +'var i=document.querySelector("img");'
+    +'function doPrint(){setTimeout(function(){window.print();},300);}'
+    +'i.onload=doPrint;'
+    +'if(i.complete&&i.naturalWidth){doPrint();}'
+    +'<\/script>'
     +'</body></html>';
 
   const w=window.open('','_blank');
