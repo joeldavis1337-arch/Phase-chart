@@ -648,7 +648,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '1.3.4';
+  return '1.3.7';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -3260,21 +3260,33 @@ async function desktopPrint(){
 // If both arrows point the same direction → compare raw phases directly.
 // If arrows point opposite directions → flip one by 180° before comparing.
 // The Inboard/Outboard labels are anatomical only and are NOT used here.
-function axialPhaseDiff(phaseA, axDirA, phaseB, axDirB){
+// Resolves which physical direction an axial sensor arrow points.
+// axDir='in' means toward coupling, axDir='out' means away from coupling.
+// coupSide='R' means coupling is on the right side of this component.
+// Returns 'R' or 'L' — the actual arrow direction regardless of label.
+function resolveArrowDir(axDir, coupSide){
+  const dir = axDir || 'out';
+  const cs  = coupSide || 'R';
+  // Inboard = toward coupling. Outboard = away from coupling.
+  if(dir === 'in')  return cs === 'R' ? 'R' : 'L';  // toward coupling
+  else              return cs === 'R' ? 'L' : 'R';   // away from coupling
+}
+
+// Compare two axial sensors by resolved arrow direction only.
+// Flip one phase by 180° only when arrows point in physically opposite directions.
+// axDir and coupSide are both required to determine true arrow direction.
+function axialPhaseDiff(phaseA, axDirA, coupSideA, phaseB, axDirB, coupSideB){
   const pA = Math.round(parseFloat(phaseA)||0);
   const pB = Math.round(parseFloat(phaseB)||0);
-  const dirA = axDirA || 'out';
-  const dirB = axDirB || 'out';
-  // Only flip if arrows point in opposite directions
-  if(dirA !== dirB){
+  const resolvedA = resolveArrowDir(axDirA, coupSideA);
+  const resolvedB = resolveArrowDir(axDirB, coupSideB);
+  if(resolvedA !== resolvedB){
     let flipped = pB + 180;
     if(flipped > 180) flipped -= 360;
     return phaseDiff(pA, flipped);
   }
   return phaseDiff(pA, pB);
 }
-// Legacy wrapper — kept for any direct calls, but cross-coupling
-// comparisons now use axialPhaseDiff() instead.
 function normalizeAxialPhase(phase, axDir){
   return Math.round(parseFloat(phase)||0);
 }
@@ -3796,7 +3808,7 @@ function runDiagnosis(){
       // Compare using arrow direction only — if both arrows point the same
       // way, compare raw phases directly. Only flip if arrows are opposite.
       // Inboard/Outboard labels are NOT used in this comparison.
-      const d=axialPhaseDiff(a.phase, a.axDir||'out', b.phase, b.axDir||'out');
+      const d=axialPhaseDiff(a.phase, a.axDir||'out', A.coupSide||'R', b.phase, b.axDir||'out', B.coupSide||'L');
       if(isOutOfPhase(d,TOL)){
         axOut++;
         // Only color bubbles red for valid same-position pairs
@@ -3826,20 +3838,19 @@ function runDiagnosis(){
     }
 
     // ── OFFSET MISALIGNMENT — radial phase across coupling ──────────
-    // Pair by index: first V on driver with first V on driven, etc.
-    // This prevents cross-pairing (e.g. a soft-foot-affected reading pairing
-    // with a healthy reading on the other machine and falsely flagging misalignment)
+    // Pair by position code: VERT_DE↔VERT_DE, VERT_NDE↔VERT_NDE,
+    // HORIZ_DE↔HORIZ_DE, HORIZ_NDE↔HORIZ_NDE.
+    // This is the only physically valid comparison — same bearing location,
+    // same plane, across the coupling. Index-based pairing can silently
+    // pair NDE with DE if sensors are entered in different orders.
     const radPairs=[];
-    const vLen=Math.min(aVert.length,bVert.length);
-    for(let vi=0;vi<vLen;vi++){
-      const av=aVert[vi],bv=bVert[vi];
-      if(hasVal(av)||hasVal(bv)) radPairs.push({a:av,b:bv,dir:'Vertical'});
-    }
-    const hLen=Math.min(aHoriz.length,bHoriz.length);
-    for(let hi=0;hi<hLen;hi++){
-      const ah=aHoriz[hi],bh=bHoriz[hi];
-      if(hasVal(ah)||hasVal(bh)) radPairs.push({a:ah,b:bh,dir:'Horizontal'});
-    }
+    ['VERT_DE','VERT_NDE','HORIZ_DE','HORIZ_NDE'].forEach(pos=>{
+      const av=A.meas.find(m=>m.pos===pos);
+      const bv=B.meas.find(m=>m.pos===pos);
+      if(av&&bv&&(hasVal(av)||hasVal(bv))){
+        radPairs.push({a:av,b:bv,dir:pos.startsWith('VERT')?'Vertical':'Horizontal'});
+      }
+    });
 
     let radOut=0,radIn=0,radWarn=0;
     radPairs.forEach(({a,b})=>{
@@ -3878,35 +3889,36 @@ function runDiagnosis(){
     const bentFlagged=new Set();
     [A,B].forEach(node=>{
       if(bentFlagged.has(node.id))return;
-      const v=node.meas.filter(m=>(m.pos==='VERT_NDE'||m.pos==='VERT_DE')&&hasVal(m));
-      const h=node.meas.filter(m=>(m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE')&&hasVal(m));
+      // ── Within-machine bearing-to-bearing checks (position-code based) ──
+      // Compare same-plane sensors at different bearing locations.
+      // VERT_NDE↔VERT_DE and HORIZ_NDE↔HORIZ_DE are the valid within-machine pairs.
+      const vNDE=node.meas.find(m=>m.pos==='VERT_NDE'&&hasVal(m));
+      const vDE =node.meas.find(m=>m.pos==='VERT_DE' &&hasVal(m));
+      const hNDE=node.meas.find(m=>m.pos==='HORIZ_NDE'&&hasVal(m));
+      const hDE =node.meas.find(m=>m.pos==='HORIZ_DE' &&hasVal(m));
       let flagged=false;
-      if(v.length>=2){
-        for(let x=0;x<v.length-1;x++){
-          for(let y=x+1;y<v.length;y++){
-            const d=phaseDiff(v[x].phase,v[y].phase);
-            if(isOutOfPhase(d,TOL)&&!flagged){
-              setSev(v[x].id,'warn');setSev(v[y].id,'warn');
-              results.push({type:'warn',
-                label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
-                desc:'Vertical phase readings at different bearing locations on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Classic signature of soft foot (machine rocking on base), bent shaft, or structural looseness. Loosen one foot bolt at a time — if vibration changes, that is the problem foot.'});
-              flagged=true;bentFlagged.add(node.id);
-            }
-          }
+
+      // Vertical NDE vs DE (bearing-to-bearing, same plane)
+      if(vNDE&&vDE){
+        const d=phaseDiff(vNDE.phase,vDE.phase);
+        if(isOutOfPhase(d,TOL)&&!flagged){
+          setSev(vNDE.id,'warn');setSev(vDE.id,'warn');
+          results.push({type:'warn',
+            label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
+            desc:'Vertical phase at NDE ('+vNDE.label+': '+Math.round(vNDE.phase)+'°) and DE ('+vDE.label+': '+Math.round(vDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Classic signature of soft foot (machine rocking on base), bent shaft, or structural looseness. Loosen one foot bolt at a time — if vibration changes, that is the problem foot.'});
+          flagged=true;bentFlagged.add(node.id);
         }
       }
-      if(!flagged&&h.length>=2){
-        for(let x=0;x<h.length-1;x++){
-          for(let y=x+1;y<h.length;y++){
-            const d=phaseDiff(h[x].phase,h[y].phase);
-            if(isOutOfPhase(d,TOL)){
-              setSev(h[x].id,'warn');setSev(h[y].id,'warn');
-              results.push({type:'warn',
-                label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
-                desc:'Horizontal phase readings at different bearing locations on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Possible soft foot, bent shaft, or rocking in horizontal plane. Check hold-down bolts and base integrity.'});
-              bentFlagged.add(node.id);
-            }
-          }
+
+      // Horizontal NDE vs DE (bearing-to-bearing, same plane)
+      if(!flagged&&hNDE&&hDE){
+        const d=phaseDiff(hNDE.phase,hDE.phase);
+        if(isOutOfPhase(d,TOL)){
+          setSev(hNDE.id,'warn');setSev(hDE.id,'warn');
+          results.push({type:'warn',
+            label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
+            desc:'Horizontal phase at NDE ('+hNDE.label+': '+Math.round(hNDE.phase)+'°) and DE ('+hDE.label+': '+Math.round(hDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Possible soft foot, bent shaft, or rocking in horizontal plane. Check hold-down bolts and base integrity.'});
+          bentFlagged.add(node.id);
         }
       }
     });
@@ -3929,7 +3941,7 @@ function runDiagnosis(){
         ob.forEach(obm=>{
           ib.forEach(ibm=>{
             // Use arrow-direction comparison — flip only if arrows point opposite ways
-            const d=axialPhaseDiff(obm.phase, obm.axDir||'out', ibm.phase, ibm.axDir||'out');
+            const d=axialPhaseDiff(obm.phase, obm.axDir||'out', node.coupSide||'R', ibm.phase, ibm.axDir||'out', node.coupSide||'R');
             const obDirLabel=(obm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             const ibDirLabel=(ibm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             if(isOutOfPhase(d,TOL)){
@@ -3953,79 +3965,76 @@ function runDiagnosis(){
       }
     });
 
-    // ── V vs H SAME MACHINE — physics check ─────────────────────────
-    // V and H sensors are 90° apart physically so ~90° phase difference is NORMAL
-    // ~0° or ~180° V vs H on same machine = abnormal (looseness, soft foot, structural)
-    // ~90° V vs H with unequal amplitudes = possible resonance (directional)
+    // ── V vs H SAME BEARING — position-code based physics check ────────
+    // At each bearing location, V and H sensors are physically 90° apart.
+    // Check each bearing independently: VERT_NDE↔HORIZ_NDE, VERT_DE↔HORIZ_DE.
+    // ~90° phase difference = normal circular orbit.
+    // ~0° or ~180° = structural looseness, soft foot, or rocking at that bearing.
+    // ~90° with very different amplitudes = directional resonance at that bearing.
     [A,B].forEach(node=>{
-      const v=node.meas.filter(m=>(m.pos==='VERT_NDE'||m.pos==='VERT_DE')&&parseFloat(m.amp)>0);
-      const h=node.meas.filter(m=>(m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE')&&parseFloat(m.amp)>0);
-      if(v.length>0&&h.length>0){
-        const vA=parseFloat(v[0].amp),hA=parseFloat(h[0].amp);
+      const bearingPairs=[
+        {vPos:'VERT_NDE',hPos:'HORIZ_NDE',loc:'NDE'},
+        {vPos:'VERT_DE', hPos:'HORIZ_DE', loc:'DE'},
+      ];
+      bearingPairs.forEach(({vPos,hPos,loc})=>{
+        const v=node.meas.find(m=>m.pos===vPos&&parseFloat(m.amp)>0);
+        const h=node.meas.find(m=>m.pos===hPos&&parseFloat(m.amp)>0);
+        if(!v||!h)return;
+        const vA=parseFloat(v.amp),hA=parseFloat(h.amp);
         const ampRatio=Math.min(vA,hA)/Math.max(vA,hA);
-        const pd=phaseDiff(v[0].phase,h[0].phase);
-        // V and H sensors are physically 90° apart
-        // BOTH +90° and -90° (=270°) are normal depending on sensor orientation
-        // phaseDiff returns 0-180, so we check if it's close to 90°
-        // We also account for sign convention: treat the difference as normal
-        // if it falls within 60-120° band (±30° around 90°)
-        // Only flag if CLEARLY near 0° (in phase) or 180° (anti-phase)
-        const isNormal90=(pd>=55&&pd<=125); // ~90° normal band, generous ±35°
-        const isAbnormal0=(pd<25);           // clearly in phase = structural issue
-        const isAbnormal180=(pd>155);        // clearly anti-phase = structural issue
-
+        const pd=phaseDiff(v.phase,h.phase);
+        const isNormal90=(pd>=55&&pd<=125);
+        const isAbnormal0=(pd<25);
+        const isAbnormal180=(pd>155);
         if(isAbnormal0||isAbnormal180){
-          // V and H clearly in phase or anti-phase — structural issue
-          setSev(v[0].id,'warn');setSev(h[0].id,'warn');
+          setSev(v.id,'warn');setSev(h.id,'warn');
           results.push({type:'warn',
-            label:'⚡ Abnormal V/H Phase Relationship — '+node.name,
-            desc:'Vertical and horizontal readings on '+node.name+' are '+(pd<25?'nearly in phase (':' ~180° out of phase (')+Math.round(pd)+'°). Expected ~90° due to sensor placement. This pattern can indicate structural looseness, soft foot, or resonance. Verify sensor orientation and check base integrity.'});
+            label:'⚡ Abnormal V/H Phase — '+node.name+' '+loc,
+            desc:'Vertical ('+v.label+': '+Math.round(v.phase)+'°) and horizontal ('+h.label+': '+Math.round(h.phase)+'°) at '+node.name+' '+loc+' bearing are '+(pd<25?'nearly in phase':'~180° out of phase')+' ('+Math.round(pd)+'°). Expected ~90° due to sensor placement. Indicates structural looseness, soft foot, or rocking at this bearing. Check hold-down bolts and base plate at this corner.'});
         } else if(isNormal90&&ampRatio<0.4){
-          // ~90° apart but very different amplitudes = directional/resonance
           results.push({type:'warn',
-            label:'⚡ Possible Directional Resonance — '+node.name,
-            desc:'V/H phase on '+node.name+' is ~90° (normal) but amplitudes differ significantly (ratio: '+ampRatio.toFixed(2)+'). This directional amplitude difference with normal phase suggests a resonance in one direction or anisotropic stiffness. Check natural frequencies.'});
+            label:'⚡ Directional Resonance — '+node.name+' '+loc,
+            desc:'V/H phase at '+node.name+' '+loc+' bearing is ~90° (normal orbital motion) but amplitudes differ significantly ('+v.label+': '+(vA.toFixed(3))+', '+h.label+': '+(hA.toFixed(3))+', ratio: '+ampRatio.toFixed(2)+'). Directional amplitude imbalance with normal phase suggests resonance in one plane or anisotropic support stiffness at this bearing. Check natural frequencies and bearing support condition.'});
         }
-        // ~90° with similar amplitudes = healthy — no flag needed
-      }
+        // ~90° with similar amplitudes = healthy circular orbit — no flag
+      });
     });
   }
 
-  // ── IMBALANCE — V vs V or H vs H in phase across same machine ─────
-  // Real imbalance check: compare same-direction readings at different
-  // bearing locations on the same machine — they should be in phase for imbalance
-  // Do NOT compare V vs H (those are always ~90° apart — that is normal physics)
+  // ── IMBALANCE — position-code based same-bearing and bearing-to-bearing checks ──
+  // Imbalance signature: same-plane readings at BOTH bearings are in phase
+  // with comparable amplitudes. Uses position codes, not array index.
+  // Also checks same-bearing V↔H: ~90° apart is normal, but consistent
+  // in-phase readings at both bearings across both planes = strong imbalance.
   nodes.forEach(node=>{
-    const v=node.meas.filter(m=>(m.pos==='VERT_NDE'||m.pos==='VERT_DE')&&parseFloat(m.amp)>0);
-    const h=node.meas.filter(m=>(m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE')&&parseFloat(m.amp)>0);
-    // Need readings in same direction at multiple bearing locations
-    // If we have V readings at 2+ locations, compare them
-    let imbalanceFound=false;
-    if(v.length>=2){
-      const pd=phaseDiff(v[0].phase,v[1].phase);
-      const vA0=parseFloat(v[0].amp),vA1=parseFloat(v[1].amp);
-      const ampRatio=Math.min(vA0,vA1)/Math.max(vA0,vA1);
-      if(isInPhase(pd,TOL)&&ampRatio>0.5&&vA0>0&&vA1>0){
-        imbalanceFound=true;
-      }
-    }
-    if(!imbalanceFound&&h.length>=2){
-      const pd=phaseDiff(h[0].phase,h[1].phase);
-      const hA0=parseFloat(h[0].amp),hA1=parseFloat(h[1].amp);
-      const ampRatio=Math.min(hA0,hA1)/Math.max(hA0,hA1);
-      if(isInPhase(pd,TOL)&&ampRatio>0.5&&hA0>0&&hA1>0){
-        imbalanceFound=true;
-      }
-    }
-    // Only flag imbalance if amplitudes are meaningfully elevated
-    // Thresholds by unit: in/s=0.25, mils=3.0, G=0.3, mm/s=6.0, µm=75
+    const vNDE=node.meas.find(m=>m.pos==='VERT_NDE'&&parseFloat(m.amp)>0);
+    const vDE =node.meas.find(m=>m.pos==='VERT_DE' &&parseFloat(m.amp)>0);
+    const hNDE=node.meas.find(m=>m.pos==='HORIZ_NDE'&&parseFloat(m.amp)>0);
+    const hDE =node.meas.find(m=>m.pos==='HORIZ_DE' &&parseFloat(m.amp)>0);
     const uKey=document.getElementById('amp-unit').value;
     const imbThresh={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
-    const anyElevated=v.some(m=>parseFloat(m.amp)>imbThresh)||h.some(m=>parseFloat(m.amp)>imbThresh);
+
+    let imbalanceFound=false;
+
+    // VERT_NDE ↔ VERT_DE in phase = vertical plane imbalance
+    if(vNDE&&vDE){
+      const pd=phaseDiff(vNDE.phase,vDE.phase);
+      const aRatio=Math.min(parseFloat(vNDE.amp),parseFloat(vDE.amp))/Math.max(parseFloat(vNDE.amp),parseFloat(vDE.amp));
+      if(isInPhase(pd,TOL)&&aRatio>0.5) imbalanceFound=true;
+    }
+    // HORIZ_NDE ↔ HORIZ_DE in phase = horizontal plane imbalance
+    if(!imbalanceFound&&hNDE&&hDE){
+      const pd=phaseDiff(hNDE.phase,hDE.phase);
+      const aRatio=Math.min(parseFloat(hNDE.amp),parseFloat(hDE.amp))/Math.max(parseFloat(hNDE.amp),parseFloat(hDE.amp));
+      if(isInPhase(pd,TOL)&&aRatio>0.5) imbalanceFound=true;
+    }
+
+    const allRad=[vNDE,vDE,hNDE,hDE].filter(Boolean);
+    const anyElevated=allRad.some(m=>parseFloat(m.amp)>imbThresh);
     if(imbalanceFound&&anyElevated){
       results.push({type:'warn',
         label:'⚡ Possible Imbalance — '+node.name,
-        desc:'Same-direction (V or H) phase readings at different bearing locations on '+node.name+' are in phase with comparable amplitudes and elevated levels. Consistent with mass imbalance generating a uniform rotating force. Confirm with elevated 1× radial amplitudes in spectrum data.'});
+        desc:'Same-plane radial phase readings at NDE and DE on '+node.name+' are in phase (±'+TOL+'°) with comparable amplitudes and elevated levels. Consistent with mass imbalance generating a uniform rotating force at both bearings. Confirm with elevated 1× radial amplitudes in spectrum data.'});
     }
   });
 
@@ -4843,6 +4852,24 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.3.7':{
+    date:'04/02/2026',
+    items:[
+      'Same-bearing V/H comparison — vertical and horizontal sensors are now compared by matched bearing position code (VERT_NDE↔HORIZ_NDE, VERT_DE↔HORIZ_DE) instead of array index. Each bearing location is assessed independently. Abnormal phase (0° or 180° instead of expected ~90°) flags structural looseness or soft foot at that specific bearing. Directional resonance (normal ~90° phase but large amplitude difference) is also reported per bearing.',
+    ]
+  },
+  '1.3.6':{
+    date:'04/02/2026',
+    items:[
+      'Axial orientation fix — sensor arrow direction now correctly resolved from both axDir and coupSide together. Two sensors show the same visual arrow when one is Inboard on a right-coupled machine and the other is Inboard on a left-coupled machine — the code now recognises these as opposite physical directions and flips accordingly, and vice versa. Eliminates false faults where visually matching arrows were triggering a phase flip due to differing axDir label strings.',
+    ]
+  },
+  '1.3.5':{
+    date:'04/02/2026',
+    items:[
+      'Radial comparison logic overhauled — all comparisons now use sensor position codes instead of array index order. Cross-coupling pairs VERT_DE↔VERT_DE and VERT_NDE↔VERT_NDE (same bearing location, same plane, across coupling). Within-machine bent shaft check pairs VERT_NDE↔VERT_DE and HORIZ_NDE↔HORIZ_DE. Imbalance check also position-code based. Eliminates false misalignment faults caused by sensors entered in different orders.',
+    ]
+  },
   '1.3.4':{
     date:'04/02/2026',
     items:[
