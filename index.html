@@ -648,7 +648,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '1.3.3';
+  return '1.3.4';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -3254,20 +3254,29 @@ async function desktopPrint(){
   else{alert('Pop-ups blocked. Please allow pop-ups for this page to use desktop print.');}
 }
 
-// ── Phase normalization for axial orientation ─────────────
-// Returns a corrected phase value so all axial readings are
-// expressed in a common reference direction (outboard = positive).
-// If a sensor faces INBOARD (toward coupling), its phase is inverted
-// by adding 180° (mod 360) to put it in the same reference frame.
-function normalizeAxialPhase(phase, axDir){
-  const p = Math.round(parseFloat(phase)||0);
-  if(axDir === 'in'){
-    // Flip: add 180, then wrap to -180..180
-    let flipped = p + 180;
+// ── Axial phase comparison ────────────────────────────────
+// Compares two axial sensors by arrow direction only.
+// The arrow indicates which way the accelerometer face points.
+// If both arrows point the same direction → compare raw phases directly.
+// If arrows point opposite directions → flip one by 180° before comparing.
+// The Inboard/Outboard labels are anatomical only and are NOT used here.
+function axialPhaseDiff(phaseA, axDirA, phaseB, axDirB){
+  const pA = Math.round(parseFloat(phaseA)||0);
+  const pB = Math.round(parseFloat(phaseB)||0);
+  const dirA = axDirA || 'out';
+  const dirB = axDirB || 'out';
+  // Only flip if arrows point in opposite directions
+  if(dirA !== dirB){
+    let flipped = pB + 180;
     if(flipped > 180) flipped -= 360;
-    return flipped;
+    return phaseDiff(pA, flipped);
   }
-  return p;
+  return phaseDiff(pA, pB);
+}
+// Legacy wrapper — kept for any direct calls, but cross-coupling
+// comparisons now use axialPhaseDiff() instead.
+function normalizeAxialPhase(phase, axDir){
+  return Math.round(parseFloat(phase)||0);
 }
 
 // ── Diagnosis Engine ─────────────────────────────────────
@@ -3784,13 +3793,10 @@ function runDiagnosis(){
 
     let axOut=0,axIn=0;
     axPairs.forEach(({a,b,primary})=>{
-      // Normalize both phases to outboard reference before comparing.
-      // Two sensors both facing outboard → same reference, compare directly.
-      // One facing inboard → flip that one first.
-      // After normalization: in-phase = healthy alignment, ~180° = angular misalignment.
-      const normA = normalizeAxialPhase(a.phase, a.axDir||'out');
-      const normB = normalizeAxialPhase(b.phase, b.axDir||'out');
-      const d=phaseDiff(normA, normB);
+      // Compare using arrow direction only — if both arrows point the same
+      // way, compare raw phases directly. Only flip if arrows are opposite.
+      // Inboard/Outboard labels are NOT used in this comparison.
+      const d=axialPhaseDiff(a.phase, a.axDir||'out', b.phase, b.axDir||'out');
       if(isOutOfPhase(d,TOL)){
         axOut++;
         // Only color bubbles red for valid same-position pairs
@@ -3922,9 +3928,8 @@ function runDiagnosis(){
       if(ob.length>0&&ib.length>0){
         ob.forEach(obm=>{
           ib.forEach(ibm=>{
-            const normOB = normalizeAxialPhase(obm.phase, obm.axDir||'out');
-            const normIB = normalizeAxialPhase(ibm.phase, ibm.axDir||'out');
-            const d=phaseDiff(normOB, normIB);
+            // Use arrow-direction comparison — flip only if arrows point opposite ways
+            const d=axialPhaseDiff(obm.phase, obm.axDir||'out', ibm.phase, ibm.axDir||'out');
             const obDirLabel=(obm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             const ibDirLabel=(ibm.axDir||'out')==='in'?'← Inboard':'Outboard →';
             if(isOutOfPhase(d,TOL)){
@@ -3934,13 +3939,13 @@ function runDiagnosis(){
               setSev(obm.id,'fault');setSev(ibm.id,'fault');
               results.push({type:'fault',
                 label:'⚠ Axial Phase Reversal — '+node.name,
-                desc:'After correcting for sensor orientation ('+obm.label+': '+obDirLabel+', '+ibm.label+': '+ibDirLabel+'), outboard axial (normalized: '+normOB+'°) and inboard axial (normalized: '+normIB+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). On a healthy shaft both axial points should be in phase once sensor directions are accounted for. This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
+                desc:'Outboard axial ('+obm.label+': '+obm.phase+'°, arrow: '+obDirLabel+') and inboard axial ('+ibm.label+': '+ibm.phase+'°, arrow: '+ibDirLabel+') on '+node.name+' are ~180° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). On a healthy shaft both axial points should be in phase. This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
             } else if(d>60&&d<120){
               if(!angMisalignFlagged){
                 setSev(obm.id,'warn');setSev(ibm.id,'warn');
                 results.push({type:'warn',
                   label:'⚡ Unusual Axial Phase Relationship — '+node.name,
-                  desc:'After correcting for sensor orientation ('+obm.label+': '+obDirLabel+', '+ibm.label+': '+ibDirLabel+'), outboard and inboard axial readings on '+node.name+' are ~90° out of phase (normalized diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase for a healthy machine. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+                  desc:'Outboard ('+obm.label+': '+obDirLabel+') and inboard ('+ibm.label+': '+ibDirLabel+') axial readings on '+node.name+' are ~90° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
               }
             }
           });
@@ -4838,6 +4843,12 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+  '1.3.4':{
+    date:'04/02/2026',
+    items:[
+      'Axial orientation diagnosis fix — phase comparison between axial sensors now uses arrow direction only, not the Inboard/Outboard anatomical labels. Two sensors with arrows pointing the same direction are compared directly with no phase correction, regardless of label. Correction is only applied when arrows point in opposite directions. This eliminates false angular misalignment faults on standard motor-pump trains where both coupling-end sensors face the same physical direction.',
+    ]
+  },
   '1.3.3':{
     date:'04/01/2026',
     items:[
