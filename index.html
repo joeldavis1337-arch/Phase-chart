@@ -570,9 +570,9 @@ body.hicon .bs-mode-btn.active{color:#000}
         <span style="font-size:11px;color:var(--tx2)">Exaggeration:</span>
         <input type="range" id="ods-exag" min="10" max="300" value="80" style="width:90px;height:22px" oninput="odsExagChange(+this.value)">
         <span id="ods-exag-val" style="font-size:11px;color:var(--tx);min-width:34px">80×</span>
-        <span style="font-size:11px;color:var(--tx2);margin-left:6px">Speed:</span>
-        <input type="range" id="ods-speed" min="5" max="200" value="60" style="width:70px;height:22px" oninput="odsSpeedChange(+this.value)">
-        <span id="ods-speed-val" style="font-size:11px;color:var(--tx);min-width:30px">1.0×</span>
+        <span style="font-size:11px;color:var(--tx2);margin-left:6px">Anim Speed:</span>
+        <input type="range" id="ods-speed" min="1" max="200" value="6" style="width:70px;height:22px" oninput="odsSpeedChange(+this.value)">
+        <span id="ods-speed-val" style="font-size:11px;color:var(--tx);min-width:30px">0.1×</span>
         <button class="btn" id="ods-play-btn" onclick="odsTogglePlay()" style="padding:5px 10px;font-size:12px">⏸ Pause</button>
         <div style="display:flex;gap:3px;margin-left:4px">
           <button class="btn active" id="ods-btn-side" onclick="odsSetView('side')" style="padding:5px 9px;font-size:11px">Side (V)</button>
@@ -5206,12 +5206,12 @@ function openBugReport(){document.getElementById('bug-modal').classList.add('sho
 function closeBugReport(){document.getElementById('bug-modal').classList.remove('show');}
 
 // ── ODS Engine v2.0.0 ─────────────────────────────────────────────
-const ODS={exag:80,speed:1.0,playing:false,view:'side',t:0,lastTs:null,raf:null,
+const ODS={exag:80,speed:0.1,playing:false,view:'side',t:0,lastTs:null,raf:null,
   SEV:{ok:'#22c55e',warn:'#f59e0b',fault:'#ef4444',none:'#666'},
   GLOW:{ok:'rgba(34,197,94,.35)',warn:'rgba(245,158,11,.35)',fault:'rgba(239,68,68,.45)',none:'transparent'}};
 
 function odsExagChange(v){ODS.exag=v;document.getElementById('ods-exag-val').textContent=v+'×';}
-function odsSpeedChange(v){ODS.speed=v/60;document.getElementById('ods-speed-val').textContent=ODS.speed.toFixed(1)+'×';}
+function odsSpeedChange(v){ODS.speed=v/60;const d=ODS.speed<0.1?2:ODS.speed<1?2:1;document.getElementById('ods-speed-val').textContent=ODS.speed.toFixed(d)+'×';}
 function odsTogglePlay(){
   ODS.playing=!ODS.playing;
   document.getElementById('ods-play-btn').textContent=ODS.playing?'⏸ Pause':'▶ Play';
@@ -5484,10 +5484,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <div id="fb" class="badge" style="display:none"><div class="dot" id="bd"></div><span id="ft"></span></div></div>
 <div class="ctrls">
 <span class="lbl">Exaggeration</span><input type="range" id="ex" min="10" max="300" value="80" style="width:90px" oninput="se(+this.value)"><span class="vval" id="ev">80\xd7</span>
-<span class="lbl" style="margin-left:6px">Speed</span><input type="range" id="sp" min="5" max="200" value="60" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">1.0\xd7</span>
+<span class="lbl" style="margin-left:6px">Anim Speed</span><input type="range" id="sp" min="1" max="200" value="6" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">0.1\xd7</span>
 <button class="btn act" id="pb" onclick="tp()">&#9208; Pause</button>
 <div style="display:flex;gap:3px"><button class="btn act" id="b-side" onclick="sv2('side')">Side (V)</button><button class="btn" id="b-top" onclick="sv2('top')">Top (H)</button><button class="btn" id="b-orb" onclick="sv2('orb')">Orbits</button></div>
 <div id="fi" style="margin-left:auto;font-size:10px;color:#666;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+<button class="btn" onclick="recGIF()" style="margin-left:auto">🎞 Save GIF</button>
+<button class="btn" onclick="recVid()" id="vid-btn">📹 Save Video</button>
 </div>
 <div class="cw"><canvas id="cv"></canvas></div>
 <div class="foot">ODS VISUALIZATION \u2014 EXAGGERATION APPLIED \u2014 NOT TO SCALE \u2014 FOR DIAGNOSTIC REFERENCE ONLY &nbsp;|&nbsp; v${ver} | ${date} | \xa9 ${new Date().getFullYear()} Joel Davis</div>
@@ -5496,11 +5498,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 const NODES=${nodesSnap};const DIAG=${diagSnap};const SM=${sevSnap};const PAL=${palSnap};
 const UK=${JSON.stringify(uKey)};const UNITS={'mils':{dec:2,label:'mils'},'in/s':{dec:3,label:'in/s'},'mm/s':{dec:2,label:'mm/s'},'G':{dec:3,label:"G's"},'\xb5m':{dec:1,label:'\xb5m'}};
 const U=UNITS[UK]||UNITS['in/s'];const GR=${parseFloat(grpm)||0};
-let ex=80,sp=1.0,pl=true,vw='side',t=0,lt=null,rf=null;
+let ex=80,sp=0.1,pl=true,vw='side',t=0,lt=null,rf=null;
 const SC={ok:'#22c55e',warn:'#f59e0b',fault:'#ef4444',none:'#555'};
 const SG={ok:'rgba(34,197,94,.3)',warn:'rgba(245,158,11,.3)',fault:'rgba(239,68,68,.4)',none:'transparent'};
 function se(v){ex=v;document.getElementById('ev').textContent=v+'\xd7';}
-function ss(v){sp=v/60;document.getElementById('sv').textContent=sp.toFixed(1)+'\xd7';}
+function ss(v){sp=v/60;const d=sp<1?2:1;document.getElementById('sv').textContent=sp.toFixed(d)+'\xd7';}
 function tp(){pl=!pl;document.getElementById('pb').textContent=pl?'\u23f8 Pause':'\u25b6 Play';document.getElementById('pb').classList.toggle('act',pl);if(pl)rf=requestAnimationFrame(lp);}
 function sv2(v){vw=v;['side','top','orb'].forEach(n=>document.getElementById('b-'+n).classList.toggle('act',n===v));}
 function bn(){
@@ -5616,7 +5618,186 @@ function clk(ctx,W,H,pt){
 })();
 window.addEventListener('resize',()=>{rz();if(!pl){const cv=document.getElementById('cv');const c=cv.getContext('2d');draw(c,cv.clientWidth,cv.clientHeight,t*2*Math.PI);}});
 rz();rf=requestAnimationFrame(lp);
-<\/script></body></html>`;
+
+// ── Video recording (WebM — plays on Android/desktop/Mac) ──────────────────
+function recVid(){
+  const cv=document.getElementById('cv');
+  if(!cv.captureStream){alert('Video recording not supported in this browser. Try Chrome or Edge.');return;}
+  const btn=document.getElementById('vid-btn');
+  if(btn._recording){
+    btn._mr.stop();return;
+  }
+  const stream=cv.captureStream(30);
+  const mr=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9',videoBitsPerSecond:4000000});
+  const chunks=[];
+  mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+  mr.onstop=()=>{
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='ODS_${title.replace(/\\s+/g,'_')}.webm';
+    a.click();URL.revokeObjectURL(a.href);
+    btn.textContent='📹 Save Video';btn._recording=false;
+  };
+  mr.start();btn._mr=mr;btn._recording=true;
+  btn.textContent='⏹ Stop (recording…)';btn.style.background='#ef4444';btn.style.color='#fff';btn.style.borderColor='#ef4444';
+  // Auto-stop after 8 seconds if user doesn't stop manually
+  setTimeout(()=>{if(mr.state==='recording'){mr.stop();btn.style.background='';btn.style.color='';btn.style.borderColor='';}},8000);
+}
+
+// ── Animated GIF (plays on iPhone iMessage, Photos, everywhere) ─────────────
+// Uses a lightweight JS GIF encoder embedded inline — no external deps
+function recGIF(){
+  const cv=document.getElementById('cv');
+  const W=cv.clientWidth,H=cv.clientHeight;
+  const FPS=12,DUR=3; // 12fps, 3 seconds = 36 frames — keeps file size sane
+  const frames=[];
+  let f=0;
+  const wasPlaying=pl;
+  // Pause live animation while capturing
+  if(pl){pl=false;}
+  const tStart=t;
+  const grpmVal=(GR||1780);
+  const step=(grpmVal/60*sp)*(1/FPS); // time increment per frame
+
+  function captureFrame(){
+    if(f>=FPS*DUR){buildGIF(frames,W,H,FPS);pl=wasPlaying;if(pl)rf=requestAnimationFrame(lp);return;}
+    const ctx=cv.getContext('2d');
+    draw(ctx,W,H,t*2*Math.PI);
+    const id=ctx.getImageData(0,0,cv.width,cv.height);
+    frames.push({data:id.data,w:cv.width,h:cv.height});
+    t+=step;f++;
+    requestAnimationFrame(captureFrame);
+  }
+
+  // Show progress
+  const btn=document.querySelector('[onclick="recGIF()"]');
+  if(btn){btn.textContent='⏳ Capturing…';btn.disabled=true;}
+  captureFrame();
+}
+
+function buildGIF(frames,W,H,fps){
+  // Minimal GIF89a encoder
+  const delay=Math.round(100/fps); // centiseconds per frame
+  const parts=[gifHeader(frames[0].w,frames[0].h)];
+  frames.forEach((fr,i)=>{
+    const {indexed,palette}=quantize(fr.data,fr.w,fr.h);
+    if(i===0)parts.push(gifNetscapeExt(0)); // loop forever
+    parts.push(gifGraphicExt(delay));
+    parts.push(gifImageDesc(fr.w,fr.h,palette));
+    parts.push(gifLZW(indexed,palette.length));
+  });
+  parts.push(new Uint8Array([0x3B])); // trailer
+  const blob=new Blob(parts,{type:'image/gif'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ODS_${title.replace(/\\s+/g,'_')}.gif';
+  a.click();URL.revokeObjectURL(a.href);
+  const btn=document.querySelector('[onclick="recGIF()"]');
+  if(btn){btn.textContent='🎞 Save GIF';btn.disabled=false;}
+}
+
+function gifHeader(w,h){
+  // Global color table size = 256 colors
+  const b=new Uint8Array(13);
+  b[0]=0x47;b[1]=0x49;b[2]=0x46;b[3]=0x38;b[4]=0x39;b[5]=0x61; // GIF89a
+  b[6]=w&0xFF;b[7]=(w>>8)&0xFF;b[8]=h&0xFF;b[9]=(h>>8)&0xFF;
+  b[10]=0xF7; // global color table, 256 colors
+  b[11]=0x00;b[12]=0x00; // bg=0, aspect=0
+  return b;
+}
+function gifNetscapeExt(loops){
+  return new Uint8Array([0x21,0xFF,0x0B,0x4E,0x45,0x54,0x53,0x43,0x41,0x50,0x45,0x32,0x2E,0x30,0x03,0x01,(loops&0xFF),((loops>>8)&0xFF),0x00]);
+}
+function gifGraphicExt(delay){
+  return new Uint8Array([0x21,0xF9,0x04,0x00,(delay&0xFF),((delay>>8)&0xFF),0x00,0x00]);
+}
+function gifImageDesc(w,h,pal){
+  const b=new Uint8Array(10+pal.length*3);
+  b[0]=0x2C;b[1]=0;b[2]=0;b[3]=0;b[4]=0; // separator + pos
+  b[5]=w&0xFF;b[6]=(w>>8)&0xFF;b[7]=h&0xFF;b[8]=(h>>8)&0xFF;
+  b[9]=0x87; // local color table, 256 colors
+  for(let i=0;i<pal.length;i++){b[10+i*3]=pal[i][0];b[10+i*3+1]=pal[i][1];b[10+i*3+2]=pal[i][2];}
+  // Pad to 256 colors
+  return b;
+}
+
+function quantize(data,w,h){
+  // Fast median-cut quantization to 255 colors (+1 transparent)
+  // Sample every other pixel for speed on large canvases
+  const step=Math.max(1,Math.floor(w*h/8000));
+  const pixels=[];
+  for(let i=0;i<data.length;i+=4*step){
+    pixels.push([data[i],data[i+1],data[i+2]]);
+  }
+  // Build palette via k-means light (just use uniform sampling for speed)
+  const palette=[];
+  const seen=new Map();
+  for(const p of pixels){
+    const key=((p[0]>>3)<<10)|((p[1]>>3)<<5)|(p[2]>>3);
+    if(!seen.has(key)){seen.set(key,p);if(palette.length<255)palette.push(p);}
+    if(palette.length>=255)break;
+  }
+  while(palette.length<256)palette.push([0,0,0]);
+
+  // Index pixels
+  const indexed=new Uint8Array(w*h);
+  const cache=new Map();
+  for(let i=0,p=0;i<data.length;i+=4,p++){
+    const r=data[i],g=data[i+1],b=data[i+2];
+    const key=((r>>2)<<12)|((g>>2)<<6)|(b>>2);
+    let idx=cache.get(key);
+    if(idx===undefined){
+      let best=0,bd=1e9;
+      for(let j=0;j<palette.length;j++){
+        const dr=r-palette[j][0],dg=g-palette[j][1],db=b-palette[j][2];
+        const d=dr*dr+dg*dg+db*db;
+        if(d<bd){bd=d;best=j;}
+      }
+      idx=best;cache.set(key,idx);
+    }
+    indexed[p]=idx;
+  }
+  return{indexed,palette};
+}
+
+function gifLZW(indexed,palSize){
+  const minCode=Math.max(2,Math.ceil(Math.log2(palSize)));
+  // LZW compress
+  let codeSize=minCode+1,clearCode=1<<minCode,eofCode=clearCode+1;
+  let nextCode=eofCode+1,codeTable=new Map(),code=-1;
+  const out=[];let buf=0,bufBits=0;
+
+  function emit(c){
+    buf|=c<<bufBits;bufBits+=codeSize;
+    while(bufBits>=8){out.push(buf&0xFF);buf>>=8;bufBits-=8;}
+  }
+
+  emit(clearCode);
+  for(let i=0;i<indexed.length;i++){
+    const px=indexed[i];
+    const next=code<0?px:code*512+px;
+    if(codeTable.has(next)){code=codeTable.get(next);}
+    else{
+      emit(code<0?px:code);
+      if(nextCode<4096){codeTable.set(next,nextCode++);if(nextCode>(1<<codeSize)&&codeSize<12)codeSize++;}
+      else{emit(clearCode);codeTable=new Map();nextCode=eofCode+1;codeSize=minCode+1;}
+      code=px;
+    }
+  }
+  if(code>=0)emit(code);
+  emit(eofCode);
+  if(bufBits>0)out.push(buf&0xFF);
+
+  // Package into sub-blocks
+  const result=[minCode];
+  for(let i=0;i<out.length;){
+    const len=Math.min(255,out.length-i);
+    result.push(len,...out.slice(i,i+len));i+=len;
+  }
+  result.push(0);
+  return new Uint8Array(result);
+}<\/script></body></html>`;
 
   const blob=new Blob([html],{type:'text/html'});
   const a=document.createElement('a');
