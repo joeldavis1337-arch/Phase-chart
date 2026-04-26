@@ -571,8 +571,8 @@ body.hicon .bs-mode-btn.active{color:#000}
         <input type="range" id="ods-exag" min="10" max="300" value="80" style="width:90px;height:22px" oninput="odsExagChange(+this.value)">
         <span id="ods-exag-val" style="font-size:11px;color:var(--tx);min-width:34px">80×</span>
         <span style="font-size:11px;color:var(--tx2);margin-left:6px">Anim Speed:</span>
-        <input type="range" id="ods-speed" min="1" max="200" value="6" style="width:70px;height:22px" oninput="odsSpeedChange(+this.value)">
-        <span id="ods-speed-val" style="font-size:11px;color:var(--tx);min-width:30px">0.1×</span>
+        <input type="range" id="ods-speed" min="1" max="200" value="3" style="width:70px;height:22px" oninput="odsSpeedChange(+this.value)">
+        <span id="ods-speed-val" style="font-size:11px;color:var(--tx);min-width:30px">0.05×</span>
         <button class="btn" id="ods-play-btn" onclick="odsTogglePlay()" style="padding:5px 10px;font-size:12px">⏸ Pause</button>
         <div style="display:flex;gap:3px;margin-left:4px">
           <button class="btn active" id="ods-btn-side" onclick="odsSetView('side')" style="padding:5px 9px;font-size:11px">Side (V)</button>
@@ -5206,7 +5206,7 @@ function openBugReport(){document.getElementById('bug-modal').classList.add('sho
 function closeBugReport(){document.getElementById('bug-modal').classList.remove('show');}
 
 // ── ODS Engine v2.0.0 ─────────────────────────────────────────────
-const ODS={exag:80,speed:0.1,playing:false,view:'side',t:0,lastTs:null,raf:null,
+const ODS={exag:80,speed:0.05,playing:false,view:'side',t:0,lastTs:null,raf:null,
   SEV:{ok:'#22c55e',warn:'#f59e0b',fault:'#ef4444',none:'#666'},
   GLOW:{ok:'rgba(34,197,94,.35)',warn:'rgba(245,158,11,.35)',fault:'rgba(239,68,68,.45)',none:'transparent'}};
 
@@ -5484,7 +5484,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <div id="fb" class="badge" style="display:none"><div class="dot" id="bd"></div><span id="ft"></span></div></div>
 <div class="ctrls">
 <span class="lbl">Exaggeration</span><input type="range" id="ex" min="10" max="300" value="80" style="width:90px" oninput="se(+this.value)"><span class="vval" id="ev">80\xd7</span>
-<span class="lbl" style="margin-left:6px">Anim Speed</span><input type="range" id="sp" min="1" max="200" value="6" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">0.1\xd7</span>
+<span class="lbl" style="margin-left:6px">Anim Speed</span><input type="range" id="sp" min="1" max="200" value="3" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">0.05\xd7</span>
 <button class="btn act" id="pb" onclick="tp()">&#9208; Pause</button>
 <div style="display:flex;gap:3px"><button class="btn act" id="b-side" onclick="sv2('side')">Side (V)</button><button class="btn" id="b-top" onclick="sv2('top')">Top (H)</button><button class="btn" id="b-orb" onclick="sv2('orb')">Orbits</button></div>
 <div id="fi" style="margin-left:auto;font-size:10px;color:#666;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
@@ -5498,7 +5498,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 const NODES=${nodesSnap};const DIAG=${diagSnap};const SM=${sevSnap};const PAL=${palSnap};
 const UK=${JSON.stringify(uKey)};const UNITS={'mils':{dec:2,label:'mils'},'in/s':{dec:3,label:'in/s'},'mm/s':{dec:2,label:'mm/s'},'G':{dec:3,label:"G's"},'\xb5m':{dec:1,label:'\xb5m'}};
 const U=UNITS[UK]||UNITS['in/s'];const GR=${parseFloat(grpm)||0};
-let ex=80,sp=0.1,pl=true,vw='side',t=0,lt=null,rf=null;
+let ex=80,sp=0.05,pl=true,vw='side',t=0,lt=null,rf=null;
 const SC={ok:'#22c55e',warn:'#f59e0b',fault:'#ef4444',none:'#555'};
 const SG={ok:'rgba(34,197,94,.3)',warn:'rgba(245,158,11,.3)',fault:'rgba(239,68,68,.4)',none:'transparent'};
 function se(v){ex=v;document.getElementById('ev').textContent=v+'\xd7';}
