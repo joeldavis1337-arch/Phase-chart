@@ -5336,10 +5336,13 @@ function odsDrawShaftView(ctx,W,H,pt,sn,txC){
   const title=document.getElementById('chart-title').value||'ODS';
   const grpm=parseFloat(document.getElementById('global-rpm').value)||0;
   const u=getUnit();
-  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='left';
-  ctx.fillText(title+' — '+(isH?'VERTICAL DISPLACEMENT (Side View)':'HORIZONTAL DISPLACEMENT (Top View)'),xL,18);
-  ctx.font='10px Roboto,sans-serif';
-  ctx.fillText('RPM '+(grpm||'____')+' | 1× | Exag '+ODS.exag+'×',xL,32);
+  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  const odsFullTitle=title+' — '+(isH?'VERTICAL DISPLACEMENT (Side View)':'HORIZONTAL DISPLACEMENT (Top View)');
+  const odsTitleMax=W-32;
+  ctx.save();ctx.beginPath();ctx.rect(8,0,W-16,24);ctx.clip();
+  ctx.fillText(odsFullTitle,W/2,18);ctx.restore();
+  ctx.font='10px Roboto,sans-serif';ctx.textAlign='center';
+  ctx.fillText('RPM '+(grpm||'____')+' | 1× | Exag '+ODS.exag+'×',W/2,32);
   // Component zone backgrounds
   let prevIdx=-1;
   sn.forEach((s,i)=>{
