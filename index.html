@@ -583,8 +583,6 @@ body.hicon .bs-mode-btn.active{color:#000}
           <button class="btn" id="ods-btn-orb"  onclick="odsSetView('orb')"  style="padding:5px 9px;font-size:11px">Orbits</button>
         </div>
         <button class="btn" onclick="odsExport()" style="margin-left:auto;padding:5px 10px;font-size:12px">📤 Export ODS</button>
-        <button class="btn" onclick="odsRecGIF()" id="ods-gif-btn" style="padding:5px 10px;font-size:12px">🎞 Save GIF</button>
-        <button class="btn" onclick="odsRecVid()" id="ods-vid-btn" style="padding:5px 10px;font-size:12px">📹 Save Video</button>
       </div>
       <div style="flex:1;position:relative;min-height:0">
         <canvas id="ods-canvas" style="display:block;width:100%;height:100%"></canvas>
@@ -709,8 +707,6 @@ body.hicon .bs-mode-btn.active{color:#000}
       <button class="modal-btn" id="download-image-btn">⬇️ Save Image to Device</button>
       <button class="modal-btn" id="desktop-print-btn">🖨 Print (Desktop / Mac)</button>
       <button class="modal-btn" id="export-ods-btn">🔄 Export ODS Animation (HTML)</button>
-      <button class="modal-btn" id="ods-gif-modal-btn">🎞 Save ODS as GIF (iPhone friendly)</button>
-      <button class="modal-btn" id="ods-vid-modal-btn">📹 Save ODS as Video (Android / Desktop)</button>
     </div>
     <button class="modal-cancel" onclick="closeModal()">Cancel</button>
   </div>
@@ -5443,7 +5439,7 @@ function odsDrawOrbits(ctx,W,H,pt,sn,txC){
   });
 }
 function odsDrawClock(ctx,W,H,pt){
-  const cx=W-28,cy=H-28,r=18;
+  const cx=28,cy=H-28,r=18;
   ctx.save();
   ctx.fillStyle=darkMode?'rgba(20,20,20,.85)':'rgba(255,255,255,.85)';
   ctx.strokeStyle=darkMode?'#333':'#ddd';ctx.lineWidth=1;
@@ -5609,7 +5605,7 @@ function orb(ctx,W,H,pt,sn){
   });
 }
 function clk(ctx,W,H,pt){
-  const cx=W-28,cy=H-28,r=18;ctx.save();
+  const cx=28,cy=H-28,r=18;ctx.save();
   ctx.fillStyle='rgba(20,20,20,.85)';ctx.strokeStyle='#333';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.strokeStyle='#333';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
   const a=pt-Math.PI/2;ctx.strokeStyle='#3b82f6';ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r*.8,cy+Math.sin(a)*r*.8);ctx.stroke();
@@ -5985,9 +5981,8 @@ function boot(){
   document.getElementById('share-image-btn').addEventListener('click',shareImage);
   document.getElementById('download-image-btn').addEventListener('click',downloadImage);
   document.getElementById('desktop-print-btn').addEventListener('click',desktopPrint);
-document.getElementById('export-ods-btn').addEventListener('click',function(){closeModal();runDiagnosis();odsExport();});
-document.getElementById('ods-gif-modal-btn').addEventListener('click',function(){runDiagnosis();showTab('ods');setTimeout(odsRecGIF,400);});
-document.getElementById('ods-vid-modal-btn').addEventListener('click',function(){runDiagnosis();showTab('ods');setTimeout(odsRecVid,400);});
+  document.getElementById('export-ods-btn').addEventListener('click',function(){closeModal();runDiagnosis();odsExport();});
+
   document.getElementById('confirm-ok-btn').addEventListener('click',doConfirm);
   document.getElementById('wn-modal').addEventListener('click',function(e){if(e.target===this)closeWN();});
   // Close confirm on overlay tap
