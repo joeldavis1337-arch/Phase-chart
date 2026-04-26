@@ -469,7 +469,7 @@ body.hicon .bs-mode-btn.active{color:#000}
         <option value="G">G's</option>
         <option value="µm">µm</option>
       </select></label>
-      <label>Layout <select id="layout" onchange="renderSidebar();redraw();odsResize()">
+      <label>Layout <select id="layout" onchange="renderSidebar();redraw()">
         <option value="H">Horizontal</option>
         <option value="V">Vertical</option>
         <option value="FB">Foot/Base</option>
@@ -584,8 +584,8 @@ body.hicon .bs-mode-btn.active{color:#000}
         </div>
         <button class="btn" onclick="odsExport()" style="margin-left:auto;padding:5px 10px;font-size:12px">📤 Export ODS</button>
       </div>
-      <div id="ods-canvas-wrap" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;min-height:0">
-        <canvas id="ods-canvas" style="display:block"></canvas>
+      <div style="flex:1;position:relative;min-height:0">
+        <canvas id="ods-canvas" style="display:block;width:100%;height:100%"></canvas>
       </div>
       <div style="padding:5px 12px;font-size:9px;color:var(--tx3);background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0">
         ODS VISUALIZATION — EXAGGERATION APPLIED FOR CLARITY — NOT TO SCALE — FOR DIAGNOSTIC REFERENCE ONLY &nbsp;|&nbsp; 1× RUNNING SPEED &nbsp;|&nbsp; Amplitude used as relative displacement proxy
@@ -5285,15 +5285,7 @@ function odsStart(){
 function odsResize(){
   const cv=document.getElementById('ods-canvas');if(!cv)return;
   const dpr=window.devicePixelRatio||1;
-  const wrap=document.getElementById('ods-canvas-wrap');
-  const W=wrap?wrap.clientWidth||300:300;
-  const isVertTrain=document.getElementById('layout').value==='V';
-  const nodeCount=nodes.reduce((sum,n)=>{
-    const hasNDE=n.meas.some(m=>m.pos==='VERT_NDE'||m.pos==='HORIZ_NDE'||m.pos==='AX_OB');
-    const hasDE =n.meas.some(m=>m.pos==='VERT_DE' ||m.pos==='HORIZ_DE' ||m.pos==='AX_IB');
-    return sum+(hasNDE?1:0)+(hasDE?1:0);
-  },0)||4;
-  const H=isVertTrain?Math.max(500,nodeCount*140+120):wrap?wrap.clientHeight||300:300;
+  const W=cv.parentElement.clientWidth||300,H=cv.parentElement.clientHeight||300;
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.width=W+'px';cv.style.height=H+'px';
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
@@ -5339,8 +5331,6 @@ function odsDraw(ctx,W,H,pt){
   odsDrawClock(ctx,W,H,pt);
 }
 function odsDrawShaftView(ctx,W,H,pt,sn,txC){
-  const isVertTrain=document.getElementById('layout').value==='V';
-  if(isVertTrain){odsDrawShaftVertical(ctx,W,H,pt,sn,txC);return;}
   const isH=ODS.view==='side',axis=isH?'V':'H';
   const pad=56,yBase=H/2,xL=pad+16,xR=W-pad,trainW=xR-xL;
   const title=document.getElementById('chart-title').value||'ODS';
@@ -5385,93 +5375,6 @@ function odsDrawShaftView(ctx,W,H,pt,sn,txC){
   pts.forEach(({x,y,s})=>odsDrawNode(ctx,x,y,yBase,s,axis,u,txC));
   ctx.font='9px Roboto,sans-serif';ctx.fillStyle=darkMode?'#444':'#bbb';ctx.textAlign='center';
   ctx.fillText('v'+getDocVersion()+' | '+getDocDate()+' | © '+new Date().getFullYear()+' Joel Davis',W/2,H-6);
-}
-function odsDrawShaftVertical(ctx,W,H,pt,sn,txC){
-  const isH=ODS.view==='side',axis=isH?'V':'H';
-  const title=document.getElementById('chart-title').value||'ODS';
-  const grpm=parseFloat(document.getElementById('global-rpm').value)||0;
-  const u=getUnit();
-  const topPad=44,botPad=36,sidePad=20;
-  const xBase=W/2;
-  const yT=topPad,yB=H-botPad;
-  const trainH=yB-yT;
-  const n=sn.length;
-  sn.forEach((s,i)=>{s.yn=n===1?yT+trainH/2:yT+(i/(n-1))*trainH;});
-  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
-  ctx.fillText(title+' — VERTICAL TRAIN — '+(isH?'RADIAL (Side)':'RADIAL (Front)'),W/2,18);
-  ctx.font='10px Roboto,sans-serif';
-  ctx.fillText('RPM '+(grpm||'____')+' | 1× | Exag '+ODS.exag+'×',W/2,32);
-  let prevIdx=-1;
-  sn.forEach((s,i)=>{
-    if(s.nodeIdx!==prevIdx){
-      const y0=s.yn-28;
-      const nextChange=sn.slice(i+1).find(nd=>nd.nodeIdx!==s.nodeIdx);
-      const y1=nextChange?nextChange.yn-28:yB-4;
-      ctx.fillStyle=s.color+'11';ctx.fillRect(44,y0,W-88,y1-y0);
-      ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=s.color+'cc';ctx.textAlign='right';
-      ctx.fillText(s.name,W-50,(y0+y1)/2+4);prevIdx=s.nodeIdx;
-    }
-  });
-  const hasFault=diagResults.some(r=>r.type==='fault'&&r.label&&r.label.indexOf('Angular')>-1);
-  for(let i=1;i<sn.length;i++){
-    if(sn[i].nodeIdx!==sn[i-1].nodeIdx){
-      const cy=(sn[i-1].yn+sn[i].yn)/2;
-      ctx.fillStyle=darkMode?'#333':'#ddd';ctx.strokeStyle=darkMode?'#555':'#bbb';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.roundRect(xBase-16,cy-8,32,16,3);ctx.fill();ctx.stroke();
-      ctx.beginPath();ctx.roundRect(xBase-10,cy-12,20,24,2);ctx.fill();ctx.stroke();
-      if(hasFault){ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xBase-17,cy-13,34,26,4);ctx.stroke();}
-    }
-  }
-  ctx.setLineDash([6,6]);ctx.strokeStyle=darkMode?'rgba(255,255,255,.18)':'rgba(0,0,0,.18)';ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(xBase,yT);ctx.lineTo(xBase,yB);ctx.stroke();ctx.setLineDash([]);
-  const pts=sn.map(s=>({x:xBase+odsDisp(s,axis,pt),y:s.yn,s}));
-  odsDrawSplineV(ctx,pts,sn);
-  pts.forEach(({x,y,s},i)=>odsDrawNodeV(ctx,x,y,xBase,s,axis,u,txC,i%2===0));
-  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
-  ctx.fillText('← RADIAL DISPLACEMENT →',W/2,H-22);
-  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=darkMode?'#444':'#bbb';
-  ctx.fillText('v'+getDocVersion()+' | '+getDocDate()+' | © '+new Date().getFullYear()+' Joel Davis',W/2,H-8);
-}
-function odsDrawSplineV(ctx,pts,sn){
-  if(pts.length<2)return;
-  ctx.save();ctx.shadowColor='rgba(0,180,255,.2)';ctx.shadowBlur=8;
-  const grad=ctx.createLinearGradient(0,pts[0].y,0,pts[pts.length-1].y);
-  const hasFault=diagResults.some(r=>r.type==='fault'&&r.label&&r.label.indexOf('Angular')>-1);
-  pts.forEach((p,i)=>{
-    const frac=i/(pts.length-1);
-    const edge=i>0&&sn[i].nodeIdx!==sn[i-1].nodeIdx;
-    grad.addColorStop(Math.max(0,frac-.005),p.s.color);
-    if(hasFault&&edge){grad.addColorStop(frac,'#ef4444');grad.addColorStop(Math.min(1,frac+.005),pts[Math.min(i+1,pts.length-1)].s.color);}
-  });
-  ctx.strokeStyle=grad;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
-  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
-  for(let i=0;i<pts.length-1;i++){
-    const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
-    ctx.bezierCurveTo(p1.x+(p2.x-p0.x)/6,p1.y+(p2.y-p0.y)/6,p2.x-(p3.x-p1.x)/6,p2.y-(p3.y-p1.y)/6,p2.x,p2.y);
-  }
-  ctx.stroke();ctx.shadowBlur=0;ctx.restore();
-}
-function odsDrawNodeV(ctx,x,y,xBase,s,axis,u,txC,labelLeft){
-  const sev=s.sev||'none',col=ODS.SEV[sev]||ODS.SEV.none,glo=ODS.GLOW[sev]||ODS.GLOW.none,r=9;
-  ctx.save();
-  ctx.strokeStyle=col+'66';ctx.lineWidth=1;ctx.setLineDash([2,3]);
-  ctx.beginPath();ctx.moveTo(xBase,y);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
-  ctx.shadowColor=glo;ctx.shadowBlur=12;
-  ctx.beginPath();ctx.arc(x,y,r+3,0,Math.PI*2);ctx.fillStyle=glo;ctx.fill();ctx.shadowBlur=0;
-  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
-  ctx.fillStyle=darkMode?'#1a1a1a':'#fff';ctx.fill();
-  ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
-  const labelX=labelLeft?xBase-r-48:xBase+r+8;
-  const align=labelLeft?'right':'left';
-  const parts=s.label.split('\n');
-  ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=col;ctx.textAlign=align;
-  ctx.fillText(parts[0],labelX,y-10);
-  ctx.font='8px Roboto,sans-serif';ctx.fillStyle=txC;
-  ctx.fillText(parts[1]||s.bearing,labelX,y);
-  const m=s[axis];
-  ctx.fillText(m.amp.toFixed(u.dec)+' '+u.label,labelX,y+10);
-  ctx.fillText(m.phase+'°',labelX,y+20);
-  ctx.restore();
 }
 function odsDrawSpline(ctx,pts,sn){
   if(pts.length<2)return;
