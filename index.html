@@ -569,7 +569,7 @@ body.hicon .bs-mode-btn.active{color:#000}
         <canvas id="chart"></canvas>
       </div>
     </div>
-        <div class="chart-area hidden" id="panel-ods" style="flex-direction:column;background:var(--bg)">
+        <div class="chart-area hidden" id="panel-ods" style="flex-direction:column;background:var(--bg);overflow:hidden">
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0">
         <span style="font-size:11px;color:var(--tx2)">Exaggeration:</span>
         <input type="range" id="ods-exag" min="10" max="300" value="80" style="width:90px;height:22px" oninput="odsExagChange(+this.value)">
@@ -585,8 +585,8 @@ body.hicon .bs-mode-btn.active{color:#000}
         </div>
         <button class="btn" onclick="odsExport()" style="margin-left:auto;padding:5px 10px;font-size:12px">📤 Export ODS</button>
       </div>
-      <div id="ods-canvas-wrap" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;min-height:0">
-        <canvas id="ods-canvas" style="display:block"></canvas>
+      <div id="ods-canvas-wrap" style="flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0;display:flex;flex-direction:column">
+        <canvas id="ods-canvas" style="display:block;flex-shrink:0"></canvas>
       </div>
       <div style="padding:5px 12px;font-size:9px;color:var(--tx3);background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0">
         ODS VISUALIZATION — EXAGGERATION APPLIED FOR CLARITY — NOT TO SCALE — FOR DIAGNOSTIC REFERENCE ONLY &nbsp;|&nbsp; 1× RUNNING SPEED &nbsp;|&nbsp; Amplitude used as relative displacement proxy
@@ -5659,33 +5659,39 @@ function odsStart(){
   ODS.playing=true;
   if(ODS.raf)cancelAnimationFrame(ODS.raf);
   ODS.lastTs=null;
-  // Defer resize by one frame so the panel is fully visible and clientHeight is correct
-  requestAnimationFrame(()=>{
+  // Double-defer: first rAF makes panel visible, second measures correct dimensions
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
     odsResize();
     ODS.raf=requestAnimationFrame(odsLoop);
-  });
+  }));
 }
 function odsResize(){
   const cv=document.getElementById('ods-canvas');if(!cv)return;
   const dpr=window.devicePixelRatio||1;
   const wrap=document.getElementById('ods-canvas-wrap');
-  const panel=document.getElementById('panel-ods');
-  const W=(wrap?wrap.clientWidth:0)||300;
+  if(!wrap)return;
   const isV=document.getElementById('layout').value==='V';
+  const isFS=document.getElementById('layout').value==='FS';
+  // Width: always fill the wrap
+  const W=wrap.clientWidth||window.innerWidth||300;
   let H;
   if(isV){
-    // Vertical: tall scrollable canvas — 150px per node, min 500px
+    // Vertical train: tall scrollable canvas
     const nodeCount=nodes.reduce((sum,n)=>{
       const hasNDE=n.meas.some(m=>m.pos==='VERT_NDE'||m.pos==='HORIZ_NDE'||m.pos==='AX_OB');
       const hasDE =n.meas.some(m=>m.pos==='VERT_DE' ||m.pos==='HORIZ_DE' ||m.pos==='AX_IB');
       return sum+(hasNDE?1:0)+(hasDE?1:0);
     },0)||4;
-    H=Math.max(500,nodeCount*150+160);
+    H=Math.max(500,nodeCount*160+180);
+  } else if(isFS){
+    // Fixed/Structural: tall scrollable canvas based on point count
+    const ptCount=(getFSData().points||[]).length||3;
+    H=Math.max(400,ptCount*60+160);
   } else {
-    // Horizontal: fill the available panel height minus toolbar rows (~100px)
-    // Use panel clientHeight which is reliable; wrap may report 0 on first paint
-    const panelH=panel?panel.clientHeight:0;
-    H=Math.max(240,panelH-2);
+    // Horizontal: fill the visible wrap height
+    // getBoundingClientRect is reliable on iOS even on first paint
+    const rect=wrap.getBoundingClientRect();
+    H=Math.max(240,rect.height||300);
   }
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.width=W+'px';cv.style.height=H+'px';
@@ -5834,7 +5840,7 @@ function odsDrawShaftVertical(ctx,W,H,pt,sn,txC){
   const grpm=parseFloat(document.getElementById('global-rpm').value)||0;
   const u=getUnit();
   const n=sn.length;
-  const topPad=50,botPad=40,xBase=W/2;
+  const topPad=70,botPad=44,xBase=W/2;
   const yT=topPad,yB=H-botPad,trainH=yB-yT;
 
   // Evenly space nodes vertically
@@ -6782,9 +6788,16 @@ function boot(){
   document.getElementById('share-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
   window.addEventListener('resize',()=>{
     if(!document.getElementById('panel-chart').classList.contains('hidden'))requestAnimationFrame(redraw);
-    if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize();
+    if(!document.getElementById('panel-ods').classList.contains('hidden'))requestAnimationFrame(()=>requestAnimationFrame(odsResize));
     // Close overflow if screen is now wide enough
     if(window.innerWidth>700)closeOverflow();
+  });
+  // iOS orientation change fires before viewport updates — delay resize
+  window.addEventListener('orientationchange',()=>{
+    setTimeout(()=>{
+      if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize();
+      if(!document.getElementById('panel-chart').classList.contains('hidden'))requestAnimationFrame(redraw);
+    },300);
   });
   // One-time clear of any demo history from previous test versions
   if(!localStorage.getItem('phaseChart_v128_clean')){
