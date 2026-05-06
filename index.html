@@ -469,11 +469,12 @@ body.hicon .bs-mode-btn.active{color:#000}
         <option value="G">G's</option>
         <option value="µm">µm</option>
       </select></label>
-      <label>Layout <select id="layout" onchange="renderSidebar();redraw()">
+      <label>Layout <select id="layout" onchange="renderSidebar();redraw();if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize()">
         <option value="H">Horizontal</option>
         <option value="V">Vertical</option>
         <option value="FB">Foot/Base</option>
         <option value="BS">Base/Structure</option>
+        <option value="FS">Fixed/Structural (ODS)</option>
       </select></label>
       <label>Theme <select id="theme-sel" onchange="setTheme(this.value)" style="width:48px">
         <option value="light">☀️</option>
@@ -522,7 +523,7 @@ body.hicon .bs-mode-btn.active{color:#000}
     <button id="tab-components" class="active" onclick="showTab('components')">Components</button>
     <button id="tab-chart" onclick="showTab('chart')">Chart</button>
     <button id="tab-diag" onclick="showTab('diag')">Diagnosis</button>
-    <button id="tab-ods" onclick="showTab('ods')">ODS</button>
+    <button id="tab-ods" onclick="showTab('ods')">ODS <span style="font-size:9px;color:#f97316;font-weight:700;vertical-align:middle">β</span></button>
   </div>
   <div class="body-wrap">
     <div class="sidebar hidden" id="panel-history">
@@ -580,12 +581,12 @@ body.hicon .bs-mode-btn.active{color:#000}
         <div style="display:flex;gap:3px;margin-left:4px">
           <button class="btn active" id="ods-btn-side" onclick="odsSetView('side')" style="padding:5px 9px;font-size:11px">Side (V)</button>
           <button class="btn" id="ods-btn-top"  onclick="odsSetView('top')"  style="padding:5px 9px;font-size:11px">Top (H)</button>
-          <button class="btn" id="ods-btn-orb"  onclick="odsSetView('orb')"  style="padding:5px 9px;font-size:11px">Orbits</button>
+          <button class="btn" id="ods-btn-amp"  onclick="odsSetView('amp')"  style="padding:5px 9px;font-size:11px">Amp Map</button>
         </div>
         <button class="btn" onclick="odsExport()" style="margin-left:auto;padding:5px 10px;font-size:12px">📤 Export ODS</button>
       </div>
-      <div style="flex:1;position:relative;min-height:0">
-        <canvas id="ods-canvas" style="display:block;width:100%;height:100%"></canvas>
+      <div id="ods-canvas-wrap" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;min-height:0">
+        <canvas id="ods-canvas" style="display:block"></canvas>
       </div>
       <div style="padding:5px 12px;font-size:9px;color:var(--tx3);background:var(--bg2);border-top:1px solid var(--bd);flex-shrink:0">
         ODS VISUALIZATION — EXAGGERATION APPLIED FOR CLARITY — NOT TO SCALE — FOR DIAGNOSTIC REFERENCE ONLY &nbsp;|&nbsp; 1× RUNNING SPEED &nbsp;|&nbsp; Amplitude used as relative displacement proxy
@@ -808,7 +809,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '2.0';
+  return '2.1';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -1319,10 +1320,352 @@ function doUndo(){
 }
 
 // ── Sidebar ───────────────────────────────────────────────
+// ── Fixed/Structural ODS ─────────────────────────────────────────────
+const FS_SHAPES=['Pipe','Beam','Vessel','Plate','Generic'];
+const FS_MAX=12;
+let fsData=null;
+function getFSData(){
+  if(!fsData)fsData=getDefaultFSData();
+  return fsData;
+}
+function getDefaultFSData(){
+  return{
+    shape:'Pipe',
+    points:[
+      {id:1,label:'P1',V:{amp:0,phase:0},H:{amp:0,phase:0}},
+      {id:2,label:'P2',V:{amp:0,phase:0},H:{amp:0,phase:0}},
+      {id:3,label:'P3',V:{amp:0,phase:0},H:{amp:0,phase:0}},
+    ]
+  };
+}
+let fsNextId=100;
+function addFSPoint(){
+  const d=getFSData();
+  if(d.points.length>=FS_MAX){alert('Maximum '+FS_MAX+' points reached.');return;}
+  const idx=d.points.length+1;
+  d.points.push({id:fsNextId++,label:'P'+idx,V:{amp:0,phase:0},H:{amp:0,phase:0}});
+  renderFSSidebar();redraw();
+}
+function removeFSPoint(id){
+  const d=getFSData();
+  if(d.points.length<=1)return;
+  d.points=d.points.filter(p=>p.id!==id);
+  renderFSSidebar();redraw();
+}
+function handleFSInput(el){
+  const d=getFSData();
+  const field=el.dataset.field,axis=el.dataset.axis,id=parseInt(el.dataset.id);
+  if(field==='shape'){d.shape=el.value;redraw();return;}
+  const pt=d.points.find(p=>p.id===id);if(!pt)return;
+  if(axis){
+    let v=parseFloat(el.value)||0;
+    if(field==='phase'){v=Math.max(-180,Math.min(180,Math.round(v)));}
+    else{const u=getUnit();v=Math.max(0,Math.min(u.max,v));}
+    pt[axis][field]=v;
+  } else if(field==='label'){
+    pt.label=el.value||('P'+(d.points.indexOf(pt)+1));
+  }
+  redraw();
+}
+function renderFSSidebar(){
+  const el=document.getElementById('node-list');if(!el)return;
+  const d=getFSData();
+  const u=getUnit();
+  const numStyle=`font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:4px 6px;color:var(--tx);font-family:'Roboto',sans-serif;-webkit-appearance:none;min-height:32px;width:100%;text-align:center`;
+  let html=`<div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Fixed/Structural ODS — up to ${FS_MAX} measurement points along a structure or pipe run.</div>
+  <div class="node-card" style="margin-bottom:10px">
+    <div class="row"><span class="lbl">Structure Type</span>
+      <select class="nc-sel" style="flex:1" data-field="shape" onchange="handleFSInput(this)">
+        ${FS_SHAPES.map(s=>`<option${s===d.shape?' selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+  </div>`;
+  d.points.forEach((pt,i)=>{
+    html+=`<div class="node-card" style="margin-bottom:8px">
+      <div class="mhdr">
+        <input class="mlabel" value="${esc(pt.label)}" style="width:44px"
+          data-id="${pt.id}" data-field="label"
+          oninput="handleFSInput(this)" onchange="handleFSInput(this)">
+        <span style="flex:1;font-size:11px;color:var(--tx3);padding-left:6px">Point ${i+1} of ${d.points.length}</span>
+        <button class="rm" onclick="removeFSPoint(${pt.id})">×</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px">
+        <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;text-align:center">V Amp (${u.label})</div>
+          <input type="number" inputmode="decimal" value="${pt.V.amp||''}" placeholder="0"
+            min="0" max="${u.max}" step="${u.step}" style="${numStyle}"
+            data-id="${pt.id}" data-field="amp" data-axis="V"
+            oninput="handleFSInput(this)" onchange="handleFSInput(this)"></div>
+        <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;text-align:center">V Phase (°)</div>
+          <input type="number" inputmode="numeric" value="${pt.V.phase||''}" placeholder="0"
+            min="-180" max="180" step="1" style="${numStyle}"
+            data-id="${pt.id}" data-field="phase" data-axis="V"
+            oninput="handleFSInput(this)" onchange="handleFSInput(this)"></div>
+        <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;text-align:center">H Amp (${u.label})</div>
+          <input type="number" inputmode="decimal" value="${pt.H.amp||''}" placeholder="0"
+            min="0" max="${u.max}" step="${u.step}" style="${numStyle}"
+            data-id="${pt.id}" data-field="amp" data-axis="H"
+            oninput="handleFSInput(this)" onchange="handleFSInput(this)"></div>
+        <div><div style="font-size:10px;color:var(--tx3);margin-bottom:2px;text-align:center">H Phase (°)</div>
+          <input type="number" inputmode="numeric" value="${pt.H.phase||''}" placeholder="0"
+            min="-180" max="180" step="1" style="${numStyle}"
+            data-id="${pt.id}" data-field="phase" data-axis="H"
+            oninput="handleFSInput(this)" onchange="handleFSInput(this)"></div>
+      </div>
+    </div>`;
+  });
+  if(d.points.length<FS_MAX){
+    html+=`<button class="add-node" onclick="addFSPoint()">+ Add point (${d.points.length}/${FS_MAX})</button>`;
+  }
+  el.innerHTML=html;
+}
+
+// ── Fixed/Structural ODS draw ────────────────────────────────────────
+// Builds a Catmull-Rom spline through animated points, returns array of {x,y}
+function fsBuildSpline(animPts,steps){
+  const out=[];
+  const n=animPts.length;
+  if(n===1){out.push({x:animPts[0].x,y:animPts[0].y});return out;}
+  for(let i=0;i<n-1;i++){
+    const p0=animPts[Math.max(0,i-1)],p1=animPts[i],p2=animPts[i+1],p3=animPts[Math.min(n-1,i+2)];
+    for(let t=0;t<steps;t++){
+      const tt=t/steps;
+      const tt2=tt*tt,tt3=tt2*tt;
+      const x=0.5*((2*p1.x)+(-p0.x+p2.x)*tt+(2*p0.x-5*p1.x+4*p2.x-p3.x)*tt2+(-p0.x+3*p1.x-3*p2.x+p3.x)*tt3);
+      const y=0.5*((2*p1.y)+(-p0.y+p2.y)*tt+(2*p0.y-5*p1.y+4*p2.y-p3.y)*tt2+(-p0.y+3*p1.y-3*p2.y+p3.y)*tt3);
+      out.push({x,y});
+    }
+  }
+  out.push({x:animPts[n-1].x,y:animPts[n-1].y});
+  return out;
+}
+
+// Offset a spline by +/-thickness perpendicular to the local tangent
+function fsOffsetSpline(spine,offset){
+  return spine.map((pt,i)=>{
+    const prev=spine[Math.max(0,i-1)],next=spine[Math.min(spine.length-1,i+1)];
+    const dx=next.x-prev.x,dy=next.y-prev.y;
+    const len=Math.sqrt(dx*dx+dy*dy)||1;
+    // Perpendicular: rotate tangent 90°
+    const nx=-dy/len,ny=dx/len;
+    return{x:pt.x+nx*offset,y:pt.y+ny*offset};
+  });
+}
+
+function fsDrawPath(ctx,pts){
+  if(!pts.length)return;
+  ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+}
+
+function odsDrawFS(ctx,W,H,pt,txC){
+  const d=getFSData();
+  const isH=ODS.view==='side',axis=isH?'V':'H';
+  const title=document.getElementById('chart-title').value||'ODS';
+  const grpm=parseFloat(document.getElementById('global-rpm').value)||0;
+  const u=getUnit();
+  const pad=56,yBase=H/2,xL=pad+16,xR=W-pad,trainW=xR-xL;
+  const pts2=d.points,n=pts2.length,shape=d.shape;
+  const col='#3b82f6';
+  const fillA=darkMode?'rgba(59,130,246,0.18)':'rgba(59,130,246,0.12)';
+  const bg=darkMode?'#1a1a1a':'#fff';
+
+  // Title
+  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  ctx.save();ctx.beginPath();ctx.rect(8,0,W-16,24);ctx.clip();
+  ctx.fillText(title+' — '+shape.toUpperCase()+' — '+(isH?'VERTICAL (Side)':'HORIZONTAL (Top)'),W/2,18);
+  ctx.restore();
+  ctx.font='10px Roboto,sans-serif';ctx.textAlign='center';
+  ctx.fillText('RPM '+(grpm||'____')+' | 1× | Exag '+ODS.exag+'×',W/2,32);
+
+  // Y-axis label
+  ctx.save();ctx.translate(14,H/2);ctx.rotate(-Math.PI/2);
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  ctx.fillText(isH?'VERTICAL DISPLACEMENT ↕':'HORIZONTAL DISPLACEMENT ↔',0,0);ctx.restore();
+
+  // Centerline (dashed)
+  ctx.setLineDash([6,6]);ctx.strokeStyle=darkMode?'rgba(255,255,255,.12)':'rgba(0,0,0,.15)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(xL,yBase);ctx.lineTo(xR,yBase);ctx.stroke();ctx.setLineDash([]);
+
+  // Build animated centerline points
+  const animPts=pts2.map((p,i)=>{
+    const xn=n===1?0.5:(0.08+i*(0.84/(n-1)));
+    const x=xL+xn*trainW;
+    const m=p[axis];
+    const disp=m.amp*ODS.exag*Math.cos(pt-m.phase*Math.PI/180);
+    return{x,y:yBase-disp,p,i};
+  });
+
+  // Build dense spline
+  const spine=fsBuildSpline(animPts,20);
+
+  // Shape-specific body rendering
+  ctx.save();
+  ctx.shadowColor='rgba(59,130,246,.25)';ctx.shadowBlur=8;
+
+  switch(shape){
+    case 'Pipe':{
+      // Pipe in elevation: outer wall, inner bore, flat end caps
+      const outer=10,bore=5;
+      const outerTop=fsOffsetSpline(spine,-outer);
+      const outerBot=fsOffsetSpline(spine, outer);
+      const boreTop =fsOffsetSpline(spine,-bore);
+      const boreBot =fsOffsetSpline(spine, bore);
+      // Wall fill (annular ring in elevation)
+      ctx.beginPath();fsDrawPath(ctx,outerTop);for(let i=outerBot.length-1;i>=0;i--)ctx.lineTo(outerBot[i].x,outerBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Bore (hollow — clear the center)
+      ctx.beginPath();fsDrawPath(ctx,boreTop);for(let i=boreBot.length-1;i>=0;i--)ctx.lineTo(boreBot[i].x,boreBot[i].y);ctx.closePath();
+      ctx.fillStyle=darkMode?'rgba(17,17,17,0.85)':'rgba(255,255,255,0.85)';ctx.fill();
+      // Outer wall lines
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';
+      fsDrawPath(ctx,outerTop);ctx.stroke();
+      fsDrawPath(ctx,outerBot);ctx.stroke();
+      // Inner bore lines (lighter)
+      ctx.lineWidth=1;ctx.strokeStyle=col+'77';
+      fsDrawPath(ctx,boreTop);ctx.stroke();
+      fsDrawPath(ctx,boreBot);ctx.stroke();
+      // Flat end caps
+      ctx.strokeStyle=col;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(outerTop[0].x,outerTop[0].y);ctx.lineTo(outerBot[0].x,outerBot[0].y);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(outerTop[outerTop.length-1].x,outerTop[outerTop.length-1].y);ctx.lineTo(outerBot[outerBot.length-1].x,outerBot[outerBot.length-1].y);ctx.stroke();
+      break;
+    }
+    case 'Beam':{
+      // Wide-flange W-beam (I-beam): thick top/bottom flanges, thin web
+      const flangeOff=14,flangeThk=4,webOff=2.5;
+      const tfOuter=fsOffsetSpline(spine,-(flangeOff+flangeThk));
+      const tfInner=fsOffsetSpline(spine,-(flangeOff));
+      const bfInner=fsOffsetSpline(spine, flangeOff);
+      const bfOuter=fsOffsetSpline(spine, flangeOff+flangeThk);
+      const wTop   =fsOffsetSpline(spine,-(webOff));
+      const wBot   =fsOffsetSpline(spine, webOff);
+      // Fill top flange
+      ctx.beginPath();fsDrawPath(ctx,tfOuter);for(let i=tfInner.length-1;i>=0;i--)ctx.lineTo(tfInner[i].x,tfInner[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Fill bottom flange
+      ctx.beginPath();fsDrawPath(ctx,bfInner);for(let i=bfOuter.length-1;i>=0;i--)ctx.lineTo(bfOuter[i].x,bfOuter[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Fill web
+      ctx.beginPath();fsDrawPath(ctx,wTop);for(let i=wBot.length-1;i>=0;i--)ctx.lineTo(wBot[i].x,wBot[i].y);ctx.closePath();ctx.fillStyle=fillA+'66';ctx.fill();
+      // Outer flange faces (bold — these are the visible faces in elevation)
+      ctx.strokeStyle=col;ctx.lineWidth=3;ctx.lineCap='round';
+      fsDrawPath(ctx,tfOuter);ctx.stroke();
+      fsDrawPath(ctx,bfOuter);ctx.stroke();
+      // Flange inner faces
+      ctx.lineWidth=1.5;
+      fsDrawPath(ctx,tfInner);ctx.stroke();
+      fsDrawPath(ctx,bfInner);ctx.stroke();
+      // Web faces
+      ctx.lineWidth=1.2;ctx.strokeStyle=col+'99';
+      fsDrawPath(ctx,wTop);ctx.stroke();
+      fsDrawPath(ctx,wBot);ctx.stroke();
+      break;
+    }
+    case 'Vessel':{
+      // Pressure vessel / heat exchanger: thick shell, domed heads, nozzle stub, seam weld line
+      const shell=14;
+      const outerTop=fsOffsetSpline(spine,-shell);
+      const outerBot=fsOffsetSpline(spine, shell);
+      // Shell fill
+      ctx.beginPath();fsDrawPath(ctx,outerTop);for(let i=outerBot.length-1;i>=0;i--)ctx.lineTo(outerBot[i].x,outerBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Shell walls
+      ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineCap='round';
+      fsDrawPath(ctx,outerTop);ctx.stroke();
+      fsDrawPath(ctx,outerBot);ctx.stroke();
+      // Domed heads
+      const s0=spine[0],sE=spine[spine.length-1];
+      ctx.beginPath();ctx.arc(s0.x,s0.y,shell,Math.PI/2,3*Math.PI/2);ctx.stroke();
+      ctx.beginPath();ctx.arc(sE.x,sE.y,shell,-Math.PI/2,Math.PI/2);ctx.stroke();
+      // Shell seam weld (dashed centre line)
+      ctx.setLineDash([8,5]);ctx.lineWidth=1;ctx.strokeStyle=col+'44';
+      fsDrawPath(ctx,spine);ctx.stroke();ctx.setLineDash([]);
+      // Nozzle on top at midpoint
+      const mid=spine[Math.floor(spine.length/2)];
+      ctx.strokeStyle=col;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(mid.x,mid.y-shell);ctx.lineTo(mid.x,mid.y-shell-10);ctx.stroke();
+      ctx.beginPath();ctx.rect(mid.x-7,mid.y-shell-16,14,7);ctx.stroke();
+      break;
+    }
+    case 'Plate':{
+      // Structural floor grating / deck plate: thin body with evenly spaced stiffener lines
+      const thick=5;
+      const top=fsOffsetSpline(spine,-thick);
+      const bot=fsOffsetSpline(spine, thick);
+      // Fill
+      ctx.beginPath();fsDrawPath(ctx,top);for(let i=bot.length-1;i>=0;i--)ctx.lineTo(bot[i].x,bot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Top and bottom faces
+      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';
+      fsDrawPath(ctx,top);ctx.stroke();
+      fsDrawPath(ctx,bot);ctx.stroke();
+      // End caps
+      ctx.beginPath();ctx.moveTo(top[0].x,top[0].y);ctx.lineTo(bot[0].x,bot[0].y);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(top[top.length-1].x,top[top.length-1].y);ctx.lineTo(bot[bot.length-1].x,bot[bot.length-1].y);ctx.stroke();
+      // Stiffener ribs (evenly spaced vertical lines through the plate)
+      const xStart=spine[0].x,xEnd=spine[spine.length-1].x;
+      const ribSpacing=22;
+      const numRibs=Math.floor((xEnd-xStart)/ribSpacing);
+      ctx.strokeStyle=col+'66';ctx.lineWidth=1;
+      for(let r=1;r<numRibs;r++){
+        const frac=r/numRibs;
+        const idx=Math.round(frac*(spine.length-1));
+        const ti=top[Math.min(idx,top.length-1)],bi=bot[Math.min(idx,bot.length-1)];
+        ctx.beginPath();ctx.moveTo(ti.x,ti.y);ctx.lineTo(bi.x,bi.y);ctx.stroke();
+      }
+      break;
+    }
+    default:{
+      // Generic: twin-wall body
+      const thick=6;
+      const top=fsOffsetSpline(spine,-thick);
+      const bot=fsOffsetSpline(spine, thick);
+      ctx.beginPath();fsDrawPath(ctx,top);for(let i=bot.length-1;i>=0;i--)ctx.lineTo(bot[i].x,bot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      ctx.strokeStyle=col;ctx.lineWidth=2;
+      fsDrawPath(ctx,top);ctx.stroke();
+      fsDrawPath(ctx,bot);ctx.stroke();
+    }
+  }
+  ctx.shadowBlur=0;ctx.restore();
+
+  // Point markers and labels along the centerline
+  animPts.forEach(({x,y,p,i})=>{
+    const sev=fsSev(p);
+    const col2=ODS.SEV[sev]||ODS.SEV.none;
+    const glo2=ODS.GLOW[sev]||ODS.GLOW.none;
+    // Tick mark from yBase to node
+    ctx.strokeStyle=col2+'44';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.moveTo(x,yBase);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
+    // Dot on the body with severity glow
+    ctx.shadowColor=glo2;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=col2;ctx.fill();ctx.shadowBlur=0;
+    // Label centered below
+    const labelY=y+22;
+    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=col2;ctx.textAlign='center';
+    ctx.fillText(p.label,x,labelY);
+    ctx.font='8px Roboto,sans-serif';ctx.fillStyle=txC;
+    const m=p[axis];
+    ctx.fillText(m.amp.toFixed(u.dec)+' '+u.label,x,labelY+11);
+    ctx.fillText(m.phase+'°',x,labelY+21);
+  });
+
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=darkMode?'#444':'#bbb';ctx.textAlign='center';
+  ctx.fillText('v'+getDocVersion()+' | '+getDocDate()+' | © '+new Date().getFullYear()+' Joel Davis',W/2,H-6);
+}
+
+// Determine severity for a FS point based on amplitude thresholds matching main ODS
+function fsSev(p){
+  const uKey=document.getElementById('amp-unit').value;
+  const warn={'mils':3.0,'in/s':0.15,'mm/s':4.0,'G':0.2,'µm':75}[uKey]||0.15;
+  const fault={'mils':6.0,'in/s':0.30,'mm/s':8.0,'G':0.4,'µm':150}[uKey]||0.30;
+  const maxA=Math.max(p.V.amp,p.H.amp);
+  if(maxA>=fault)return'fault';
+  if(maxA>=warn)return'warn';
+  if(maxA>0)return'ok';
+  return'none';
+}
+
+
 function renderSidebar(){
   const _lay=document.getElementById('layout')?.value;
   if(_lay==='BS'){renderBSSidebar();return;}
   if(_lay==='FB'){renderFBSidebar();return;}
+  if(_lay==='FS'){renderFSSidebar();return;}
   const u=getUnit();
   const el=document.getElementById('node-list');
   if(!el)return;
@@ -2108,6 +2451,8 @@ function redraw(){
     drawBaseStructure();
   } else if(layout==='FB'){
     drawFootBase();
+  } else if(layout==='FS'){
+    drawFSChart();
   } else if(layout==='V'){
     drawVertical();
   } else {
@@ -2117,6 +2462,21 @@ function redraw(){
     renderChart(ctx,W,H,tc);
     applyFitScale(W,H);
   }
+}
+
+function drawFSChart(){
+  // Fixed/Structural layout: chart tab shows a simple info panel
+  // ODS tab is the primary visualization for this layout
+  const tc=getTC();
+  const W=320,H=160;
+  const ctx=setupCanvas(W,H);
+  ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
+  ctx.font='bold 13px Roboto,sans-serif';ctx.fillStyle=tc.tx;ctx.textAlign='center';
+  ctx.fillText('Fixed / Structural ODS',W/2,60);
+  ctx.font='11px Roboto,sans-serif';ctx.fillStyle=tc.tx2;
+  ctx.fillText('Go to the ODS tab to view the',W/2,85);
+  ctx.fillText('animated displacement visualization.',W/2,102);
+  applyFitScale(W,H);
 }
 
 function drawVertical(){
@@ -4844,6 +5204,7 @@ function saveToHistory(){
     footBaseData:JSON.parse(JSON.stringify(footBaseData)),
     bsData:bsData?JSON.parse(JSON.stringify(bsData)):null,
     bsMode:bsMode,
+    fsData:fsData?JSON.parse(JSON.stringify(fsData)):null,
     meta:{
       chartTitle:title,
       globalRpm:rpm,
@@ -4895,6 +5256,7 @@ function loadFromHistory(id){
       footBaseData=entry.footBaseData?JSON.parse(JSON.stringify(entry.footBaseData)):{};
       bsData=entry.bsData?JSON.parse(JSON.stringify(entry.bsData)):null;
       bsMode=entry.bsMode||'single';
+      fsData=entry.fsData?JSON.parse(JSON.stringify(entry.fsData)):null;
       renderSidebar();
       runDiagnosis();
       showTab('components');
@@ -5013,6 +5375,22 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'2.1':{
+date:'05/06/2026',
+items:[
+'Fixed/Structural ODS layout — new layout type for structural and pipe ODS surveys on fixed equipment where motion amplification cannot be used (e.g. vibrating platforms, offshore modules). Up to 12 measurement points along a pipe run, beam, vessel, or plate.',
+'Animated 2D structure body — the ODS shape profile flexes and deforms with the animation rather than just a stick model. Pipe shows outer wall and hollow bore, Beam renders a wide-flange W-section with flanges and web, Vessel shows thick shell with domed hemispherical heads and nozzle stub, Plate shows stiffener ribs.',
+'Single shape selector per survey — Pipe, Beam, Vessel, Plate, or Generic. One shape for the whole chain, clean and uncluttered.',
+'Amplitude Map view — new third ODS view replacing Orbit plots. Shows V and H amplitude at each point as paired horizontal bars, color-coded by severity alarm level (green/amber/red), with phase angle annotated on each bar. Available for both Fixed/Structural and standard machine train ODS.',
+'Fixed/Structural ODS export — Export ODS now correctly exports Fixed/Structural surveys as a self-contained animated HTML file. Previously exported blank for FS layout.',
+'Orbit plots removed — orbit plots required two simultaneous orthogonal proximity probe signals at the same physical point to be physically meaningful. Accelerometer-based single-point readings do not produce valid orbits. Replaced with the Amplitude Map.',
+'Vertical layout ODS — ODS tab now correctly renders a top-to-bottom shaft model for vertical machine trains, matching the vertical bubble chart layout. Driver NDE at top, coupling in center, Driven NDE at bottom. Canvas scrolls vertically to give each bearing location adequate space.',
+'ODS title clipping fixed — Side (V) and Top (H) title text is now center-aligned and clipped within canvas bounds so long chart titles never overflow.',
+'ODS β badge — ODS tab now shows a small orange β indicator to communicate that the feature is in active development.',
+'Fixed/Structural (ODS) label — layout dropdown now clearly identifies the Fixed/Structural option as ODS-specific.',
+'Save GIF and Save Video removed from ODS toolbar — these buttons were causing layout issues on the ODS tab. Export ODS (standalone HTML) remains the primary sharing method.',
+],
+},
 '2.0':{
 date:'04/26/2026',
 items:[
@@ -5222,7 +5600,7 @@ function odsTogglePlay(){
 }
 function odsSetView(v){
   ODS.view=v;
-  ['side','top','orb'].forEach(n=>{const b=document.getElementById('ods-btn-'+n);if(b)b.classList.toggle('active',n===v);});
+  ['side','top','amp'].forEach(n=>{const b=document.getElementById('ods-btn-'+n);if(b)b.classList.toggle('active',n===v);});
 }
 function odsBuildNodes(){
   // Build shaft nodes by position code — never by array index.
@@ -5277,15 +5655,38 @@ function odsBrgSev(node){
 function odsDisp(node,axis,pt){const m=node[axis];return m.amp*ODS.exag*Math.cos(pt-m.phase*Math.PI/180);}
 function odsStart(){
   const cv=document.getElementById('ods-canvas');if(!cv)return;
-  odsResize();ODS.playing=true;
   document.getElementById('ods-play-btn').textContent='⏸ Pause';
+  ODS.playing=true;
   if(ODS.raf)cancelAnimationFrame(ODS.raf);
-  ODS.lastTs=null;ODS.raf=requestAnimationFrame(odsLoop);
+  ODS.lastTs=null;
+  // Defer resize by one frame so the panel is fully visible and clientHeight is correct
+  requestAnimationFrame(()=>{
+    odsResize();
+    ODS.raf=requestAnimationFrame(odsLoop);
+  });
 }
 function odsResize(){
   const cv=document.getElementById('ods-canvas');if(!cv)return;
   const dpr=window.devicePixelRatio||1;
-  const W=cv.parentElement.clientWidth||300,H=cv.parentElement.clientHeight||300;
+  const wrap=document.getElementById('ods-canvas-wrap');
+  const panel=document.getElementById('panel-ods');
+  const W=(wrap?wrap.clientWidth:0)||300;
+  const isV=document.getElementById('layout').value==='V';
+  let H;
+  if(isV){
+    // Vertical: tall scrollable canvas — 150px per node, min 500px
+    const nodeCount=nodes.reduce((sum,n)=>{
+      const hasNDE=n.meas.some(m=>m.pos==='VERT_NDE'||m.pos==='HORIZ_NDE'||m.pos==='AX_OB');
+      const hasDE =n.meas.some(m=>m.pos==='VERT_DE' ||m.pos==='HORIZ_DE' ||m.pos==='AX_IB');
+      return sum+(hasNDE?1:0)+(hasDE?1:0);
+    },0)||4;
+    H=Math.max(500,nodeCount*150+160);
+  } else {
+    // Horizontal: fill the available panel height minus toolbar rows (~100px)
+    // Use panel clientHeight which is reliable; wrap may report 0 on first paint
+    const panelH=panel?panel.clientHeight:0;
+    H=Math.max(240,panelH-2);
+  }
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
   cv.style.width=W+'px';cv.style.height=H+'px';
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
@@ -5317,6 +5718,11 @@ function odsDraw(ctx,W,H,pt){
     ctx.font='13px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
     ctx.fillText('ODS not available for Base/Structure or Foot/Base layouts',W/2,H/2);return;
   }
+  if(layout==='FS'){
+    if(ODS.view==='amp')odsDrawFSAmpMap(ctx,W,H,pt,txC);
+    else odsDrawFS(ctx,W,H,pt,txC);
+    odsDrawClock(ctx,W,H,pt);return;
+  }
   if(!nodes.length){
     ctx.font='13px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
     ctx.fillText('Add components and measurements to view ODS',W/2,H/2);return;
@@ -5326,7 +5732,8 @@ function odsDraw(ctx,W,H,pt){
     ctx.font='13px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
     ctx.fillText('Enter vertical/horizontal measurements to view ODS',W/2,H/2);return;
   }
-  if(ODS.view==='orb')odsDrawOrbits(ctx,W,H,pt,sn,txC);
+  if(ODS.view==='amp')odsDrawAmpMap(ctx,W,H,pt,sn,txC);
+  else if(layout==='V')odsDrawShaftVertical(ctx,W,H,pt,sn,txC);
   else odsDrawShaftView(ctx,W,H,pt,sn,txC);
   odsDrawClock(ctx,W,H,pt);
 }
@@ -5415,31 +5822,243 @@ function odsDrawNode(ctx,x,y,yBase,s,axis,u,txC){
   ctx.fillText(m.amp.toFixed(u.dec)+' '+u.label,x,y+r+31);ctx.fillText(m.phase+'°',x,y+r+40);
   ctx.restore();
 }
-function odsDrawOrbits(ctx,W,H,pt,sn,txC){
-  const cols=Math.min(sn.length,3),rows=Math.ceil(sn.length/cols);
-  const cW=W/cols,cH=H/rows,u=getUnit();
+// ── Fixed/Structural Amplitude Map ───────────────────────────────────
+// Replaces orbit view — shows V and H amplitude at each point as
+// paired horizontal bars, color-coded by severity, with phase annotation.
+// Points are sorted left-to-right matching the stick model order.
+// Shared amp map drawing core — used by both FS and standard ODS
+function odsDrawShaftVertical(ctx,W,H,pt,sn,txC){
+  // Vertical train: shaft runs top→bottom, displacement is horizontal (radial)
+  const isH=ODS.view==='side',axis=isH?'V':'H';
+  const title=document.getElementById('chart-title').value||'ODS';
+  const grpm=parseFloat(document.getElementById('global-rpm').value)||0;
+  const u=getUnit();
+  const n=sn.length;
+  const topPad=50,botPad=40,xBase=W/2;
+  const yT=topPad,yB=H-botPad,trainH=yB-yT;
+
+  // Evenly space nodes vertically
+  sn.forEach((s,i)=>{s.yn=n===1?yT+trainH/2:yT+(i/(n-1))*trainH;});
+
+  // Title
+  ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  ctx.save();ctx.beginPath();ctx.rect(8,0,W-16,24);ctx.clip();
+  ctx.fillText(title+' — VERTICAL TRAIN — '+(isH?'VERTICAL DISPLACEMENT (Side)':'HORIZONTAL DISPLACEMENT (Top)'),W/2,18);
+  ctx.restore();
+  ctx.font='10px Roboto,sans-serif';ctx.textAlign='center';
+  ctx.fillText('RPM '+(grpm||'____')+' | 1× | Exag '+ODS.exag+'×',W/2,34);
+
+  // Component zone bands (horizontal strips per component)
+  let prevIdx=-1;
   sn.forEach((s,i)=>{
-    const col=i%cols,row=Math.floor(i/cols),cx=cW*(col+.5),cy=cH*(row+.5);
-    const R=Math.min(cW,cH)*.26,sc=ODS.SEV[s.sev||'none']||ODS.SEV.none;
-    ctx.fillStyle=darkMode?'rgba(20,20,20,.7)':'rgba(255,255,255,.7)';
-    ctx.strokeStyle=darkMode?'#2a2a2a':'#e0e0e0';ctx.lineWidth=1;
-    ctx.beginPath();ctx.roundRect(cx-cW/2+8,cy-cH/2+8,cW-16,cH-16,8);ctx.fill();ctx.stroke();
-    ctx.strokeStyle=darkMode?'rgba(255,255,255,.08)':'rgba(0,0,0,.1)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
-    ctx.beginPath();ctx.moveTo(cx-R*1.4,cy);ctx.lineTo(cx+R*1.4,cy);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(cx,cy-R*1.4);ctx.lineTo(cx,cy+R*1.4);ctx.stroke();ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.strokeStyle=darkMode?'rgba(255,255,255,.1)':'rgba(0,0,0,.1)';ctx.stroke();
-    const scale=R/(Math.max(s.V.amp,s.H.amp,.001)*ODS.exag||1)*.85;
-    let first=true;ctx.beginPath();
-    for(let f=90;f>=0;f--){const tp=pt-f*.05;const hx=odsDisp(s,'H',tp)*scale,vy=odsDisp(s,'V',tp)*scale;if(first){ctx.moveTo(cx+hx,cy-vy);first=false;}else ctx.lineTo(cx+hx,cy-vy);}
-    ctx.strokeStyle=sc+'55';ctx.lineWidth=1.5;ctx.stroke();
-    const hxN=odsDisp(s,'H',pt)*scale,vyN=odsDisp(s,'V',pt)*scale;
-    ctx.shadowColor=ODS.GLOW[s.sev||'none'];ctx.shadowBlur=10;
-    ctx.beginPath();ctx.arc(cx+hxN,cy-vyN,5,0,Math.PI*2);ctx.fillStyle=sc;ctx.fill();ctx.shadowBlur=0;
-    const parts=s.label.split('\n');
-    ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=sc;ctx.textAlign='center';ctx.fillText(parts[0],cx,cy-R*1.3);
-    ctx.font='9px Roboto,sans-serif';ctx.fillStyle=txC;ctx.fillText(parts[1]||s.bearing,cx,cy-R*1.3+13);
-    ctx.font='8px Roboto,sans-serif';ctx.fillStyle=txC+'88';ctx.fillText('H →',cx+R*1.3,cy+3);ctx.fillText('V ↑',cx,cy-R*1.15);
+    if(s.nodeIdx!==prevIdx){
+      const y0=i===0?yT-4:(sn[i-1].yn+s.yn)/2;
+      const nextChange=sn.slice(i+1).find(nd=>nd.nodeIdx!==s.nodeIdx);
+      const y1=nextChange?(s.yn+nextChange.yn)/2:yB+4;
+      ctx.fillStyle=s.color+'11';ctx.fillRect(20,y0,W-40,y1-y0);
+      ctx.font='bold 10px Roboto,sans-serif';ctx.fillStyle=s.color+'bb';ctx.textAlign='right';
+      ctx.fillText(s.name,W-24,(y0+y1)/2+4);
+      prevIdx=s.nodeIdx;
+    }
   });
+
+  // Coupling markers between components
+  const hasFault=diagResults.some(r=>r.type==='fault'&&r.label&&r.label.indexOf('Angular')>-1);
+  for(let i=1;i<sn.length;i++){
+    if(sn[i].nodeIdx!==sn[i-1].nodeIdx){
+      const cy=(sn[i-1].yn+sn[i].yn)/2;
+      ctx.fillStyle=darkMode?'#333':'#ddd';ctx.strokeStyle=darkMode?'#555':'#bbb';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.roundRect(xBase-16,cy-8,32,16,3);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.roundRect(xBase-10,cy-12,20,24,2);ctx.fill();ctx.stroke();
+      if(hasFault){ctx.strokeStyle='#ef4444';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xBase-17,cy-13,34,26,4);ctx.stroke();}
+    }
+  }
+
+  // Vertical centerline (nominal shaft axis)
+  ctx.setLineDash([6,6]);ctx.strokeStyle=darkMode?'rgba(255,255,255,.18)':'rgba(0,0,0,.18)';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(xBase,yT);ctx.lineTo(xBase,yB);ctx.stroke();ctx.setLineDash([]);
+
+  // X-axis label
+  ctx.font='10px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  ctx.fillText('← RADIAL DISPLACEMENT →',W/2,H-24);
+
+  // Animated points: x = base + displacement, y = fixed shaft position
+  const pts=sn.map(s=>({x:xBase+odsDisp(s,axis,pt),y:s.yn,s}));
+
+  // Spline connecting points
+  if(pts.length>=2){
+    ctx.save();ctx.shadowColor='rgba(0,180,255,.2)';ctx.shadowBlur=8;
+    const grad=ctx.createLinearGradient(0,pts[0].y,0,pts[pts.length-1].y);
+    pts.forEach((p,i)=>{
+      const frac=i/(pts.length-1);
+      const edge=i>0&&sn[i].nodeIdx!==sn[i-1].nodeIdx;
+      grad.addColorStop(Math.max(0,frac-.005),p.s.color);
+      if(hasFault&&edge){grad.addColorStop(frac,'#ef4444');grad.addColorStop(Math.min(1,frac+.005),pts[Math.min(i+1,pts.length-1)].s.color);}
+    });
+    ctx.strokeStyle=grad;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+    for(let i=0;i<pts.length-1;i++){
+      const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+      ctx.bezierCurveTo(p1.x+(p2.x-p0.x)/6,p1.y+(p2.y-p0.y)/6,p2.x-(p3.x-p1.x)/6,p2.y-(p3.y-p1.y)/6,p2.x,p2.y);
+    }
+    ctx.stroke();ctx.shadowBlur=0;ctx.restore();
+  }
+
+  // Draw nodes — labels alternate left/right to avoid overlap
+  pts.forEach(({x,y,s},i)=>{
+    const sev=s.sev||'none',col=ODS.SEV[sev]||ODS.SEV.none,glo=ODS.GLOW[sev]||ODS.GLOW.none,r=9;
+    ctx.save();
+    // Dashed line from centerline to node
+    ctx.strokeStyle=col+'55';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.moveTo(xBase,y);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
+    // Glow + circle
+    ctx.shadowColor=glo;ctx.shadowBlur=12;
+    ctx.beginPath();ctx.arc(x,y,r+3,0,Math.PI*2);ctx.fillStyle=glo;ctx.fill();ctx.shadowBlur=0;
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    ctx.fillStyle=darkMode?'#1a1a1a':'#fff';ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();
+    // Labels: alternate left/right per node
+    // Clip to canvas so text never overflows the edge
+    const labelLeft=i%2===0;
+    const labelX=labelLeft?Math.max(6,xBase-r-8):Math.min(W-6,xBase+r+8);
+    const align=labelLeft?'right':'left';
+    const parts=s.label.split('\n');
+    // Clip region for label text
+    ctx.save();
+    if(labelLeft){ctx.beginPath();ctx.rect(0,y-20,labelX,60);ctx.clip();}
+    else{ctx.beginPath();ctx.rect(labelX,y-20,W-labelX,60);ctx.clip();}
+    ctx.font='bold 9px Roboto,sans-serif';ctx.fillStyle=col;ctx.textAlign=align;
+    ctx.fillText(parts[0],labelX,y-10);
+    ctx.font='8px Roboto,sans-serif';ctx.fillStyle=txC;
+    ctx.fillText(parts[1]||s.bearing,labelX,y+1);
+    const m=s[axis];
+    ctx.fillText(m.amp.toFixed(u.dec)+' '+u.label,labelX,y+11);
+    ctx.fillText(m.phase+'°',labelX,y+21);
+    ctx.restore();
+    ctx.restore();
+  });
+
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=darkMode?'#444':'#bbb';ctx.textAlign='center';
+  ctx.fillText('v'+getDocVersion()+' | '+getDocDate()+' | © '+new Date().getFullYear()+' Joel Davis',W/2,H-10);
+}
+
+function odsAmpMapCore(ctx,W,H,rows,title,subtitle,txC){
+  // rows: [{label, col, bars:[{tag,amp,phase,u}]}]
+  const n=rows.length;
+  const padL=56,padR=20,padTop=50,padBot=36;
+  const barAreaW=W-padL-padR;
+  const rowH=Math.min(64,Math.floor((H-padTop-padBot)/Math.max(n,1)));
+  const barH=13,gap=5;
+
+  // Title
+  ctx.font='bold 12px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
+  ctx.save();ctx.beginPath();ctx.rect(8,0,W-16,26);ctx.clip();
+  ctx.fillText(title,W/2,20);ctx.restore();
+  ctx.font='10px Roboto,sans-serif';ctx.textAlign='center';ctx.fillStyle=txC;
+  ctx.fillText(subtitle,W/2,36);
+
+  // Global max across all bars for consistent scaling
+  const globalMax=Math.max(...rows.flatMap(r=>r.bars.map(b=>b.amp)),.001);
+
+  rows.forEach((row,i)=>{
+    const col=row.col;
+    const y=padTop+i*rowH;
+
+    // Row label on left — larger and vertically centered on the row
+    ctx.font='bold 11px Roboto,sans-serif';ctx.fillStyle=col;ctx.textAlign='right';
+    const rowMid=y+(row.bars.length*(barH+gap)-gap)/2+5;
+    ctx.fillText(row.label,padL-8,rowMid);
+
+    row.bars.forEach((bar,bi)=>{
+      const by=y+bi*(barH+gap);
+      const bW=Math.max(2,(bar.amp/globalMax)*barAreaW);
+      const labelStr=bar.tag+'  '+bar.amp.toFixed(bar.u.dec)+' '+bar.u.label+'  '+bar.phase+'°';
+
+      // Background track
+      ctx.fillStyle=col+'22';ctx.fillRect(padL,by,barAreaW,barH);
+      // Filled bar
+      ctx.fillStyle=col+(bi===0?'ff':'bb');ctx.fillRect(padL,by,bW,barH);
+
+      // Label: if bar is wide enough, draw inside (white/dark); else draw to the right
+      ctx.font='bold 10px Roboto,sans-serif';
+      const labelW=ctx.measureText(labelStr).width;
+      const spaceInside=bW-6;
+      const spaceOutside=barAreaW-bW-4;
+
+      if(spaceInside>labelW){
+        // Inside the bar — contrasting color
+        ctx.fillStyle=darkMode?'rgba(0,0,0,0.75)':'rgba(255,255,255,0.85)';
+        ctx.textAlign='left';
+        ctx.fillText(labelStr,padL+4,by+barH-2);
+      } else if(spaceOutside>labelW){
+        // To the right of bar
+        ctx.fillStyle=txC;ctx.textAlign='left';
+        ctx.fillText(labelStr,padL+bW+4,by+barH-2);
+      } else {
+        // Bar is nearly full width — draw inside right-aligned, clipped
+        ctx.save();
+        ctx.beginPath();ctx.rect(padL+2,by,barAreaW-4,barH);ctx.clip();
+        ctx.fillStyle=darkMode?'rgba(0,0,0,0.75)':'rgba(255,255,255,0.85)';
+        ctx.textAlign='right';
+        ctx.fillText(labelStr,padL+barAreaW-4,by+barH-2);
+        ctx.restore();
+      }
+    });
+
+    // Separator
+    if(i<n-1){
+      ctx.strokeStyle=darkMode?'rgba(255,255,255,.06)':'rgba(0,0,0,.06)';
+      ctx.lineWidth=1;ctx.beginPath();
+      ctx.moveTo(padL,y+rowH-2);ctx.lineTo(W-padR,y+rowH-2);ctx.stroke();
+    }
+  });
+
+  // Legend
+  const legY=H-padBot+10;
+  ctx.font='10px Roboto,sans-serif';ctx.textAlign='left';
+  [['ok','Normal'],['warn','Warning'],['fault','Fault'],['none','No data']].forEach(([s,lbl],i)=>{
+    const lx=padL+i*((W-padL-padR)/4);
+    ctx.fillStyle=ODS.SEV[s];ctx.fillRect(lx,legY,12,10);
+    ctx.fillStyle=txC;ctx.fillText(lbl,lx+16,legY+10);
+  });
+
+  ctx.font='9px Roboto,sans-serif';ctx.fillStyle=darkMode?'#444':'#bbb';ctx.textAlign='center';
+  ctx.fillText('v'+getDocVersion()+' | '+getDocDate()+' | © '+new Date().getFullYear()+' Joel Davis',W/2,H-4);
+}
+
+function odsDrawFSAmpMap(ctx,W,H,pt,txC){
+  const d=getFSData();
+  const u=getUnit();
+  const title=document.getElementById('chart-title').value||'ODS';
+  if(!d.points.length)return;
+  const rows=d.points.map(p=>({
+    label:p.label,
+    col:ODS.SEV[fsSev(p)]||ODS.SEV.none,
+    bars:[
+      {tag:'V',amp:p.V.amp,phase:p.V.phase,u},
+      {tag:'H',amp:p.H.amp,phase:p.H.phase,u},
+    ]
+  }));
+  odsAmpMapCore(ctx,W,H,rows,
+    title+' — AMPLITUDE MAP (V & H per point)',
+    'Bars show 1× amplitude  |  Color = severity alarm level',txC);
+}
+
+function odsDrawAmpMap(ctx,W,H,pt,sn,txC){
+  const u=getUnit();
+  const title=document.getElementById('chart-title').value||'ODS';
+  if(!sn.length)return;
+  const rows=sn.map(s=>({
+    label:s.label.replace('\n',' '),
+    col:ODS.SEV[s.sev||'none']||ODS.SEV.none,
+    bars:[
+      {tag:'V',amp:s.V.amp,phase:s.V.phase,u},
+      {tag:'H',amp:s.H.amp,phase:s.H.phase,u},
+    ]
+  }));
+  odsAmpMapCore(ctx,W,H,rows,
+    title+' — AMPLITUDE MAP (V & H per bearing)',
+    'Bars show 1× amplitude  |  Color = severity alarm level',txC);
 }
 function odsDrawClock(ctx,W,H,pt){
   const cx=W-28,cy=H-28,r=18;
@@ -5458,6 +6077,8 @@ function odsDrawClock(ctx,W,H,pt){
 // ── ODS Export — self-contained standalone HTML ──────────────────────
 function odsExport(){
   closeModal();
+  const layout=document.getElementById('layout').value;
+  if(layout==='FS'){odsExportFS();return;}
   const title=document.getElementById('chart-title').value||'Cross-Channel Phase Analysis';
   const grpm=document.getElementById('global-rpm').value||'';
   const uKey=document.getElementById('amp-unit').value;
@@ -5492,7 +6113,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
 <span class="lbl">Exaggeration</span><input type="range" id="ex" min="10" max="300" value="80" style="width:90px" oninput="se(+this.value)"><span class="vval" id="ev">80\xd7</span>
 <span class="lbl" style="margin-left:6px">Anim Speed</span><input type="range" id="sp" min="1" max="200" value="3" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">0.05\xd7</span>
 <button class="btn act" id="pb" onclick="tp()">&#9208; Pause</button>
-<div style="display:flex;gap:3px"><button class="btn act" id="b-side" onclick="sv2('side')">Side (V)</button><button class="btn" id="b-top" onclick="sv2('top')">Top (H)</button><button class="btn" id="b-orb" onclick="sv2('orb')">Orbits</button></div>
+<div style="display:flex;gap:3px"><button class="btn act" id="b-side" onclick="sv2('side')">Side (V)</button><button class="btn" id="b-top" onclick="sv2('top')">Top (H)</button></div>
 <div id="fi" style="margin-left:auto;font-size:10px;color:#666;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
 <button class="btn" onclick="recGIF()" style="margin-left:auto">🎞 Save GIF</button>
 <button class="btn" onclick="recVid()" id="vid-btn">📹 Save Video</button>
@@ -5510,7 +6131,7 @@ const SG={ok:'rgba(34,197,94,.3)',warn:'rgba(245,158,11,.3)',fault:'rgba(239,68,
 function se(v){ex=v;document.getElementById('ev').textContent=v+'\xd7';}
 function ss(v){sp=v/60;const d=sp<1?2:1;document.getElementById('sv').textContent=sp.toFixed(d)+'\xd7';}
 function tp(){pl=!pl;document.getElementById('pb').textContent=pl?'\u23f8 Pause':'\u25b6 Play';document.getElementById('pb').classList.toggle('act',pl);if(pl)rf=requestAnimationFrame(lp);}
-function sv2(v){vw=v;['side','top','orb'].forEach(n=>document.getElementById('b-'+n).classList.toggle('act',n===v));}
+function sv2(v){vw=v;['side','top'].forEach(n=>document.getElementById('b-'+n).classList.toggle('act',n===v));}
 function bn(){
   const N=NODES.length;
   const raw=[];
@@ -5813,6 +6434,173 @@ function gifLZW(indexed,palSize){
   setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 
+// ── ODS Export for Fixed/Structural layout ───────────────────────────
+function odsExportFS(){
+  const d=getFSData();
+  if(!d||!d.points.length){alert('No structural points to export.');return;}
+  const title=document.getElementById('chart-title').value||'Structural ODS';
+  const grpm=document.getElementById('global-rpm').value||'';
+  const uKey=document.getElementById('amp-unit').value;
+  const date=getDocDate();const ver=getDocVersion();
+  const fsSnap=JSON.stringify(d);
+  const UNITS_JS=`{'mils':{dec:2,label:'mils'},'in/s':{dec:3,label:'in/s'},'mm/s':{dec:2,label:'mm/s'},'G':{dec:3,label:"G's"},'\xb5m':{dec:1,label:'\xb5m'}}`;
+  const html=`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ODS \u2014 ${title}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif}
+.app{display:flex;flex-direction:column;height:100%}
+.hdr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 14px;background:#1a1a1a;border-bottom:1px solid #333;flex-shrink:0}
+.hdr-t{font-size:16px;font-weight:700;color:#eee}.hdr-s{font-size:11px;color:#666}
+.ctrls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:7px 14px;background:#141414;border-bottom:1px solid #2a2a2a;flex-shrink:0}
+.lbl{font-size:10px;color:#666;white-space:nowrap}.vval{font-size:11px;color:#3b82f6;min-width:32px}
+input[type=range]{-webkit-appearance:none;height:3px;background:#333;border-radius:2px;cursor:pointer;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:#3b82f6;border-radius:50%;border:2px solid #111}
+.btn{background:#1e1e1e;border:1px solid #333;border-radius:5px;padding:5px 10px;font-size:11px;color:#eee;cursor:pointer;font-family:inherit}
+.btn.act{background:#3b82f6;color:#fff;border-color:#3b82f6}.btn:active{opacity:.6}
+.cw{flex:1;position:relative;min-height:0}canvas{display:block;width:100%;height:100%}
+.foot{padding:5px 14px;font-size:9px;color:#333;background:#111;border-top:1px solid #1e1e1e;flex-shrink:0}
+</style></head><body>
+<div class="app">
+<div class="hdr"><div><div class="hdr-t">${title}</div>
+<div class="hdr-s">Fixed/Structural ODS &nbsp;|&nbsp; 1\xd7 &nbsp;|&nbsp; ${grpm?'RPM '+grpm:'RPM \u2014'} &nbsp;|&nbsp; ${uKey} &nbsp;|&nbsp; ${d.shape}</div></div></div>
+<div class="ctrls">
+<span class="lbl">Exaggeration</span><input type="range" id="ex" min="10" max="300" value="80" style="width:90px" oninput="se(+this.value)"><span class="vval" id="ev">80\xd7</span>
+<span class="lbl" style="margin-left:6px">Anim Speed</span><input type="range" id="sp" min="1" max="200" value="3" style="width:70px" oninput="ss(+this.value)"><span class="vval" id="sv">0.05\xd7</span>
+<button class="btn act" id="pb" onclick="tp()">&#9208; Pause</button>
+<div style="display:flex;gap:3px">
+  <button class="btn act" id="b-side" onclick="sv('side')">Side (V)</button>
+  <button class="btn" id="b-top" onclick="sv('top')">Top (H)</button>
+</div>
+</div>
+<div class="cw"><canvas id="cv"></canvas></div>
+<div class="foot">FIXED/STRUCTURAL ODS \u2014 EXAGGERATION APPLIED \u2014 NOT TO SCALE \u2014 FOR DIAGNOSTIC REFERENCE ONLY &nbsp;|&nbsp; v${ver} | ${date} | \xa9 ${new Date().getFullYear()} Joel Davis</div>
+</div>
+<script>
+const FS=${fsSnap};
+const UK=${JSON.stringify(uKey)};
+const UNITS=${UNITS_JS};
+const U=UNITS[UK]||UNITS['in/s'];
+const GR=${parseFloat(grpm)||0};
+const SEV={ok:'#22c55e',warn:'#f59e0b',fault:'#ef4444',none:'#555'};
+const WARN={'mils':3.0,'in/s':0.15,'mm/s':4.0,'G':0.2,'µm':75}[UK]||0.15;
+const FAULT={'mils':6.0,'in/s':0.30,'mm/s':8.0,'G':0.4,'µm':150}[UK]||0.30;
+let ex=80,sp=0.05,pl=true,vw='side',t=0,lt=null,rf=null;
+function se(v){ex=v;document.getElementById('ev').textContent=v+'\xd7';}
+function ss(v){sp=v/60;const d=sp<1?2:1;document.getElementById('sv').textContent=sp.toFixed(d)+'\xd7';}
+function tp(){pl=!pl;document.getElementById('pb').textContent=pl?'\u23f8 Pause':'\u25b6 Play';document.getElementById('pb').classList.toggle('act',pl);if(pl)rf=requestAnimationFrame(lp);}
+function sv(v){vw=v;['side','top'].forEach(n=>document.getElementById('b-'+n).classList.toggle('act',n===v));}
+function sev(p){const m=Math.max(p.V.amp,p.H.amp);if(m>=FAULT)return'fault';if(m>=WARN)return'warn';if(m>0)return'ok';return'none';}
+function rz(){const cv=document.getElementById('cv');const d=window.devicePixelRatio||1;const W=cv.parentElement.clientWidth,H=cv.parentElement.clientHeight;cv.width=Math.round(W*d);cv.height=Math.round(H*d);cv.style.width=W+'px';cv.style.height=H+'px';const c=cv.getContext('2d');c.scale(d,d);}
+function lp(ts){if(!pl)return;if(lt===null)lt=ts;const dt=(ts-lt)/1000;lt=ts;t+=(GR||1200)/60*sp*dt;const cv=document.getElementById('cv');const c=cv.getContext('2d');draw(c,cv.clientWidth,cv.clientHeight,t*2*Math.PI);rf=requestAnimationFrame(lp);}
+function spline(pts){
+  const out=[];const n=pts.length;if(n<2)return pts;
+  for(let i=0;i<n-1;i++){
+    const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n-1,i+2)];
+    for(let j=0;j<20;j++){
+      const tt=j/20,tt2=tt*tt,tt3=tt2*tt;
+      const x=0.5*((2*p1.x)+(-p0.x+p2.x)*tt+(2*p0.x-5*p1.x+4*p2.x-p3.x)*tt2+(-p0.x+3*p1.x-3*p2.x+p3.x)*tt3);
+      const y=0.5*((2*p1.y)+(-p0.y+p2.y)*tt+(2*p0.y-5*p1.y+4*p2.y-p3.y)*tt2+(-p0.y+3*p1.y-3*p2.y+p3.y)*tt3);
+      out.push({x,y});
+    }
+  }
+  out.push(pts[n-1]);return out;
+}
+function offset(spine,off){return spine.map((pt,i)=>{const prev=spine[Math.max(0,i-1)],next=spine[Math.min(spine.length-1,i+1)];const dx=next.x-prev.x,dy=next.y-prev.y,len=Math.sqrt(dx*dx+dy*dy)||1;return{x:pt.x+(-dy/len)*off,y:pt.y+(dx/len)*off};});}
+function drawPath(ctx,pts){if(!pts.length)return;ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);}
+function draw(ctx,W,H,pt){
+  ctx.fillStyle='#111';ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(255,255,255,.04)';ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const pts2=FS.points,n=pts2.length,shape=FS.shape;
+  const ax=vw==='side'?'V':'H';
+  const pad=56,yBase=H/2,xL=pad+16,xR=W-pad,trainW=xR-xL;
+  const col='#3b82f6';
+  const fillA='rgba(59,130,246,0.18)';
+  // Title
+  ctx.font='bold 11px Arial';ctx.fillStyle='#aaa';ctx.textAlign='center';
+  ctx.save();ctx.beginPath();ctx.rect(8,0,W-16,24);ctx.clip();
+  ctx.fillText('${title} \u2014 '+shape.toUpperCase()+' \u2014 '+(vw==='side'?'VERTICAL (Side)':'HORIZONTAL (Top)'),W/2,18);
+  ctx.restore();
+  ctx.font='10px Arial';ctx.fillText('RPM ${grpm||'____'} | 1\xd7 | Exag '+ex+'\xd7',W/2,32);
+  // Centerline
+  ctx.setLineDash([6,6]);ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(xL,yBase);ctx.lineTo(xR,yBase);ctx.stroke();ctx.setLineDash([]);
+  // Y label
+  ctx.save();ctx.translate(14,H/2);ctx.rotate(-Math.PI/2);ctx.font='10px Arial';ctx.fillStyle='#555';ctx.textAlign='center';
+  ctx.fillText(vw==='side'?'VERTICAL DISPLACEMENT \u2195':'HORIZONTAL DISPLACEMENT \u2194',0,0);ctx.restore();
+  // Animated points
+  const animPts=pts2.map((p,i)=>{
+    const xn=n===1?0.5:(0.08+i*(0.84/(n-1)));
+    const x=xL+xn*trainW;
+    const m=p[ax];
+    const disp=m.amp*ex*Math.cos(pt-m.phase*Math.PI/180);
+    return{x,y:yBase-disp,p,i};
+  });
+  const spine=spline(animPts);
+  // Draw shape body
+  ctx.save();ctx.shadowColor='rgba(0,180,255,.2)';ctx.shadowBlur=8;
+  const thick=shape==='Vessel'?14:shape==='Beam'?0:shape==='Plate'?5:10;
+  if(shape==='Beam'){
+    const fO=14,fT=4,wO=2.5;
+    const tfO=offset(spine,-(fO+fT)),tfI=offset(spine,-fO),bfI=offset(spine,fO),bfO=offset(spine,fO+fT),wT=offset(spine,-wO),wB=offset(spine,wO);
+    ctx.beginPath();drawPath(ctx,tfO);for(let i=tfI.length-1;i>=0;i--)ctx.lineTo(tfI[i].x,tfI[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+    ctx.beginPath();drawPath(ctx,bfI);for(let i=bfO.length-1;i>=0;i--)ctx.lineTo(bfO[i].x,bfO[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=3;ctx.lineCap='round';
+    drawPath(ctx,tfO);ctx.stroke();drawPath(ctx,bfO);ctx.stroke();
+    ctx.lineWidth=1.5;drawPath(ctx,tfI);ctx.stroke();drawPath(ctx,bfI);ctx.stroke();
+  } else {
+    const oT=offset(spine,-thick),oB=offset(spine,thick);
+    ctx.beginPath();drawPath(ctx,oT);for(let i=oB.length-1;i>=0;i--)ctx.lineTo(oB[i].x,oB[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+    if(shape==='Pipe'){
+      const bT=offset(spine,-5),bB=offset(spine,5);
+      ctx.beginPath();drawPath(ctx,bT);for(let i=bB.length-1;i>=0;i--)ctx.lineTo(bB[i].x,bB[i].y);ctx.closePath();
+      ctx.fillStyle='rgba(17,17,17,0.85)';ctx.fill();
+      ctx.strokeStyle=col;ctx.lineWidth=1;drawPath(ctx,bT);ctx.stroke();drawPath(ctx,bB);ctx.stroke();
+    }
+    ctx.strokeStyle=col;ctx.lineWidth=shape==='Vessel'?2.5:2;ctx.lineCap='round';
+    drawPath(ctx,oT);ctx.stroke();drawPath(ctx,oB);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(oT[0].x,oT[0].y);ctx.lineTo(oB[0].x,oB[0].y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(oT[oT.length-1].x,oT[oT.length-1].y);ctx.lineTo(oB[oB.length-1].x,oB[oB.length-1].y);ctx.stroke();
+    if(shape==='Vessel'){
+      const s0=spine[0],sE=spine[spine.length-1];
+      ctx.beginPath();ctx.arc(s0.x,s0.y,thick,Math.PI/2,3*Math.PI/2);ctx.stroke();
+      ctx.beginPath();ctx.arc(sE.x,sE.y,thick,-Math.PI/2,Math.PI/2);ctx.stroke();
+    }
+  }
+  ctx.shadowBlur=0;ctx.restore();
+  // Point markers
+  animPts.forEach(({x,y,p})=>{
+    const sv2=sev(p),sc=SEV[sv2]||SEV.none;
+    ctx.strokeStyle=sc+'44';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    ctx.beginPath();ctx.moveTo(x,yBase);ctx.lineTo(x,y);ctx.stroke();ctx.setLineDash([]);
+    ctx.shadowColor=sc+'66';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=sc;ctx.fill();ctx.shadowBlur=0;
+    const m=p[ax];
+    ctx.font='bold 9px Arial';ctx.fillStyle=sc;ctx.textAlign='center';ctx.fillText(p.label,x,y+20);
+    ctx.font='8px Arial';ctx.fillStyle='#777';
+    ctx.fillText(m.amp.toFixed(U.dec)+' '+U.label,x,y+30);ctx.fillText(m.phase+'\xb0',x,y+40);
+  });
+  // Clock
+  const cx=28,cy=H-28,r=18;ctx.save();
+  ctx.fillStyle='rgba(20,20,20,.85)';ctx.strokeStyle='#333';ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,r+4,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.strokeStyle='#333';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+  const a=pt-Math.PI/2;ctx.strokeStyle='#3b82f6';ctx.lineWidth=2;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*r*.8,cy+Math.sin(a)*r*.8);ctx.stroke();
+  ctx.fillStyle='#3b82f6';ctx.beginPath();ctx.arc(cx,cy,2.5,0,Math.PI*2);ctx.fill();
+  ctx.font='7px Arial';ctx.fillStyle='#444';ctx.textAlign='center';ctx.fillText('1\xd7',cx,cy+r+9);ctx.restore();
+}
+window.addEventListener('resize',()=>{rz();});
+rz();rf=requestAnimationFrame(lp);
+<\/script></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(title.replace(/\s+/g,'_')+'_StructuralODS.html');
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+}
+
 // ── ODS Video recording (main app) ───────────────────────────────────────
 function odsRecVid(){
   closeModal();
@@ -6003,6 +6791,7 @@ function boot(){
     localStorage.removeItem('phaseChart_history');
     localStorage.setItem('phaseChart_v128_clean','1');
   }
+  // Inject pipe ODS examples into history once
   // Restore theme preference — always use localStorage as source of truth
   const savedTheme=localStorage.getItem('phaseChart_theme')||'light';
   setTheme(savedTheme);
