@@ -4,6 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Cross-Channel Phase Analysis</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS PWA meta tags -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Phase Chart">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2563eb">
+
+<!-- iOS home screen icon -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ── Reset ── */
@@ -7003,6 +7017,37 @@ function boot(){
   renderHistory();
   // Check if app was opened via a shared chart link
   checkImportFromURL();
+  // PWA Service Worker — enables offline use and Add to Home Screen
+  if('serviceWorker' in navigator){
+    const swCode=`
+const CACHE='phase-chart-v2-1-1';
+const ASSETS=[self.location.href.split('?')[0],'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap'];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{})));
+  self.skipWaiting();
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  e.respondWith(
+    caches.match(e.request).then(cached=>{
+      const fresh=fetch(e.request).then(res=>{
+        if(res.ok){caches.open(CACHE).then(c=>c.put(e.request,res.clone()));}
+        return res;
+      }).catch(()=>cached);
+      return cached||fresh;
+    })
+  );
+});`;
+    const blob=new Blob([swCode],{type:'application/javascript'});
+    const swURL=URL.createObjectURL(blob);
+    navigator.serviceWorker.register(swURL,{scope:'./'})
+      .then(()=>URL.revokeObjectURL(swURL))
+      .catch(()=>{});
+  }
   // Auto-show What's New on first open after a version update
   const _seenVer=localStorage.getItem('phaseChart_seenVersion');
   const _curVer=getDocVersion();
