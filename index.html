@@ -811,7 +811,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '2.1';
+  return '2.1.1';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -1323,7 +1323,7 @@ function doUndo(){
 
 // ── Sidebar ───────────────────────────────────────────────
 // ── Fixed/Structural ODS ─────────────────────────────────────────────
-const FS_SHAPES=['Pipe','Beam','Vessel','Plate','Generic'];
+const FS_SHAPES=['Pipe','Beam','Vessel','Base','Generic'];
 const FS_MAX=12;
 let fsData=null;
 function getFSData(){
@@ -1506,33 +1506,60 @@ function odsDrawFS(ctx,W,H,pt,txC){
 
   switch(shape){
     case 'Pipe':{
-      // Pipe in elevation: outer wall, inner bore, flat end caps
-      const outer=10,bore=5;
+      // Pipe in elevation: outer wall, inner bore, weld seam rings, flat flanged end caps
+      const outer=10,bore=5,wallMid=7;
       const outerTop=fsOffsetSpline(spine,-outer);
       const outerBot=fsOffsetSpline(spine, outer);
       const boreTop =fsOffsetSpline(spine,-bore);
       const boreBot =fsOffsetSpline(spine, bore);
-      // Wall fill (annular ring in elevation)
+      const midTop  =fsOffsetSpline(spine,-wallMid);
+      const midBot  =fsOffsetSpline(spine, wallMid);
+      // Wall fill
       ctx.beginPath();fsDrawPath(ctx,outerTop);for(let i=outerBot.length-1;i>=0;i--)ctx.lineTo(outerBot[i].x,outerBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
-      // Bore (hollow — clear the center)
+      // Bore hollow
       ctx.beginPath();fsDrawPath(ctx,boreTop);for(let i=boreBot.length-1;i>=0;i--)ctx.lineTo(boreBot[i].x,boreBot[i].y);ctx.closePath();
-      ctx.fillStyle=darkMode?'rgba(17,17,17,0.85)':'rgba(255,255,255,0.85)';ctx.fill();
-      // Outer wall lines
-      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';
+      ctx.fillStyle=darkMode?'rgba(17,17,17,0.9)':'rgba(255,255,255,0.9)';ctx.fill();
+      // Outer wall lines (bold)
+      ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineCap='round';
       fsDrawPath(ctx,outerTop);ctx.stroke();
       fsDrawPath(ctx,outerBot);ctx.stroke();
-      // Inner bore lines (lighter)
+      // Mid-wall highlight (pipe wall thickness detail)
+      ctx.lineWidth=0.8;ctx.strokeStyle=col+'55';
+      fsDrawPath(ctx,midTop);ctx.stroke();
+      fsDrawPath(ctx,midBot);ctx.stroke();
+      // Inner bore lines
       ctx.lineWidth=1;ctx.strokeStyle=col+'77';
       fsDrawPath(ctx,boreTop);ctx.stroke();
       fsDrawPath(ctx,boreBot);ctx.stroke();
-      // Flat end caps
-      ctx.strokeStyle=col;ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(outerTop[0].x,outerTop[0].y);ctx.lineTo(outerBot[0].x,outerBot[0].y);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(outerTop[outerTop.length-1].x,outerTop[outerTop.length-1].y);ctx.lineTo(outerBot[outerBot.length-1].x,outerBot[outerBot.length-1].y);ctx.stroke();
+      // Flanged end caps — raised flange detail
+      const flangeH=outer+4;
+      [[outerTop,outerBot,0],[outerTop,outerBot,outerTop.length-1]].forEach(([ot,ob,idx])=>{
+        const tx=ot[idx].x,ty=ot[idx].y,bx=ob[idx].x,by=ob[idx].y;
+        const mx=(tx+bx)/2,my=(ty+by)/2;
+        // Flange face
+        ctx.strokeStyle=col;ctx.lineWidth=4;
+        ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(bx,by);ctx.stroke();
+        // Flange bolt circle (4 dots)
+        ctx.lineWidth=1;
+        [-flangeH*0.6,-flangeH*0.2,flangeH*0.2,flangeH*0.6].forEach(offset=>{
+          ctx.beginPath();ctx.arc(tx,my+offset,1.5,0,Math.PI*2);ctx.fillStyle=col+'99';ctx.fill();
+        });
+      });
+      // Weld seam rings — evenly spaced vertical marks on outer wall
+      const xStart=spine[0].x,xEnd=spine[spine.length-1].x;
+      const weldSpacing=55;const numWelds=Math.floor((xEnd-xStart)/weldSpacing);
+      ctx.strokeStyle=col+'66';ctx.lineWidth=1.5;
+      for(let w=1;w<numWelds;w++){
+        const frac=w/numWelds;
+        const idx=Math.round(frac*(spine.length-1));
+        const oti=outerTop[Math.min(idx,outerTop.length-1)];
+        const obi=outerBot[Math.min(idx,outerBot.length-1)];
+        ctx.beginPath();ctx.moveTo(oti.x,oti.y);ctx.lineTo(obi.x,obi.y);ctx.stroke();
+      }
       break;
     }
     case 'Beam':{
-      // Wide-flange W-beam (I-beam): thick top/bottom flanges, thin web
+      // Wide-flange W-beam: thick top/bottom flanges, thin web, end plates, bolt holes
       const flangeOff=14,flangeThk=4,webOff=2.5;
       const tfOuter=fsOffsetSpline(spine,-(flangeOff+flangeThk));
       const tfInner=fsOffsetSpline(spine,-(flangeOff));
@@ -1545,82 +1572,156 @@ function odsDrawFS(ctx,W,H,pt,txC){
       // Fill bottom flange
       ctx.beginPath();fsDrawPath(ctx,bfInner);for(let i=bfOuter.length-1;i>=0;i--)ctx.lineTo(bfOuter[i].x,bfOuter[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
       // Fill web
-      ctx.beginPath();fsDrawPath(ctx,wTop);for(let i=wBot.length-1;i>=0;i--)ctx.lineTo(wBot[i].x,wBot[i].y);ctx.closePath();ctx.fillStyle=fillA+'66';ctx.fill();
-      // Outer flange faces (bold — these are the visible faces in elevation)
+      ctx.beginPath();fsDrawPath(ctx,wTop);for(let i=wBot.length-1;i>=0;i--)ctx.lineTo(wBot[i].x,wBot[i].y);ctx.closePath();ctx.fillStyle=fillA+'55';ctx.fill();
+      // Outer flange faces (bold)
       ctx.strokeStyle=col;ctx.lineWidth=3;ctx.lineCap='round';
       fsDrawPath(ctx,tfOuter);ctx.stroke();
       fsDrawPath(ctx,bfOuter);ctx.stroke();
       // Flange inner faces
-      ctx.lineWidth=1.5;
-      fsDrawPath(ctx,tfInner);ctx.stroke();
-      fsDrawPath(ctx,bfInner);ctx.stroke();
-      // Web faces
-      ctx.lineWidth=1.2;ctx.strokeStyle=col+'99';
-      fsDrawPath(ctx,wTop);ctx.stroke();
-      fsDrawPath(ctx,wBot);ctx.stroke();
+      ctx.lineWidth=1.5;fsDrawPath(ctx,tfInner);ctx.stroke();fsDrawPath(ctx,bfInner);ctx.stroke();
+      // Web
+      ctx.lineWidth=1.2;ctx.strokeStyle=col+'99';fsDrawPath(ctx,wTop);ctx.stroke();fsDrawPath(ctx,wBot);ctx.stroke();
+      // End plates
+      ctx.strokeStyle=col;ctx.lineWidth=3;
+      [0,tfOuter.length-1].forEach(idx=>{
+        ctx.beginPath();ctx.moveTo(tfOuter[idx].x,tfOuter[idx].y);ctx.lineTo(bfOuter[idx].x,bfOuter[idx].y);ctx.stroke();
+      });
+      // Bolt holes on flanges (evenly spaced)
+      const xStart=spine[0].x,xEnd=spine[spine.length-1].x;
+      const boltSpacing=40;const numBolts=Math.floor((xEnd-xStart)/boltSpacing);
+      ctx.strokeStyle=col+'77';ctx.lineWidth=1;
+      for(let b=1;b<numBolts;b++){
+        const frac=b/numBolts;const idx=Math.round(frac*(spine.length-1));
+        const toi=tfOuter[Math.min(idx,tfOuter.length-1)];
+        const boi=bfOuter[Math.min(idx,bfOuter.length-1)];
+        ctx.beginPath();ctx.arc(toi.x,toi.y+flangeThk/2,1.5,0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.arc(boi.x,boi.y-flangeThk/2,1.5,0,Math.PI*2);ctx.stroke();
+      }
       break;
     }
     case 'Vessel':{
-      // Pressure vessel / heat exchanger: thick shell, domed heads, nozzle stub, seam weld line
-      const shell=14;
+      // Pressure vessel: thick shell, domed heads, multiple nozzles, saddle supports, seam weld
+      const shell=14,shellMid=10;
       const outerTop=fsOffsetSpline(spine,-shell);
       const outerBot=fsOffsetSpline(spine, shell);
+      const innerTop=fsOffsetSpline(spine,-shellMid);
+      const innerBot=fsOffsetSpline(spine, shellMid);
       // Shell fill
       ctx.beginPath();fsDrawPath(ctx,outerTop);for(let i=outerBot.length-1;i>=0;i--)ctx.lineTo(outerBot[i].x,outerBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Inner wall lines (shell thickness detail)
+      ctx.strokeStyle=col+'44';ctx.lineWidth=1;
+      fsDrawPath(ctx,innerTop);ctx.stroke();fsDrawPath(ctx,innerBot);ctx.stroke();
       // Shell walls
       ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineCap='round';
-      fsDrawPath(ctx,outerTop);ctx.stroke();
-      fsDrawPath(ctx,outerBot);ctx.stroke();
+      fsDrawPath(ctx,outerTop);ctx.stroke();fsDrawPath(ctx,outerBot);ctx.stroke();
       // Domed heads
       const s0=spine[0],sE=spine[spine.length-1];
       ctx.beginPath();ctx.arc(s0.x,s0.y,shell,Math.PI/2,3*Math.PI/2);ctx.stroke();
       ctx.beginPath();ctx.arc(sE.x,sE.y,shell,-Math.PI/2,Math.PI/2);ctx.stroke();
-      // Shell seam weld (dashed centre line)
+      // Seam weld line (dashed)
       ctx.setLineDash([8,5]);ctx.lineWidth=1;ctx.strokeStyle=col+'44';
       fsDrawPath(ctx,spine);ctx.stroke();ctx.setLineDash([]);
-      // Nozzle on top at midpoint
-      const mid=spine[Math.floor(spine.length/2)];
+      // Multiple nozzles — top at 1/3 and 2/3 span, bottom at midpoint
+      const n1=spine[Math.floor(spine.length*0.33)];
+      const n2=spine[Math.floor(spine.length*0.67)];
+      const nMid=spine[Math.floor(spine.length*0.5)];
       ctx.strokeStyle=col;ctx.lineWidth=2;
-      ctx.beginPath();ctx.moveTo(mid.x,mid.y-shell);ctx.lineTo(mid.x,mid.y-shell-10);ctx.stroke();
-      ctx.beginPath();ctx.rect(mid.x-7,mid.y-shell-16,14,7);ctx.stroke();
+      [[n1,-1],[n2,-1],[nMid,1]].forEach(([pt,dir])=>{
+        ctx.beginPath();ctx.moveTo(pt.x,pt.y+dir*shell);ctx.lineTo(pt.x,pt.y+dir*(shell+10));ctx.stroke();
+        ctx.beginPath();ctx.rect(pt.x-6,pt.y+dir*(shell+10)+(dir>0?0:-6),12,6);ctx.stroke();
+      });
+      // Saddle supports — at ~1/4 and 3/4 span
+      const sa1=spine[Math.floor(spine.length*0.25)];
+      const sa2=spine[Math.floor(spine.length*0.75)];
+      ctx.strokeStyle=col+'88';ctx.lineWidth=1.5;
+      [sa1,sa2].forEach(pt=>{
+        const sy=pt.y+shell;
+        ctx.beginPath();ctx.moveTo(pt.x-12,sy);ctx.lineTo(pt.x-8,sy+12);ctx.lineTo(pt.x+8,sy+12);ctx.lineTo(pt.x+12,sy);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(pt.x-10,sy+12);ctx.lineTo(pt.x+10,sy+12);ctx.stroke();
+      });
       break;
     }
-    case 'Plate':{
-      // Structural floor grating / deck plate: thin body with evenly spaced stiffener lines
-      const thick=5;
-      const top=fsOffsetSpline(spine,-thick);
-      const bot=fsOffsetSpline(spine, thick);
-      // Fill
-      ctx.beginPath();fsDrawPath(ctx,top);for(let i=bot.length-1;i>=0;i--)ctx.lineTo(bot[i].x,bot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
-      // Top and bottom faces
-      ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';
-      fsDrawPath(ctx,top);ctx.stroke();
-      fsDrawPath(ctx,bot);ctx.stroke();
-      // End caps
-      ctx.beginPath();ctx.moveTo(top[0].x,top[0].y);ctx.lineTo(bot[0].x,bot[0].y);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(top[top.length-1].x,top[top.length-1].y);ctx.lineTo(bot[bot.length-1].x,bot[bot.length-1].y);ctx.stroke();
-      // Stiffener ribs (evenly spaced vertical lines through the plate)
+    case 'Base':{
+      // Machinery base frame in elevation: top rail, bottom rail, vertical legs, diagonal bracing, anchor bolts
+      const topRail=9,botRail=18,railThk=4;
+      const trTop=fsOffsetSpline(spine,-(topRail));
+      const trBot=fsOffsetSpline(spine,-(topRail-railThk));
+      const brTop=fsOffsetSpline(spine, botRail-railThk);
+      const brBot=fsOffsetSpline(spine, botRail);
+      // Fill top rail
+      ctx.beginPath();fsDrawPath(ctx,trTop);for(let i=trBot.length-1;i>=0;i--)ctx.lineTo(trBot[i].x,trBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Fill bottom rail
+      ctx.beginPath();fsDrawPath(ctx,brTop);for(let i=brBot.length-1;i>=0;i--)ctx.lineTo(brBot[i].x,brBot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+      // Open interior
+      ctx.beginPath();fsDrawPath(ctx,trBot);for(let i=brTop.length-1;i>=0;i--)ctx.lineTo(brTop[i].x,brTop[i].y);ctx.closePath();
+      ctx.fillStyle=darkMode?'rgba(17,17,17,0.4)':'rgba(255,255,255,0.3)';ctx.fill();
+      // Rail outlines
+      ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineCap='round';
+      fsDrawPath(ctx,trTop);ctx.stroke();
+      fsDrawPath(ctx,trBot);ctx.stroke();
+      fsDrawPath(ctx,brTop);ctx.stroke();
+      fsDrawPath(ctx,brBot);ctx.stroke();
+      // End plates
+      ctx.lineWidth=3;
+      [0,trTop.length-1].forEach(idx=>{
+        ctx.beginPath();ctx.moveTo(trTop[idx].x,trTop[idx].y);ctx.lineTo(brBot[idx].x,brBot[idx].y);ctx.stroke();
+      });
+      // Vertical cross-members
       const xStart=spine[0].x,xEnd=spine[spine.length-1].x;
-      const ribSpacing=22;
-      const numRibs=Math.floor((xEnd-xStart)/ribSpacing);
-      ctx.strokeStyle=col+'66';ctx.lineWidth=1;
-      for(let r=1;r<numRibs;r++){
-        const frac=r/numRibs;
-        const idx=Math.round(frac*(spine.length-1));
-        const ti=top[Math.min(idx,top.length-1)],bi=bot[Math.min(idx,bot.length-1)];
-        ctx.beginPath();ctx.moveTo(ti.x,ti.y);ctx.lineTo(bi.x,bi.y);ctx.stroke();
+      const legSpacing=50;const numLegs=Math.max(2,Math.floor((xEnd-xStart)/legSpacing));
+      ctx.strokeStyle=col+'cc';ctx.lineWidth=2;
+      for(let l=1;l<numLegs;l++){
+        const frac=l/numLegs;const idx=Math.round(frac*(spine.length-1));
+        const tbi=trBot[Math.min(idx,trBot.length-1)];
+        const bti=brTop[Math.min(idx,brTop.length-1)];
+        ctx.beginPath();ctx.moveTo(tbi.x,tbi.y);ctx.lineTo(bti.x,bti.y);ctx.stroke();
       }
+      // Diagonal bracing (X-pattern per bay)
+      ctx.strokeStyle=col+'55';ctx.lineWidth=1;
+      for(let l=0;l<numLegs-1;l++){
+        const f1=l/numLegs,f2=(l+1)/numLegs;
+        const i1=Math.round(f1*(spine.length-1)),i2=Math.round(f2*(spine.length-1));
+        const tb1=trBot[Math.min(i1,trBot.length-1)],tb2=trBot[Math.min(i2,trBot.length-1)];
+        const bt1=brTop[Math.min(i1,brTop.length-1)],bt2=brTop[Math.min(i2,brTop.length-1)];
+        ctx.beginPath();ctx.moveTo(tb1.x,tb1.y);ctx.lineTo(bt2.x,bt2.y);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(tb2.x,tb2.y);ctx.lineTo(bt1.x,bt1.y);ctx.stroke();
+      }
+      // Anchor bolts — at each cross-member position, pointing down from bottom rail into foundation
+      ctx.strokeStyle=col;ctx.lineWidth=1.5;
+      for(let l=1;l<numLegs;l++){
+        const frac=l/numLegs;const idx=Math.round(frac*(spine.length-1));
+        const bbi=brBot[Math.min(idx,brBot.length-1)];
+        const bx=bbi.x,by=bbi.y;
+        // Bolt shank
+        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+14);ctx.stroke();
+        // Nut (hexagon approximated as small rect)
+        ctx.strokeStyle=col;ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.rect(bx-4,by+14,8,4);ctx.stroke();
+        // Washer plate
+        ctx.beginPath();ctx.moveTo(bx-6,by+18);ctx.lineTo(bx+6,by+18);ctx.stroke();
+        // Reset color for next bolt
+        ctx.strokeStyle=col;
+      }
+      // Also add anchor bolts at the end plates
+      [0,brBot.length-1].forEach(idx=>{
+        const bbi=brBot[idx];
+        const bx=bbi.x,by=bbi.y;
+        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+14);ctx.stroke();
+        ctx.beginPath();ctx.rect(bx-4,by+14,8,4);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(bx-6,by+18);ctx.lineTo(bx+6,by+18);ctx.stroke();
+      });
       break;
     }
     default:{
-      // Generic: twin-wall body
+      // Generic: twin-wall body with centerline
       const thick=6;
       const top=fsOffsetSpline(spine,-thick);
       const bot=fsOffsetSpline(spine, thick);
       ctx.beginPath();fsDrawPath(ctx,top);for(let i=bot.length-1;i>=0;i--)ctx.lineTo(bot[i].x,bot[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
       ctx.strokeStyle=col;ctx.lineWidth=2;
-      fsDrawPath(ctx,top);ctx.stroke();
-      fsDrawPath(ctx,bot);ctx.stroke();
+      fsDrawPath(ctx,top);ctx.stroke();fsDrawPath(ctx,bot);ctx.stroke();
+      ctx.setLineDash([4,4]);ctx.strokeStyle=col+'44';ctx.lineWidth=1;
+      fsDrawPath(ctx,spine);ctx.stroke();ctx.setLineDash([]);
     }
   }
   ctx.shadowBlur=0;ctx.restore();
@@ -5377,6 +5478,17 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'2.1.1':{
+date:'05/07/2026',
+items:[
+'Base shape added to Fixed/Structural ODS — represents a fabricated steel machinery base frame in elevation. Features top and bottom rails with filled cross-section, vertical cross-members, X-pattern diagonal bracing in each bay, end plates, and anchor bolt symbols (shank + nut + washer plate) pointing downward from the bottom rail into the foundation. Designed specifically for center-hung fan bases and similar rotating equipment bases where soft foot or base distortion ODS visualization is needed alongside the Base/Structure phase chart.',
+'Anchor bolt symbols replace mounting pad squares on Base shape — the previous version showed ambiguous squares on the top rail. These are replaced with accurate anchor bolt details on the bottom rail, directly relevant to soft foot diagnosis.',
+'Plate shape removed from Fixed/Structural ODS — removed as it had limited diagnostic utility compared to the other shapes. Any existing entries using Plate will render as Generic.',
+'Pipe shape detail improved — mid-wall highlight line added showing pipe wall thickness, flanged end caps with raised flange face and visible bolt circle dots, evenly spaced circumferential weld seam rings along the pipe length.',
+'Beam shape detail improved — end connection plates added at both ends, bolt hole dots on top and bottom flanges at regular intervals.',
+'Vessel shape detail improved — inner shell wall line added showing wall thickness, three nozzles (two on top at 1/3 and 2/3 span, one drain nozzle on bottom at midpoint), saddle support brackets at 1/4 and 3/4 span with base plates.',
+],
+},
 '2.1':{
 date:'05/06/2026',
 items:[
@@ -6547,7 +6659,7 @@ function draw(ctx,W,H,pt){
   const spine=spline(animPts);
   // Draw shape body
   ctx.save();ctx.shadowColor='rgba(0,180,255,.2)';ctx.shadowBlur=8;
-  const thick=shape==='Vessel'?14:shape==='Beam'?0:shape==='Plate'?5:10;
+  const thick=shape==='Vessel'?14:shape==='Beam'?0:shape==='Plate'?5:shape==='Base'?0:10;
   if(shape==='Beam'){
     const fO=14,fT=4,wO=2.5;
     const tfO=offset(spine,-(fO+fT)),tfI=offset(spine,-fO),bfI=offset(spine,fO),bfO=offset(spine,fO+fT),wT=offset(spine,-wO),wB=offset(spine,wO);
@@ -6556,6 +6668,19 @@ function draw(ctx,W,H,pt){
     ctx.strokeStyle=col;ctx.lineWidth=3;ctx.lineCap='round';
     drawPath(ctx,tfO);ctx.stroke();drawPath(ctx,bfO);ctx.stroke();
     ctx.lineWidth=1.5;drawPath(ctx,tfI);ctx.stroke();drawPath(ctx,bfI);ctx.stroke();
+  } else if(shape==='Base'){
+    const tR=9,bR=18,rT=4;
+    const trT=offset(spine,-tR),trB=offset(spine,-(tR-rT)),brT=offset(spine,bR-rT),brB=offset(spine,bR);
+    ctx.beginPath();drawPath(ctx,trT);for(let i=trB.length-1;i>=0;i--)ctx.lineTo(trB[i].x,trB[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+    ctx.beginPath();drawPath(ctx,brT);for(let i=brB.length-1;i>=0;i--)ctx.lineTo(brB[i].x,brB[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
+    ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.lineCap='round';
+    drawPath(ctx,trT);ctx.stroke();drawPath(ctx,trB);ctx.stroke();drawPath(ctx,brT);ctx.stroke();drawPath(ctx,brB);ctx.stroke();
+    ctx.lineWidth=3;[0,trT.length-1].forEach(idx=>{ctx.beginPath();ctx.moveTo(trT[idx].x,trT[idx].y);ctx.lineTo(brB[idx].x,brB[idx].y);ctx.stroke();});
+    const xS=spine[0].x,xE=spine[spine.length-1].x,nL=Math.max(2,Math.floor((xE-xS)/50));
+    ctx.strokeStyle=col+'cc';ctx.lineWidth=2;
+    for(let l=1;l<nL;l++){const f=l/nL;const idx=Math.round(f*(spine.length-1));const tb=trB[Math.min(idx,trB.length-1)],bt=brT[Math.min(idx,brT.length-1)];ctx.beginPath();ctx.moveTo(tb.x,tb.y);ctx.lineTo(bt.x,bt.y);ctx.stroke();}
+    ctx.strokeStyle=col+'55';ctx.lineWidth=1;
+    for(let l=0;l<nL-1;l++){const f1=l/nL,f2=(l+1)/nL,i1=Math.round(f1*(spine.length-1)),i2=Math.round(f2*(spine.length-1));const tb1=trB[Math.min(i1,trB.length-1)],tb2=trB[Math.min(i2,trB.length-1)],bt1=brT[Math.min(i1,brT.length-1)],bt2=brT[Math.min(i2,brT.length-1)];ctx.beginPath();ctx.moveTo(tb1.x,tb1.y);ctx.lineTo(bt2.x,bt2.y);ctx.stroke();ctx.beginPath();ctx.moveTo(tb2.x,tb2.y);ctx.lineTo(bt1.x,bt1.y);ctx.stroke();}
   } else {
     const oT=offset(spine,-thick),oB=offset(spine,thick);
     ctx.beginPath();drawPath(ctx,oT);for(let i=oB.length-1;i>=0;i--)ctx.lineTo(oB[i].x,oB[i].y);ctx.closePath();ctx.fillStyle=fillA;ctx.fill();
