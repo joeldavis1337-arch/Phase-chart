@@ -6827,6 +6827,14 @@ function boot(){
   renderHistory();
   // Check if app was opened via a shared chart link
   checkImportFromURL();
+  // Auto-show What's New on first open after a version update
+  const _seenVer=localStorage.getItem('phaseChart_seenVersion');
+  const _curVer=getDocVersion();
+  if(_seenVer!==_curVer){
+    localStorage.setItem('phaseChart_seenVersion',_curVer);
+    // Small delay so the app renders before the modal opens
+    setTimeout(openWN,600);
+  }
 }
 
 if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot);}
