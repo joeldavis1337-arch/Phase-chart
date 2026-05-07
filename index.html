@@ -6831,9 +6831,14 @@ function boot(){
   const _seenVer=localStorage.getItem('phaseChart_seenVersion');
   const _curVer=getDocVersion();
   if(_seenVer!==_curVer){
-    localStorage.setItem('phaseChart_seenVersion',_curVer);
-    // Small delay so the app renders before the modal opens
-    setTimeout(openWN,600);
+    // Use rAF chain + setTimeout for reliable display on iOS Safari
+    requestAnimationFrame(()=>requestAnimationFrame(()=>setTimeout(()=>{
+      try{
+        openWN();
+        // Only mark as seen after successful open
+        localStorage.setItem('phaseChart_seenVersion',_curVer);
+      }catch(e){console.warn('WN open failed:',e);}
+    },400)));
   }
 }
 
