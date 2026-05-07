@@ -1686,28 +1686,19 @@ function odsDrawFS(ctx,W,H,pt,txC){
         ctx.beginPath();ctx.moveTo(tb1.x,tb1.y);ctx.lineTo(bt2.x,bt2.y);ctx.stroke();
         ctx.beginPath();ctx.moveTo(tb2.x,tb2.y);ctx.lineTo(bt1.x,bt1.y);ctx.stroke();
       }
-      // Anchor bolts — at each cross-member position, pointing down from bottom rail into foundation
+      // Anchor bolts — corners + up to 2 intermediate points only (realistic bolt pattern)
+      // A standard machinery base has 4-6 anchor bolts, not one per cross-member
+      const boltPositions=[0, 0.33, 0.67, 1.0]; // corners + 2 intermediate
       ctx.strokeStyle=col;ctx.lineWidth=1.5;
-      for(let l=1;l<numLegs;l++){
-        const frac=l/numLegs;const idx=Math.round(frac*(spine.length-1));
+      boltPositions.forEach(frac=>{
+        const idx=Math.round(frac*(brBot.length-1));
         const bbi=brBot[Math.min(idx,brBot.length-1)];
         const bx=bbi.x,by=bbi.y;
         // Bolt shank
         ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+14);ctx.stroke();
-        // Nut (hexagon approximated as small rect)
-        ctx.strokeStyle=col;ctx.lineWidth=1.5;
+        // Nut
         ctx.beginPath();ctx.rect(bx-4,by+14,8,4);ctx.stroke();
         // Washer plate
-        ctx.beginPath();ctx.moveTo(bx-6,by+18);ctx.lineTo(bx+6,by+18);ctx.stroke();
-        // Reset color for next bolt
-        ctx.strokeStyle=col;
-      }
-      // Also add anchor bolts at the end plates
-      [0,brBot.length-1].forEach(idx=>{
-        const bbi=brBot[idx];
-        const bx=bbi.x,by=bbi.y;
-        ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+14);ctx.stroke();
-        ctx.beginPath();ctx.rect(bx-4,by+14,8,4);ctx.stroke();
         ctx.beginPath();ctx.moveTo(bx-6,by+18);ctx.lineTo(bx+6,by+18);ctx.stroke();
       });
       break;
