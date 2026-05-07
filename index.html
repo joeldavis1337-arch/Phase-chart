@@ -5675,21 +5675,23 @@ function odsResize(){
   const layout=document.getElementById('layout').value;
   const isV=layout==='V';
   const isFS=layout==='FS';
-  // Width: full wrap width
+  const isMobile=window.innerWidth<=768;
   const W=wrap.offsetWidth||window.innerWidth||300;
   let H;
   if(isV){
+    // Vertical train: always tall and scrollable
     const nodeCount=nodes.reduce((sum,n)=>{
       const hasNDE=n.meas.some(m=>m.pos==='VERT_NDE'||m.pos==='HORIZ_NDE'||m.pos==='AX_OB');
       const hasDE =n.meas.some(m=>m.pos==='VERT_DE' ||m.pos==='HORIZ_DE' ||m.pos==='AX_IB');
       return sum+(hasNDE?1:0)+(hasDE?1:0);
     },0)||4;
     H=Math.max(500,nodeCount*160+180);
-  } else if(isFS){
+  } else if(isFS&&isMobile){
+    // FS on mobile: tall enough to show all points without crowding
     const ptCount=(getFSData().points||[]).length||3;
     H=Math.max(400,ptCount*60+160);
   } else {
-    // Horizontal: size to fit visible screen — tab bar + topbar + ods toolbar + footer ≈ 180px
+    // Horizontal and FS on desktop: fill visible screen height
     H=Math.max(240,window.innerHeight-180);
   }
   cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
