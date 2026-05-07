@@ -22,7 +22,7 @@
 <style>
 /* ── Reset ── */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:rgba(0,0,0,0)}
-html,body{height:100%;width:100%;overflow:hidden}
+html,body{height:100%;height:100dvh;width:100%;overflow:hidden}
 
 /* ── Typography ── */
 body{font-family:'DM Sans','Inter',system-ui,sans-serif;font-size:14px;-webkit-text-size-adjust:100%;transition:background .25s,color .25s;letter-spacing:-.01em}
@@ -90,7 +90,12 @@ body.forest{
 body{background:var(--bg);color:var(--tx)}
 
 /* ── App shell ── */
-.app{display:flex;flex-direction:column;height:100%;height:-webkit-fill-available}
+.app{display:flex;flex-direction:column;
+  height:100vh;
+  height:100dvh;
+  height:-webkit-fill-available;
+  padding-bottom:env(safe-area-inset-bottom);
+}
 
 /* ── Topbar ── */
 .topbar{display:flex;align-items:center;gap:0;padding:0 12px;padding-top:env(safe-area-inset-top);background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0;min-height:52px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -2480,15 +2485,26 @@ function getTC(){
     return {bg:'#000000',tx:'#ffffff',tx2:'#ffee00',tx3:'#999999',bub:'#1a1a1a',bstr:'#ffffff',ln:'#ffffff',cp1:'#404040',cp2:'#606060',dash:'#404040',foot:'#666666'};
   if(currentTheme==='forest')
     return {bg:'#060f07',tx:'#b8f5c4',tx2:'#52c463',tx3:'#2d6e38',bub:'#0f2412',bstr:'#39e855',ln:'#52c463',cp1:'#1a3d1e',cp2:'#235228',dash:'#1a3d1e',foot:'#2d6e38'};
-  return darkMode
-    ?{bg:'#1e1e1e',tx:'#eeeeee',tx2:'#aaaaaa',tx3:'#666666',bub:'#2a2a2a',bstr:'#cccccc',ln:'#cccccc',cp1:'#444',cp2:'#555',dash:'#444',foot:'#555'}
+  const cs=getComputedStyle(document.body);
+  const cvbg=cs.getPropertyValue('--cvbg').trim()||'#181b22';
+  const bg3=cs.getPropertyValue('--bg3').trim()||'#22262f';
+  const tx=cs.getPropertyValue('--tx').trim()||'#eef0f5';
+  const tx2=cs.getPropertyValue('--tx2').trim()||'#9ba3b8';
+  const tx3=cs.getPropertyValue('--tx3').trim()||'#555f75';
+  const bd=cs.getPropertyValue('--bd').trim()||'#2e3340';
+  const bd2=cs.getPropertyValue('--bd2').trim()||'#3d4455';
+  return darkMode||currentTheme==='dark'||currentTheme==='navy'||currentTheme==='hicon'||currentTheme==='forest'
+    ?{bg:cvbg,tx,tx2,tx3,bub:bg3,bstr:tx,ln:tx,cp1:bd,cp2:bd2,dash:bd,foot:tx3}
     :{bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
 }
 
 function applyFitScale(W,H){
   const c=document.getElementById('panel-chart');
   if(!c)return;
-  const cw=c.clientWidth||window.innerWidth,ch=c.clientHeight||window.innerHeight;
+  // Use getBoundingClientRect for reliable dimensions on iOS PWA
+  const rect=c.getBoundingClientRect();
+  const cw=rect.width||window.innerWidth;
+  const ch=rect.height||window.innerHeight;
   const s=Math.min(cw/W,ch/H,1);
   const vp=document.getElementById('chart-viewport');
   vp.style.transform=`scale(${s})`;
