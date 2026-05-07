@@ -471,9 +471,12 @@ body.hicon .bs-mode-btn.active{color:#000}
         <option value="G">G's</option>
         <option value="µm">µm</option>
       </select></label>
-      <label>Layout <select id="layout" onchange="renderSidebar();redraw();if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize()">
+      <label>Layout <select id="layout" onchange="onLayoutChange()">
         <option value="H">Horizontal</option>
         <option value="V">Vertical</option>
+      </select></label>
+      <label>Mode <select id="mode" onchange="onModeChange()">
+        <option value="SP">Standard Phase</option>
         <option value="FB">Foot/Base</option>
         <option value="BS">Base/Structure</option>
         <option value="FS">Fixed/Structural (ODS)</option>
@@ -879,6 +882,45 @@ function restoreLogo(){
   // Logo is per-chart only — not persisted across sessions
 }
 function onUnitChange(){renderSidebar();redraw();}
+
+// ── Layout / Mode ─────────────────────────────────────────────────────
+// Layout dropdown controls H/V orientation for Standard Phase mode only.
+// Mode dropdown controls which analysis type is active.
+// getEffectiveLayout() returns the single value the rest of the app uses.
+function getEffectiveLayout(){
+  const mode=document.getElementById('mode').value;
+  if(mode==='SP'){
+    return document.getElementById('layout').value; // H or V
+  }
+  return mode; // FB, BS, FS
+}
+// Patch getElementById('layout').value reads throughout by overriding via a proxy approach:
+// Simpler: just keep the layout select in sync with the effective value at all times.
+function syncLayoutSelect(){
+  const eff=getEffectiveLayout();
+  const lay=document.getElementById('layout');
+  // Only update if it's a layout-level value (H or V); modes manage themselves
+  if(eff==='H'||eff==='V')lay.value=eff;
+  // Show/hide layout dropdown — only relevant for Standard Phase mode
+  const mode=document.getElementById('mode').value;
+  const layLabel=lay.closest('label');
+  if(layLabel)layLabel.style.display=mode==='SP'?'':'none';
+}
+function onLayoutChange(){
+  syncLayoutSelect();
+  renderSidebar();redraw();
+  if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize();
+}
+function onModeChange(){
+  syncLayoutSelect();
+  // For non-SP modes, keep layout select in sync so existing code reading
+  // document.getElementById('layout').value gets the right answer
+  const mode=document.getElementById('mode').value;
+  const lay=document.getElementById('layout');
+  if(mode!=='SP') lay.value=mode;
+  renderSidebar();redraw();
+  if(!document.getElementById('panel-ods').classList.contains('hidden'))odsResize();
+}
 
 const PALETTE=[{fill:'#1a6bbf'},{fill:'#1a9e75'},{fill:'#c94040'},{fill:'#7a7adc'},{fill:'#c97a1a'},{fill:'#555555'}];
 const SHAPES=['Motor','Gearbox','Fan','Pump','Turbine','Compressor','Blower','Fan (Overhung)','Fan (Center Hung)','Coupling','Bearing','Shaft'];
@@ -1756,7 +1798,7 @@ function fsSev(p){
 
 
 function renderSidebar(){
-  const _lay=document.getElementById('layout')?.value;
+  const _lay=getEffectiveLayout();
   if(_lay==='BS'){renderBSSidebar();return;}
   if(_lay==='FB'){renderFBSidebar();return;}
   if(_lay==='FS'){renderFSSidebar();return;}
@@ -1833,7 +1875,7 @@ function measHTML(nid,m,u,coupSide){
   const phaseVal=Math.round(parseFloat(m.phase)||0);
   const isAxial=m.pos==='AX_OB'||m.pos==='AX_IB';
   const axDir=m.axDir||'out';
-  const isVertLayout=document.getElementById('layout').value==='V';
+  const isVertLayout=getEffectiveLayout()==='V';
 
   // Arrow direction for inboard depends on which side the coupling is on:
   // Coupling on RIGHT → inboard points right (➡), outboard points left (⬅)
@@ -2397,7 +2439,7 @@ function buildExportCanvas(){
   const off=document.createElement('canvas');
   off.width=Math.round(W*DPR);off.height=Math.round(H*DPR);
   const ctx=off.getContext('2d');ctx.scale(DPR,DPR);
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='BS'){renderBSToCanvas(ctx,W,H,tc,false);}
   else if(layout==='FB'){renderFBToCanvas(ctx,W,H,tc);}
   else{renderChart(ctx,W,H,tc);}
@@ -2408,7 +2450,7 @@ function buildExportCanvas(){
 function buildExportCanvasLight(){
   const N=nodes.length;if(!N)return null;
   const tcLight={bg:'#ffffff',tx:'#111111',tx2:'#444444',tx3:'#999999',bub:'#ffffff',bstr:'#111111',ln:'#111111',cp1:'#ccc',cp2:'#aaa',dash:'#cccccc',foot:'#aaaaaa'};
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   // For BS layout use compact dimensions so 3-section charts fit one print page
   let W,H;
   if(layout==='BS'){
@@ -2540,7 +2582,7 @@ function redraw(){
   const c=document.getElementById('panel-chart');
   if(!c||c.classList.contains('hidden'))return;
   if(!nodes.length){drawEmpty();return;}
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='BS'){
     drawBaseStructure();
   } else if(layout==='FB'){
@@ -3237,7 +3279,7 @@ function drawEmpty(){
 
 function getChartDims(){
   const N=nodes.length||1;
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='BS'){
     // Match renderBSToCanvas vertical stacking layout
     const d=getBSData();
@@ -3298,7 +3340,7 @@ function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
   if(isRef){ctx.font='bold 8px Roboto,sans-serif';ctx.fillStyle=tc.tx2;ctx.fillText('REF',cx+r+3,cy+r*0.35);}
   // Sensor orientation indicator — small tag below label, layout-aware
   if(axDir==='in'||axDir==='out'){
-    const isVL=document.getElementById('layout').value==='V';
+    const isVL=getEffectiveLayout()==='V';
     const cs=coupSide||'R';
     // Arrow points toward coupling for inboard, away for outboard
     // Direction flips based on which side of the coupling the component is on
@@ -3380,7 +3422,7 @@ function renderChart(ctx,W,H,tc){
   const title=document.getElementById('chart-title').value||'';
   const grpm=document.getElementById('global-rpm').value||'____';
   const u=getUnit();
-  const isV=document.getElementById('layout').value==='V';
+  const isV=getEffectiveLayout()==='V';
   ctx.fillStyle=tc.bg;ctx.fillRect(0,0,W,H);
   _bubbleHitRects=[];  // Reset hit rects each render
 
@@ -3733,7 +3775,7 @@ async function desktopPrint(){
   });
 
   // ── Measurement data table ────────────────────────────────
-  const _printLayout=document.getElementById('layout').value;
+  const _printLayout=getEffectiveLayout();
   const isFBLayout=_printLayout==='FB';
   const isBSLayout=_printLayout==='BS';
   let rows='';
@@ -3788,7 +3830,7 @@ async function desktopPrint(){
       'HORIZ_DE': 'Horizontal Drive End (DE)',
     };
     const dirLabel=(m,n)=>{
-      const isV=document.getElementById('layout').value==='V';
+      const isV=getEffectiveLayout()==='V';
       if(m.pos==='AX_IB'||m.pos==='AX_OB'){
         const cs=(n&&n.coupSide)||'R';
         if(isV) return m.axDir==='in'?'⬇ Downward':'⬆ Upward';
@@ -4298,13 +4340,17 @@ function runFBDiagnosis(){
 // ── Autosave current state to localStorage ───────────────────────────
 function autosave(){
   try{
+    const layoutVal=document.getElementById('layout')?.value||'H';
+    const modeVal=document.getElementById('mode')?.value||'SP';
     const state={
       nodes:JSON.parse(JSON.stringify(nodes)),
       footBaseData:JSON.parse(JSON.stringify(footBaseData)),
       bsData:bsData?JSON.parse(JSON.stringify(bsData)):null,
       bsMode,
+      fsData:fsData?JSON.parse(JSON.stringify(fsData)):null,
       annotations:JSON.parse(JSON.stringify(annotations)),
-      layout:document.getElementById('layout')?.value||'H',
+      layout:layoutVal,
+      mode:modeVal,
       unit:document.getElementById('amp-unit')?.value||'in/s',
       rpm:document.getElementById('global-rpm')?.value||'',
       title:document.getElementById('chart-title')?.value||'',
@@ -4322,11 +4368,9 @@ function restoreAutosave(){
     const raw=localStorage.getItem('phaseChart_autosave');
     if(!raw)return false;
     const state=JSON.parse(raw);
-    // Only restore if saved within last 2 hours (not stale)
     if(!state.ts||Date.now()-state.ts>7200000)return false;
     if(state.nodes&&state.nodes.length){
       nodes=state.nodes;
-      // Restore IDs
       let maxNid=0,maxMid=0;
       nodes.forEach(n=>{maxNid=Math.max(maxNid,n.id);n.meas.forEach(m=>maxMid=Math.max(maxMid,m.id));});
       nid=maxNid+1;mid=maxMid+1;
@@ -4334,10 +4378,16 @@ function restoreAutosave(){
     if(state.footBaseData)footBaseData=state.footBaseData;
     if(state.bsData)bsData=state.bsData;
     if(state.bsMode)bsMode=state.bsMode;
+    if(state.fsData)fsData=state.fsData;
     if(state.annotations)annotations=state.annotations;
-    // Restore UI fields
+    // Restore mode first, then layout
+    const modeSel=document.getElementById('mode');
+    if(modeSel&&state.mode)modeSel.value=state.mode;
     const layoutSel=document.getElementById('layout');
-    if(layoutSel&&state.layout)layoutSel.value=state.layout;
+    if(layoutSel&&state.layout){
+      // Only set layout select for H/V values; mode handles the rest
+      if(state.layout==='H'||state.layout==='V')layoutSel.value=state.layout;
+    }
     const unitSel=document.getElementById('amp-unit');
     if(unitSel&&state.unit)unitSel.value=state.unit;
     const rpmEl=document.getElementById('global-rpm');
@@ -4358,7 +4408,7 @@ function runDiagnosis(){
   const results=diagResults;
   const TOL=30;
 
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='BS'){runBSDiagnosis();return;}
   if(layout==='FB'){runFBDiagnosis();return;}
 
@@ -5286,7 +5336,7 @@ function saveToHistory(){
   const rpm=document.getElementById('global-rpm').value||'';
   const tech=document.getElementById('tech-name')?.value?.trim()||'';
   const unit=document.getElementById('amp-unit').value;
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout(); // use combined Layout+Mode value
   const date=getDocDate();
   const entry={
     id:Date.now(),
@@ -5340,7 +5390,16 @@ function loadFromHistory(id){
         document.getElementById('chart-title').value=entry.meta.chartTitle||'';
         document.getElementById('global-rpm').value=entry.meta.globalRpm||'';
         document.getElementById('amp-unit').value=entry.meta.ampUnit||'in/s';
-        document.getElementById('layout').value=entry.meta.layoutVal||'H';
+        const lv=entry.meta.layoutVal||'H';
+        // Map old single-dropdown values to new Layout + Mode dropdowns
+        if(lv==='H'||lv==='V'){
+          document.getElementById('layout').value=lv;
+          document.getElementById('mode').value='SP';
+        } else {
+          document.getElementById('layout').value='H';
+          document.getElementById('mode').value=lv;
+        }
+        syncLayoutSelect();
         document.getElementById('doc-date').value=entry.meta.docDate||'';
       }
       // Restore annotations
@@ -5775,7 +5834,7 @@ function odsResize(){
   const dpr=window.devicePixelRatio||1;
   const wrap=document.getElementById('ods-canvas-wrap');
   if(!wrap)return;
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   const isV=layout==='V';
   const isFS=layout==='FS';
   const isMobile=window.innerWidth<=768;
@@ -5823,7 +5882,7 @@ function odsDraw(ctx,W,H,pt){
   ctx.strokeStyle=gridC;ctx.lineWidth=1;
   for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
   for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='BS'||layout==='FB'){
     ctx.font='13px Roboto,sans-serif';ctx.fillStyle=txC;ctx.textAlign='center';
     ctx.fillText('ODS not available for Base/Structure or Foot/Base layouts',W/2,H/2);return;
@@ -6187,7 +6246,7 @@ function odsDrawClock(ctx,W,H,pt){
 // ── ODS Export — self-contained standalone HTML ──────────────────────
 function odsExport(){
   closeModal();
-  const layout=document.getElementById('layout').value;
+  const layout=getEffectiveLayout();
   if(layout==='FS'){odsExportFS();return;}
   const title=document.getElementById('chart-title').value||'Cross-Channel Phase Analysis';
   const grpm=document.getElementById('global-rpm').value||'';
@@ -6939,6 +6998,7 @@ function boot(){
   // Restore autosaved state if navigating back from print window
   // NOTE: theme is intentionally NOT restored from autosave  e — localStorage theme is the preference
   restoreAutosave();
+  syncLayoutSelect();
   renderSidebar();
   renderHistory();
   // Check if app was opened via a shared chart link
