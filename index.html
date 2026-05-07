@@ -535,6 +535,8 @@ body.hicon .bs-mode-btn.active{color:#000}
       <button class="overflow-item" onclick="closeOverflow();openWN()">✨ What's New</button>
       <button class="overflow-item" onclick="closeOverflow();openHelp()">❓ Help</button>
       <button class="overflow-item" onclick="closeOverflow();openBugReport()">🐛 Report a Bug</button>
+      <div class="overflow-sep"></div>
+      <button class="overflow-item" id="install-btn" onclick="closeOverflow();openInstallPrompt()" style="color:var(--accent)">📲 Add to Home Screen</button>
     </div>
   </div>
   <div class="tab-bar">
@@ -748,6 +750,62 @@ body.hicon .bs-mode-btn.active{color:#000}
   </div>
 </div>
 
+<!-- Install / Add to Home Screen modal -->
+<div class="wn-overlay" id="install-modal">
+  <div class="wn-sheet" style="max-height:70vh">
+    <div class="wn-header">
+      <h2 style="font-size:17px">📲 Add to Home Screen</h2>
+      <button class="wn-close" onclick="closeInstallPrompt()">×</button>
+    </div>
+    <!-- iOS instructions -->
+    <div id="install-ios" style="display:none;flex-direction:column;gap:14px">
+      <p style="font-size:13px;color:var(--tx2);line-height:1.6">Add Phase Chart to your iPhone home screen for quick one-tap access — no App Store required.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <div style="font-size:14px;color:var(--tx);padding-top:4px">Tap the <strong>Share button</strong> <span style="font-size:18px">⬆</span> at the bottom of Safari</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <div style="font-size:14px;color:var(--tx);padding-top:4px">Scroll down and tap <strong>"Add to Home Screen"</strong></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">3</div>
+          <div style="font-size:14px;color:var(--tx);padding-top:4px">Tap <strong>"Add"</strong> in the top right — done!</div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--tx3);line-height:1.6;margin-top:4px">
+        💡 The app will open fullscreen with its own icon — no browser address bar. Works offline after first load.
+      </div>
+    </div>
+    <!-- Android instructions -->
+    <div id="install-android" style="display:none;flex-direction:column;gap:14px">
+      <p style="font-size:13px;color:var(--tx2);line-height:1.6">Install Phase Chart as an app on your Android device.</p>
+      <button onclick="triggerAndroidInstall()" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:600">Install App</button>
+      <div style="background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--tx3);line-height:1.6">
+        💡 If the button doesn't appear, tap the ⋮ menu in Chrome → "Add to Home screen".
+      </div>
+    </div>
+    <!-- Desktop instructions -->
+    <div id="install-desktop" style="display:none;flex-direction:column;gap:14px">
+      <p style="font-size:13px;color:var(--tx2);line-height:1.6">Install Phase Chart as a desktop app in Chrome or Edge.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">1</div>
+          <div style="font-size:14px;color:var(--tx);padding-top:4px">Look for the <strong>install icon</strong> ⊕ in the browser address bar</div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:12px">
+          <div style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">2</div>
+          <div style="font-size:14px;color:var(--tx);padding-top:4px">Click it and select <strong>"Install"</strong></div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--tx3);line-height:1.6">
+        💡 Or go to Chrome menu ⋮ → "Save and share" → "Install Page as app".
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Help modal -->
 <div class="help-overlay" id="help-modal">
   <div class="help-sheet">
@@ -828,7 +886,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '2.1.1';
+  return '2.1.2';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -5542,6 +5600,15 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'2.1.2':{
+date:'05/07/2026',
+items:[
+'Add to Home Screen — new "📲 Add to Home Screen" option in the ⋯ overflow menu. Shows a platform-aware guide: step-by-step Safari instructions for iPhone/iPad, a one-tap native install button for Android Chrome, and address bar instructions for desktop Chrome/Edge. Makes it easy for all team members to install the app without needing to know where the browser install option is.',
+'PWA support — app now includes a web manifest and service worker enabling proper installation as a standalone app on all platforms. Opens fullscreen without browser chrome when installed.',
+'Phase bubble app icon — custom icon (dark blue background, phase bubble circle with amplitude/phase labels and phase needle) used as the home screen icon on all platforms when installed.',
+'Layout / Mode split — the single Layout dropdown has been split into two separate controls: Layout (Horizontal / Vertical) for machine train orientation, and Mode (Standard Phase / Foot/Base / Base/Structure / Fixed/Structural ODS) for analysis type. Layout only appears when Mode is Standard Phase since orientation is not relevant to other modes. Makes the topbar clearer for new users.',
+],
+},
 '2.1.1':{
 date:'05/07/2026',
 items:[
@@ -5763,6 +5830,35 @@ function syncDate(el){
 }
 function openBugReport(){document.getElementById('bug-modal').classList.add('show');}
 function closeBugReport(){document.getElementById('bug-modal').classList.remove('show');}
+
+// ── Install / Add to Home Screen ──────────────────────────────────────
+let _deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _deferredInstallPrompt=e;
+});
+function openInstallPrompt(){
+  const modal=document.getElementById('install-modal');
+  const ios=document.getElementById('install-ios');
+  const android=document.getElementById('install-android');
+  const desktop=document.getElementById('install-desktop');
+  // Detect platform
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  const isAndroid=/Android/.test(navigator.userAgent);
+  ios.style.display='none';android.style.display='none';desktop.style.display='none';
+  if(isIOS){ios.style.display='flex';}
+  else if(isAndroid||_deferredInstallPrompt){android.style.display='flex';}
+  else{desktop.style.display='flex';}
+  modal.classList.add('show');
+}
+function closeInstallPrompt(){document.getElementById('install-modal').classList.remove('show');}
+async function triggerAndroidInstall(){
+  if(!_deferredInstallPrompt)return;
+  _deferredInstallPrompt.prompt();
+  const result=await _deferredInstallPrompt.userChoice;
+  if(result.outcome==='accepted')_deferredInstallPrompt=null;
+  closeInstallPrompt();
+}
 
 // ── ODS Engine v2.0.0 ─────────────────────────────────────────────
 const ODS={exag:80,speed:0.05,playing:false,view:'side',t:0,lastTs:null,raf:null,
@@ -7006,6 +7102,7 @@ function boot(){
   document.getElementById('ann-modal').addEventListener('click',function(e){if(e.target===this)closeAnnModal();});
   document.getElementById('help-modal').addEventListener('click',function(e){if(e.target===this)closeHelp();});
   document.getElementById('bug-modal').addEventListener('click',function(e){if(e.target===this)closeBugReport();});
+  document.getElementById('install-modal').addEventListener('click',function(e){if(e.target===this)closeInstallPrompt();});
   document.getElementById('tpl-modal').addEventListener('click',function(e){if(e.target===this)closeTpl();});
   document.getElementById('sc-modal').addEventListener('click',function(e){if(e.target===this)closeSCModal();});
   document.getElementById('bubble-popup').addEventListener('click',function(e){e.stopPropagation();});
