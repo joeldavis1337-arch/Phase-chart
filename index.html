@@ -619,7 +619,7 @@ body.hicon .bs-mode-btn.active{color:#000}
     </div>
     <div class="sidebar hidden" id="panel-diag">
       <h3>Possible Diagnosis</h3>
-      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Based on Emerson/CSI cross-channel phase analysis principles. Always confirm with additional data.</div>
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px">Diagnostic interpretations are based on ISO 13373 vibration analysis standards and established rotating machinery diagnostic methodology. Always confirm with additional data.</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px">
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#ef4444"></div>Fault — action required</div>
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#f59e0b"></div>Warning — monitor closely</div>
@@ -851,7 +851,7 @@ body.hicon .bs-mode-btn.active{color:#000}
         <div class="help-item"><div class="help-icon">⬅️</div><div class="help-text"><strong>Swipe to delete</strong>Swipe a history card left to instantly remove it.</div></div>
         <div class="help-item"><div class="help-icon">↩️</div><div class="help-text"><strong>Undo</strong>After deleting a component or measurement point, tap the Undo button that appears in the header.</div></div>
       </div>
-      <div style="font-size:10px;color:var(--tx3);padding:8px 0;line-height:1.6">Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
+      <div style="font-size:10px;color:var(--tx3);padding:8px 0;line-height:1.6">Diagnostic interpretations are based on ISO 13373 vibration analysis standards and established rotating machinery diagnostic methodology. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.</div>
     </div>
   </div>
 </div>
@@ -5041,7 +5041,7 @@ function renderDiagResults(results){
   });
   const disc=document.createElement('div');
   disc.style.cssText='font-size:10px;color:var(--tx3);margin-top:8px;line-height:1.5;border-top:1px solid var(--bd);padding-top:8px';
-  disc.textContent='Based on Emerson/CSI cross-channel phase analysis principles. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.';
+  disc.textContent='Diagnostic interpretations are based on ISO 13373 vibration analysis standards and established rotating machinery diagnostic methodology. ±30° tolerance applied. Always correlate with spectrum data, amplitude trends, and visual inspection before any maintenance decision.';
   el.appendChild(disc);
   checkHaptic(results);
 }
