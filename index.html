@@ -687,7 +687,10 @@ body.hicon .bal-mode-btn.active{color:#000}
     <div class="sidebar hidden" id="panel-balance">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
         <h3 style="margin:0">⚖ Field Balance Calculator</h3>
-        <button class="btn" onclick="balReset()" style="font-size:11px;padding:4px 9px;color:#c00;border-color:#f99">🗑 Reset Job</button>
+        <div style="display:flex;gap:6px">
+          <button class="btn" onclick="loadBalanceDemo()" style="font-size:11px;padding:4px 9px;color:#2563eb;border-color:#93c5fd">📋 Load Demo</button>
+          <button class="btn" onclick="balReset()" style="font-size:11px;padding:4px 9px;color:#c00;border-color:#f99">🗑 Reset</button>
+        </div>
       </div>
       <div style="font-size:11px;color:var(--tx3);margin-bottom:6px;line-height:1.5">CSI 2140 companion — single &amp; two-plane. Enter readings from analyzer. App calculates correction weight, flags 30% rule, and checks ISO acceptance.</div>
 
@@ -911,6 +914,11 @@ body.hicon .bal-mode-btn.active{color:#000}
           <div id="bal-iso-result"></div>
         </div>
       </div>
+
+      <!-- Report button -->
+      <button onclick="balGenerateReport()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius);padding:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;touch-action:manipulation;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s" onmousedown="this.style.opacity='.8'" onmouseup="this.style.opacity='1'">🖨 Generate Balance Report</button>
+      <div style="font-size:10px;color:var(--tx3);text-align:center;margin-top:-4px">Opens printable report — all job data populated automatically</div>
+      <div id="bal-logo-hint" style="font-size:11px;color:var(--tx3);background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;gap:8px"></div>
 
     </div><!-- end panel-balance -->
   </div>
@@ -1224,6 +1232,7 @@ function handleLogoUpload(input){
     if(hint)hint.style.display='none';
     if(clearBtn)clearBtn.style.display='';
     // Logo is per-chart only — not saved to localStorage
+    balUpdateLogoHint();
   };
   reader.readAsDataURL(file);
 }
@@ -1238,6 +1247,7 @@ function clearLogo(){
   if(hint)hint.style.display='';
   if(clearBtn)clearBtn.style.display='none';
   redraw();
+  balUpdateLogoHint();
 }
 function restoreLogo(){
   // Logo is per-chart only — not persisted across sessions
@@ -7780,6 +7790,372 @@ function balReset(){
   renderBalance();
 }
 
+// ── Demo Job: IDF-2 Large Induced Draft Fan ───────────────
+function loadBalanceDemo(){
+  // Pre-populate a complete single-plane balance job on a large ID fan
+  // All values are consistent — correction weight was verified against vector math
+
+  balJob.planeType='single';
+
+  // All pre-balance checklist items confirmed
+  Object.keys(balJob.checklist).forEach(k=>balJob.checklist[k]=true);
+
+  // Run data — IDF-2, 885 RPM, 1.00 oz trial at 0°, single-plane
+  // Reference: 0.318 in/s @ 243° (classic static imbalance signature — in-phase across bearings)
+  // Trial response: 47% amp change, 45° phase shift → adequate trial (>30% on both counts)
+  // Correction calculated: 0.963 oz @ 268° via influence coefficient method
+  // Post-correction: 0.071 in/s → 77.7% reduction, ISO Class III Zone A ✓
+  balJob.runs.ref  ={amp:'0.318',phase:'243',amp2:'0.302',phase2:'248'};
+  balJob.runs.refR ={amp:'0.315',phase:'244',amp2:'0.299',phase2:'247'};
+  balJob.runs.t1   ={amp:'0.467',phase:'198',amp2:'0.451',phase2:'202',tw:'1.00',ta:'0'};
+  balJob.runs.t2   ={amp:'',phase:'',amp2:'',phase2:'',tw:'',ta:''};
+  balJob.runs.corr ={amp:'0.071',phase:'89', amp2:'0.068',phase2:'93'};
+  balJob.runs.trim1={amp:'',phase:'',amp2:'',phase2:''};
+  balJob.runs.final={amp:'0.068',phase:'91', amp2:'0.065',phase2:'94'};
+
+  // Render run log and checklist from balJob state
+  renderBalance();
+
+  // Set form fields not driven by balJob.runs
+  function sv(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+  function ss(id,v){const e=document.getElementById(id);if(e)e.value=v;}
+
+  // Step 1 — Plane decision inputs
+  sv('bal-ld','0.45');
+  ss('bal-phase-pat','in');
+  ss('bal-axial1x','low');
+  ss('bal-amp-pat','equal');
+
+  // Step 3 — Job setup
+  sv('bal-asset','IDF-2 — Induced Draft Fan No. 2');
+  sv('bal-rpm','885');
+  ss('bal-config','centered');
+  sv('bal-jl1','410');
+  sv('bal-rad1','28.0');
+
+  // Welding rod calc — show a realistic demo bead
+  ss('bal-rod-type','e7018');
+  ss('bal-rod-dia','0.125');
+  sv('bal-rod-len','5.5');
+
+  // Step 6 — ISO acceptance
+  ss('bal-iso-class','III');
+  sv('bal-final-amp1','0.068');
+
+  // Trigger all computed outputs
+  balPlaneDec();
+  balCalcTrial();
+  balCalcWeld();
+  balCalcCorrection();
+  balCheckISO();
+}
+
+// ── Balance Report Generator ──────────────────────────────
+function balGenerateReport(){
+  const asset=document.getElementById('bal-asset').value||'—';
+  const rpm=document.getElementById('bal-rpm').value||'—';
+  const jl1=document.getElementById('bal-jl1').value||'—';
+  const rad1=document.getElementById('bal-rad1').value||'—';
+  const jl2=document.getElementById('bal-jl2').value||'';
+  const rad2=document.getElementById('bal-rad2').value||'';
+  const isoClass=document.getElementById('bal-iso-class').value||'II';
+  const techName=getTechName()||'';
+  const docDate=getDocDate();
+  const unitKey=(document.getElementById('amp-unit')||{}).value||'in/s';
+  const is2=balJob.planeType==='two';
+  const zones=BAL_ISO_ZONES[isoClass]||BAL_ISO_ZONES.II;
+
+  // ── Helper: format run row ────────────────────────────────
+  function fv(v,dec){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(dec===undefined?3:dec);}
+  function runRow(label,r,twLabel){
+    const a1=fv(r.amp),p1=fv(r.phase,0);
+    const a2=is2?fv(r.amp2):'';
+    const p2=is2?fv(r.phase2,0):'';
+    const tw=r.tw&&r.ta?`${fv(r.tw)} oz @ ${fv(r.ta,0)}°`:'—';
+    return `<tr>
+      <td>${label}</td>
+      <td>${a1}</td><td>${p1}°</td>
+      ${is2?`<td>${a2}</td><td>${p2}°</td>`:''}
+      <td>${twLabel?tw:'—'}</td>
+    </tr>`;
+  }
+
+  // ── Checklist rows ────────────────────────────────────────
+  const checkRows=BAL_CHECKS.map(c=>{
+    const ok=balJob.checklist[c.key];
+    return `<tr><td style="padding:4px 8px;font-size:11px">${c.label}</td>
+      <td style="text-align:center;font-size:13px;color:${ok?'#166534':'#991b1b'}">${ok?'✓':'✗'}</td></tr>`;
+  }).join('');
+
+  // ── Correction calc results ───────────────────────────────
+  const ref=balJob.runs.ref||{},t1=balJob.runs.t1||{};
+  const rA=parseFloat(ref.amp),rP=parseFloat(ref.phase);
+  const tA=parseFloat(t1.amp),tP=parseFloat(t1.phase);
+  const twM=parseFloat(t1.tw),twA=parseFloat(t1.ta);
+  let corrMassStr='—',corrAngleStr='—',effVecStr='—',sensStr='—',sanityWarn='';
+  let reductionStr='—',reductionOk=false;
+  if(!isNaN(rA)&&!isNaN(rP)&&!isNaN(tA)&&!isNaN(tP)&&!isNaN(twM)&&!isNaN(twA)&&rA>0&&twM>0){
+    const O=_c(rA,rP),T1=_c(tA,tP),TW=_c(twM,twA);
+    const Effect=_sub(T1,O);
+    const effMag=_mag(Effect);
+    if(effMag>0.0001){
+      const alpha=_div(Effect,TW);
+      const Corr=_div(_neg(O),alpha);
+      const cm=_mag(Corr),ca=_ang(Corr);
+      corrMassStr=`${cm.toFixed(3)} oz (${(cm*28.3495).toFixed(2)} g)`;
+      corrAngleStr=`${ca.toFixed(1)}°`;
+      effVecStr=effMag.toFixed(4);
+      sensStr=`${(twM/effMag).toFixed(4)} oz/${unitKey}`;
+      if(cm/twM>5)sanityWarn='<div style="color:#991b1b;font-weight:700;margin-top:4px">⚠ Correction >5× trial weight — verify data before installing.</div>';
+    }
+  }
+  const corrRun=balJob.runs.corr||{};
+  const cA=parseFloat(corrRun.amp);
+  if(!isNaN(rA)&&!isNaN(cA)&&rA>0){
+    const red=(1-cA/rA)*100;
+    reductionStr=`${red.toFixed(1)}%`;
+    reductionOk=red>=75;
+  }
+
+  // ── ISO zone for final ────────────────────────────────────
+  const finalRun=balJob.runs.final||{};
+  const fa1=parseFloat(document.getElementById('bal-final-amp1').value||finalRun.amp||'');
+  function zoneLabel(amp){
+    if(isNaN(amp)||amp<=0)return{z:'—',c:'#444'};
+    if(amp<=zones.A)return{z:'Zone A — Acceptable',c:'#166534'};
+    if(amp<=zones.B)return{z:'Zone B — Acceptable long-term',c:'#92400e'};
+    if(amp<=zones.C)return{z:'Zone C — Short-term only',c:'#92400e'};
+    return{z:'Zone D — Shut down',c:'#991b1b'};
+  }
+  const z1=zoneLabel(fa1);
+  const fa2=is2?parseFloat(document.getElementById('bal-final-amp2').value||finalRun.amp2||''):NaN;
+  const z2=is2?zoneLabel(fa2):null;
+
+  // ── Weight split ──────────────────────────────────────────
+  const splitMass=parseFloat(document.getElementById('bal-split-mass').value||'');
+  const splitAngle=parseFloat(document.getElementById('bal-split-angle').value||'');
+  const splitOffset=parseFloat(document.getElementById('bal-split-offset').value||'30');
+  let splitHTML='<em style="color:#888">Not calculated</em>';
+  if(!isNaN(splitMass)&&!isNaN(splitAngle)&&splitMass>0){
+    const each=splitMass/(2*Math.cos(splitOffset*Math.PI/180));
+    const a1s=((splitAngle-splitOffset)%360+360)%360;
+    const a2s=((splitAngle+splitOffset)%360+360)%360;
+    splitHTML=`${each.toFixed(3)} oz @ ${a1s.toFixed(1)}° <strong>&amp;</strong> ${each.toFixed(3)} oz @ ${a2s.toFixed(1)}° (±${splitOffset}° split)`;
+  }
+
+  // ── Config description ────────────────────────────────────
+  const cfgMap={'centered':'Between-bearings — centered','asymmetric':'Between-bearings — asymmetric','overhung':'Overhung'};
+  const cfgLabel=cfgMap[document.getElementById('bal-config').value]||'—';
+
+  // ── Trial weight calc ─────────────────────────────────────
+  const rpmN=parseFloat(rpm),jlN=parseFloat(jl1),radN=parseFloat(rad1);
+  const twCalc=(!isNaN(rpmN)&&!isNaN(jlN)&&!isNaN(radN)&&rpmN>0&&jlN>0&&radN>0)
+    ?(56375*jlN/(rpmN*rpmN*radN)).toFixed(3):'—';
+
+  // ── Amp/phase change ──────────────────────────────────────
+  let ampChgStr='—',phChgStr='—',trialOk=false;
+  if(!isNaN(rA)&&!isNaN(tA)&&rA>0){
+    const ac=Math.abs(tA-rA)/rA*100;
+    let pc=Math.abs(tP-rP);if(pc>180)pc=360-pc;
+    ampChgStr=ac.toFixed(1)+'%';
+    phChgStr=pc.toFixed(0)+'°';
+    trialOk=ac>=30||pc>=30;
+  }
+
+  const b2Hdr=is2?'<th>Amp B2</th><th>Phase B2</th>':'';
+  const planeLabel=is2?'Two-Plane':'Single-Plane';
+
+  const logoTag=chartLogoDataURL
+    ?`<img src="${chartLogoDataURL}" style="max-height:140px;max-width:340px;object-fit:contain;display:block">`
+    :'';
+
+  const html=`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Balance Report — ${asset}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#111;background:#fff;padding:20px}
+  h1{font-size:18px;font-weight:700;margin-bottom:2px}
+  h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555;margin:18px 0 8px;padding-bottom:4px;border-bottom:2px solid #111}
+  h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#777;margin:12px 0 6px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:11px}
+  th{background:#1e3a5f;color:#fff;padding:6px 8px;text-align:left;font-size:10px;letter-spacing:.04em;text-transform:uppercase}
+  td{padding:5px 8px;border-bottom:1px solid #e0e0e0;vertical-align:top}
+  tr:nth-child(even) td{background:#f8f9fc}
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-bottom:6px}
+  .meta-item{display:flex;gap:6px;font-size:11px}
+  .meta-key{color:#555;min-width:110px;flex-shrink:0}
+  .meta-val{font-weight:700;color:#111}
+  .result-box{border:2px solid #1e3a5f;border-radius:6px;padding:14px 18px;margin-bottom:10px;background:#f0f4ff}
+  .result-main{font-size:20px;font-weight:700;color:#1e3a5f;margin-bottom:3px}
+  .result-sub{font-size:12px;color:#444}
+  .ok{color:#166534;font-weight:700}
+  .warn{color:#92400e;font-weight:700}
+  .fault{color:#991b1b;font-weight:700}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.04em}
+  .badge-ok{background:#dcfce7;color:#166534;border:1px solid #22c55e}
+  .badge-warn{background:#fef9c3;color:#92400e;border:1px solid #f59e0b}
+  .badge-fault{background:#fee2e2;color:#991b1b;border:1px solid #ef4444}
+  .sign-box{border:1px solid #ccc;border-radius:4px;padding:10px 14px;min-height:52px;margin-top:4px}
+  .watermark{font-size:9px;color:#aaa;text-align:center;margin-top:20px;border-top:1px solid #eee;padding-top:8px}
+  @media print{
+    @page{size:letter portrait;margin:1.2cm 1.4cm}
+    body{padding:0;font-size:11px}
+    .no-print{display:none}
+    h2{page-break-after:avoid}
+    table{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;border-bottom:3px solid #1e3a5f;padding-bottom:12px">
+  <div>
+    <h1>Field Balance Report</h1>
+    <div style="font-size:13px;font-weight:700;color:#1e3a5f;margin-top:2px">${asset}</div>
+    <div style="font-size:11px;color:#555;margin-top:3px">${planeLabel} &nbsp;|&nbsp; ${rpm} RPM &nbsp;|&nbsp; Amplitude units: ${unitKey}</div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+    ${logoTag?`<div>${logoTag}</div>`:''}
+    <div style="text-align:right;font-size:11px;color:#555">
+      <div style="font-weight:700;color:#111">${docDate}</div>
+      ${techName?`<div>${techName}</div>`:''}
+      <div style="margin-top:2px;font-size:10px;color:#999">Phase App v${getDocVersion()}</div>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 1: Job Setup -->
+<h2>1 — Job Setup</h2>
+<div class="meta-grid">
+  <div class="meta-item"><span class="meta-key">Asset / Equipment</span><span class="meta-val">${asset}</span></div>
+  <div class="meta-item"><span class="meta-key">Operating Speed</span><span class="meta-val">${rpm} RPM</span></div>
+  <div class="meta-item"><span class="meta-key">Balance Mode</span><span class="meta-val">${planeLabel}</span></div>
+  <div class="meta-item"><span class="meta-key">Rotor Configuration</span><span class="meta-val">${cfgLabel}</span></div>
+  <div class="meta-item"><span class="meta-key">Journal Load — P1</span><span class="meta-val">${jl1} lb</span></div>
+  <div class="meta-item"><span class="meta-key">Correction Radius — P1</span><span class="meta-val">${rad1} in</span></div>
+  ${is2?`<div class="meta-item"><span class="meta-key">Journal Load — P2</span><span class="meta-val">${jl2||'—'} lb</span></div>
+  <div class="meta-item"><span class="meta-key">Correction Radius — P2</span><span class="meta-val">${rad2||'—'} in</span></div>`:''}
+  <div class="meta-item"><span class="meta-key">Calculated Trial Weight</span><span class="meta-val">${twCalc} oz</span></div>
+  <div class="meta-item"><span class="meta-key">ISO Machine Class</span><span class="meta-val">Class ${isoClass} — Zone A ≤ ${zones.A} ${unitKey}</span></div>
+</div>
+
+<!-- SECTION 2: Pre-Balance Checklist -->
+<h2>2 — Pre-Balance Checklist</h2>
+<table>
+  <thead><tr><th style="width:88%">Item</th><th style="text-align:center">Status</th></tr></thead>
+  <tbody>${checkRows}</tbody>
+</table>
+
+<!-- SECTION 3: Run Data -->
+<h2>3 — Run Data Log</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width:22%">Run</th>
+      <th>Amp B1 (${unitKey})</th><th>Phase B1</th>
+      ${b2Hdr}
+      <th>Trial Weight</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${runRow('Reference (V₀)',balJob.runs.ref,false)}
+    ${runRow('Ref Repeat',balJob.runs.refR,false)}
+    ${runRow(is2?'Trial — Plane 1':'Trial (V₁)',balJob.runs.t1,true)}
+    ${is2?runRow('Trial — Plane 2',balJob.runs.t2,true):''}
+    ${runRow('Correction (V₂)',balJob.runs.corr,false)}
+    ${balJob.runs.trim1.amp?runRow('Trim Run 1',balJob.runs.trim1,false):''}
+    ${runRow('Final Verify',balJob.runs.final,false)}
+  </tbody>
+</table>
+<div style="font-size:10px;color:#666;margin-top:-4px;margin-bottom:10px">
+  Trial response — Amplitude change: <strong>${ampChgStr}</strong> &nbsp;·&nbsp; Phase change: <strong>${phChgStr}</strong>
+  &nbsp;<span class="${trialOk?'ok':'fault'}">${trialOk?'✓ Adequate (≥30%)':'✗ Insufficient (<30%) — see notes'}</span>
+</div>
+
+<!-- SECTION 4: Correction Weight -->
+<h2>4 — Correction Weight (Influence Coefficient Method)</h2>
+<div class="result-box">
+  <div class="result-main">${corrMassStr}</div>
+  <div class="result-sub">at <strong>${corrAngleStr}</strong> from tach reference — measured against rotation</div>
+  ${sanityWarn}
+</div>
+<div class="meta-grid" style="margin-bottom:8px">
+  <div class="meta-item"><span class="meta-key">Effect vector magnitude</span><span class="meta-val">${effVecStr} ${unitKey}</span></div>
+  <div class="meta-item"><span class="meta-key">Machine sensitivity</span><span class="meta-val">${sensStr}</span></div>
+  <div class="meta-item"><span class="meta-key">Reduction from as-found</span><span class="meta-val ${reductionOk?'ok':'warn'}">${reductionStr} ${reductionOk?'✓':'— target ≥75%'}</span></div>
+</div>
+${splitMass&&!isNaN(splitMass)?`<div style="font-size:11px;margin-bottom:8px"><strong>Weight split:</strong> ${splitHTML}</div>`:''}
+
+<!-- SECTION 5: ISO Acceptance -->
+<h2>5 — ISO 10816-1 Acceptance — Class ${isoClass}</h2>
+<table>
+  <thead><tr><th>Bearing</th><th>Final 1× (${unitKey})</th><th>ISO Zone</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Bearing 1</td>
+      <td>${isNaN(fa1)?'—':fa1.toFixed(3)}</td>
+      <td style="color:${z1.c}">${z1.z}</td>
+      <td>${isNaN(fa1)?'—':`<span class="badge ${fa1<=zones.A?'badge-ok':fa1<=zones.C?'badge-warn':'badge-fault'}">${fa1<=zones.A?'PASS':fa1<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
+    </tr>
+    ${is2&&z2?`<tr>
+      <td>Bearing 2</td>
+      <td>${isNaN(fa2)?'—':fa2.toFixed(3)}</td>
+      <td style="color:${z2.c}">${z2.z}</td>
+      <td>${isNaN(fa2)?'—':`<span class="badge ${fa2<=zones.A?'badge-ok':fa2<=zones.C?'badge-warn':'badge-fault'}">${fa2<=zones.A?'PASS':fa2<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
+    </tr>`:''}
+  </tbody>
+</table>
+
+<!-- SECTION 6: Installed Weights -->
+<h2>6 — Installed Correction Weights (Final)</h2>
+<table>
+  <thead><tr><th>#</th><th>Description / Location</th><th>Weight (oz)</th><th>Angle (°)</th><th>Attachment Method</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td>2</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+    <tr><td>3</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+  </tbody>
+</table>
+
+<!-- SECTION 7: Notes -->
+<h2>7 — Notes / Observations</h2>
+<div class="sign-box" style="min-height:70px"></div>
+
+<!-- SECTION 8: Sign-off -->
+<h2>8 — Sign-Off</h2>
+<table style="margin-top:4px">
+  <thead><tr><th style="width:50%">Analyst Signature</th><th>Customer Representative</th></tr></thead>
+  <tbody>
+    <tr>
+      <td style="padding:6px 8px">
+        <div style="font-size:11px;color:#555;margin-bottom:24px">Name: ${techName||'_______________________'}</div>
+        <div style="border-top:1px solid #aaa;padding-top:4px;font-size:10px;color:#888">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: ___________</div>
+      </td>
+      <td style="padding:6px 8px">
+        <div style="font-size:11px;color:#555;margin-bottom:24px">Name: _______________________</div>
+        <div style="border-top:1px solid #aaa;padding-top:4px;font-size:10px;color:#888">Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date: ___________</div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="watermark">
+  Field Balance Report &nbsp;|&nbsp; ${asset} &nbsp;|&nbsp; ${docDate} &nbsp;|&nbsp; Phase App v${getDocVersion()} &nbsp;|&nbsp; © ${new Date().getFullYear()} Joel Davis &nbsp;|&nbsp;
+  Based on ISO 21940-11 methodology. Always correlate with spectrum data and visual inspection.
+</div>
+
+<script>window.onload=function(){window.print();}<\/script>
+</body>
+</html>`;
+
+  const w=window.open('','_blank');
+  if(w){w.document.write(html);w.document.close();}
+  else{alert('Pop-ups blocked. Please allow pop-ups for this page to use the report printer.');}
+}
+
 function renderBalance(){
   balRenderChecklist();
   balRenderRunLog();
@@ -7788,6 +8164,19 @@ function renderBalance(){
   balCalcWeld();
   balCalcCorrection();
   balCheckISO();
+  balUpdateLogoHint();
+}
+
+function balUpdateLogoHint(){
+  const el=document.getElementById('bal-logo-hint');
+  if(!el)return;
+  if(chartLogoDataURL){
+    el.innerHTML=`<img src="${chartLogoDataURL}" style="max-height:28px;max-width:80px;object-fit:contain;border-radius:3px;flex-shrink:0">
+      <span><strong style="color:var(--tx)">Logo ready</strong> — will appear in the report header.</span>`;
+  } else {
+    el.innerHTML=`<span style="font-size:15px;flex-shrink:0">🖼</span>
+      <span>No logo uploaded. Go to the <strong style="color:var(--tx)">Components</strong> tab → Chart Logo to upload your company logo — it will appear automatically in the report.</span>`;
+  }
 }
 
 function boot(){
