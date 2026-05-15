@@ -907,7 +907,7 @@ body.hicon .bal-mode-btn.active{color:#000}
             <span class="bal-lbl">Final 1× amp B1</span>
             <input type="number" class="bal-inp" id="bal-final-amp1" placeholder="in/s or mils" step="0.001" oninput="balCheckISO()" style="max-width:130px">
           </div>
-          <div class="bal-field-row" id="bal-iso-b2-row" style="display:none">
+          <div class="bal-field-row" id="bal-iso-b2-row">
             <span class="bal-lbl">Final 1× amp B2</span>
             <input type="number" class="bal-inp" id="bal-final-amp2" placeholder="in/s or mils" step="0.001" oninput="balCheckISO()" style="max-width:130px">
           </div>
@@ -7407,8 +7407,6 @@ function balSetPlanes(type){
   if(bt)bt.classList.toggle('active',type==='two');
   const p2=document.getElementById('bal-plane2-setup');
   if(p2)p2.style.display=type==='two'?'':'none';
-  const ib2=document.getElementById('bal-iso-b2-row');
-  if(ib2)ib2.style.display=type==='two'?'':'none';
   balCalcTrial();
   balRenderRunLog();
   balCheckISO();
@@ -7542,7 +7540,7 @@ function balRenderRunLog(){
 
   function runBlock(id,title,showTW){
     const r=balJob.runs[id]||{};
-    const b2inp=is2?`
+    const b2inp=`
       <div class="bal-field-row">
         <span class="bal-lbl">1× Amp B2</span>
         <input type="number" class="bal-inp" value="${r.amp2||''}" placeholder="amp" step="0.001"
@@ -7550,7 +7548,7 @@ function balRenderRunLog(){
         <span class="bal-lbl" style="min-width:60px">Phase B2 °</span>
         <input type="number" class="bal-inp" value="${r.phase2||''}" placeholder="0–360" step="1"
           oninput="balRunSet('${id}','phase2',this.value)" style="max-width:85px">
-      </div>`:'';
+      </div>`;
     const twBlock=showTW?`
       <div class="bal-field-row">
         <span class="bal-lbl">Trial weight (oz)</span>
@@ -7869,13 +7867,12 @@ function balGenerateReport(){
   function fv(v,dec){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(dec===undefined?3:dec);}
   function runRow(label,r,twLabel){
     const a1=fv(r.amp),p1=fv(r.phase,0);
-    const a2=is2?fv(r.amp2):'';
-    const p2=is2?fv(r.phase2,0):'';
+    const a2=fv(r.amp2),p2=fv(r.phase2,0);
     const tw=r.tw&&r.ta?`${fv(r.tw)} oz @ ${fv(r.ta,0)}°`:'—';
     return `<tr>
       <td>${label}</td>
       <td>${a1}</td><td>${p1}°</td>
-      ${is2?`<td>${a2}</td><td>${p2}°</td>`:''}
+      <td>${a2}</td><td>${p2}°</td>
       <td>${twLabel?tw:'—'}</td>
     </tr>`;
   }
@@ -7928,8 +7925,8 @@ function balGenerateReport(){
     return{z:'Zone D — Shut down',c:'#991b1b'};
   }
   const z1=zoneLabel(fa1);
-  const fa2=is2?parseFloat(document.getElementById('bal-final-amp2').value||finalRun.amp2||''):NaN;
-  const z2=is2?zoneLabel(fa2):null;
+  const fa2=parseFloat(document.getElementById('bal-final-amp2').value||finalRun.amp2||'');
+  const z2=zoneLabel(fa2);
 
   // ── Weight split ──────────────────────────────────────────
   const splitMass=parseFloat(document.getElementById('bal-split-mass').value||'');
@@ -7962,7 +7959,7 @@ function balGenerateReport(){
     trialOk=ac>=30||pc>=30;
   }
 
-  const b2Hdr=is2?'<th>Amp B2</th><th>Phase B2</th>':'';
+  const b2Hdr='<th>Amp B2</th><th>Phase B2</th>';
   const planeLabel=is2?'Two-Plane':'Single-Plane';
 
   const logoTag=chartLogoDataURL
@@ -8100,11 +8097,11 @@ ${splitMass&&!isNaN(splitMass)?`<div style="font-size:11px;margin-bottom:8px"><s
       <td style="color:${z1.c}">${z1.z}</td>
       <td>${isNaN(fa1)?'—':`<span class="badge ${fa1<=zones.A?'badge-ok':fa1<=zones.C?'badge-warn':'badge-fault'}">${fa1<=zones.A?'PASS':fa1<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
     </tr>
-    ${is2&&z2?`<tr>
+    ${z2&&!isNaN(fa2)&&fa2>0?`<tr>
       <td>Bearing 2</td>
-      <td>${isNaN(fa2)?'—':fa2.toFixed(3)}</td>
+      <td>${fa2.toFixed(3)}</td>
       <td style="color:${z2.c}">${z2.z}</td>
-      <td>${isNaN(fa2)?'—':`<span class="badge ${fa2<=zones.A?'badge-ok':fa2<=zones.C?'badge-warn':'badge-fault'}">${fa2<=zones.A?'PASS':fa2<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
+      <td><span class="badge ${fa2<=zones.A?'badge-ok':fa2<=zones.C?'badge-warn':'badge-fault'}">${fa2<=zones.A?'PASS':fa2<=zones.C?'MONITOR':'FAIL'}</span></td>
     </tr>`:''}
   </tbody>
 </table>
