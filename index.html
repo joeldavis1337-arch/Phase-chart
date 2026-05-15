@@ -120,8 +120,9 @@ body.forest .topbar select{background-image:url("data:image/svg+xml,%3Csvg xmlns
 body.hicon .btn.active{color:#000}
 
 /* ── Tab bar — accent underline ── */
-.tab-bar{display:flex;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd);padding:6px 10px 0;gap:2px}
-.tab-bar button{flex:1;padding:8px 4px 10px;font-size:13px;font-weight:600;background:none;border:none;cursor:pointer;color:var(--tx3);border-bottom:2.5px solid transparent;font-family:inherit;touch-action:manipulation;user-select:none;-webkit-appearance:none;border-radius:var(--radius-xs) var(--radius-xs) 0 0;transition:color .15s,background .15s,border-color .15s;letter-spacing:.01em;white-space:nowrap}
+.tab-bar{display:flex;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--bd);padding:6px 10px 0;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-bar button{flex-shrink:0;padding:8px 10px 10px;font-size:12px;font-weight:600;background:none;border:none;cursor:pointer;color:var(--tx3);border-bottom:2.5px solid transparent;font-family:inherit;touch-action:manipulation;user-select:none;-webkit-appearance:none;border-radius:var(--radius-xs) var(--radius-xs) 0 0;transition:color .15s,background .15s,border-color .15s;letter-spacing:.01em;white-space:nowrap}
 .tab-bar button:hover{color:var(--tx2);background:var(--tab-active-bg)}
 .tab-bar button.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--tab-active-bg);font-weight:700}
 
@@ -453,6 +454,58 @@ body.hicon .bs-ref-tag{color:#000}
 .bs-mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 body.hicon .bs-mode-btn.active{color:#000}
 
+/* ── Balance module ── */
+.bal-section{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+.bal-section-hdr{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;user-select:none;touch-action:manipulation;transition:background .12s;border-radius:var(--radius) var(--radius) 0 0}
+.bal-section-hdr:hover{background:var(--bg2)}
+.bal-step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+body.hicon .bal-step-num{color:#000}
+.bal-section-title{font-size:13px;font-weight:700;color:var(--tx);flex:1}
+.bal-chevron{font-size:14px;color:var(--tx3);transition:transform .2s;line-height:1}
+.bal-chevron.collapsed{transform:rotate(-90deg)}
+.bal-section-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.bal-section-body.hidden{display:none}
+.bal-field-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bal-lbl{font-size:11px;font-weight:500;color:var(--tx3);min-width:130px;letter-spacing:.02em;flex-shrink:0}
+.bal-inp{flex:1;font-size:14px;font-weight:500;background:var(--inbg);border:1px solid var(--bd);border-radius:var(--radius-xs);padding:7px 10px;color:var(--tx);font-family:inherit;-webkit-appearance:none;min-height:36px;min-width:70px;transition:border-color .15s,box-shadow .15s}
+.bal-inp:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.bal-sel{flex:1;font-size:13px;font-weight:500;background:var(--inbg);border:1px solid var(--bd);border-radius:var(--radius-xs);padding:7px 26px 7px 10px;color:var(--tx);font-family:inherit;-webkit-appearance:none;min-height:36px;background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s;min-width:120px}
+body.light .bal-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b93a8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+body.dark  .bal-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ba3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+body.navy  .bal-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2322d3f5' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+body.hicon .bal-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23ffee00' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+body.forest .bal-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2339e855' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")}
+.bal-result{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:10px 12px;font-size:12px;color:var(--tx);line-height:1.6}
+.bal-result.ok  {background:#f0fdf4;border-color:#22c55e;color:#166534}
+.bal-result.warn{background:#fffbeb;border-color:#f59e0b;color:#92400e}
+.bal-result.fault{background:#fef2f2;border-color:#ef4444;color:#991b1b}
+body.dark .bal-result.ok  {background:#0e2018;color:#4ade80;border-color:#22c55e}
+body.dark .bal-result.warn{background:#201a0a;color:#fbbf24;border-color:#f59e0b}
+body.dark .bal-result.fault{background:#200f0f;color:#f87171;border-color:#ef4444}
+body.navy .bal-result.ok  {background:#051510;color:#4ade80;border-color:#22c55e}
+body.navy .bal-result.warn{background:#151000;color:#fbbf24;border-color:#f59e0b}
+body.navy .bal-result.fault{background:#150505;color:#f87171;border-color:#ef4444}
+body.hicon .bal-result.ok  {background:#001800;color:#00ff44;border-color:#00ff44}
+body.hicon .bal-result.warn{background:#1a1500;color:#ffee00;border-color:#ffee00}
+body.hicon .bal-result.fault{background:#1a0000;color:#ff4444;border-color:#ff4444}
+body.forest .bal-result.ok  {background:#031008;color:#39e855;border-color:#39e855}
+body.forest .bal-result.warn{background:#141200;color:#c8a020;border-color:#c8a020}
+body.forest .bal-result.fault{background:#180808;color:#e85539;border-color:#e85539}
+.bal-check-row{display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:12px}
+.bal-check-row:last-child{border-bottom:none}
+.bal-check-cb{width:20px;height:20px;cursor:pointer;flex-shrink:0;accent-color:var(--accent);margin-top:1px}
+.bal-check-lbl{flex:1;color:var(--tx);line-height:1.5;cursor:pointer}
+.bal-run-block{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:12px;display:flex;flex-direction:column;gap:8px}
+.bal-run-title{font-size:11px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.bal-mode-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid var(--bd);background:var(--bg3);color:var(--tx3);cursor:pointer;font-family:inherit;touch-action:manipulation;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
+.bal-mode-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+body.hicon .bal-mode-btn.active{color:#000}
+.bal-hint-btn{background:var(--bg2);border:1px solid var(--bd);border-radius:50%;width:26px;height:26px;font-size:11px;font-weight:700;color:var(--tx3);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;touch-action:manipulation;transition:background .12s}
+.bal-hint-btn:hover{background:var(--bd)}
+.bal-correction-box{background:var(--accent-glow);border:2px solid var(--accent);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:6px}
+.bal-corr-main{font-size:20px;font-weight:700;color:var(--tx)}
+.bal-corr-sub{font-size:12px;color:var(--tx2)}
+
 /* ── Overflow menu ── */
 .overflow-menu-btn{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--radius-xs);padding:6px 12px;font-size:14px;cursor:pointer;color:var(--tx);min-height:34px;white-space:nowrap;font-family:inherit;-webkit-appearance:none;touch-action:manipulation;user-select:none;display:none;align-items:center;gap:5px;box-shadow:var(--shadow-sm);font-weight:600}
 .overflow-menu-btn:active{opacity:.6}
@@ -549,6 +602,7 @@ body.hicon .bs-mode-btn.active{color:#000}
     <button id="tab-chart" onclick="showTab('chart')">Chart</button>
     <button id="tab-diag" onclick="showTab('diag')">Diagnosis</button>
     <button id="tab-ods" onclick="showTab('ods')">ODS <span style="font-size:9px;color:#f97316;font-weight:700;vertical-align:middle">β</span></button>
+    <button id="tab-balance" onclick="showTab('balance')">Balance</button>
   </div>
   <div class="body-wrap">
     <div class="sidebar hidden" id="panel-history">
@@ -628,6 +682,237 @@ body.hicon .bs-mode-btn.active{color:#000}
       </div>
       <div id="diag-results"></div>
     </div>
+
+    <!-- ── Balance Panel ── -->
+    <div class="sidebar hidden" id="panel-balance">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <h3 style="margin:0">⚖ Field Balance Calculator</h3>
+        <button class="btn" onclick="balReset()" style="font-size:11px;padding:4px 9px;color:#c00;border-color:#f99">🗑 Reset Job</button>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:6px;line-height:1.5">CSI 2140 companion — single &amp; two-plane. Enter readings from analyzer. App calculates correction weight, flags 30% rule, and checks ISO acceptance.</div>
+
+      <!-- Step 1 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s1')">
+          <span class="bal-step-num">1</span>
+          <span class="bal-section-title">Plane Decision</span>
+          <span class="bal-chevron" id="bal-chev-s1">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s1">
+          <div class="bal-field-row">
+            <span class="bal-lbl">Rotor L/D ratio</span>
+            <input type="number" class="bal-inp" id="bal-ld" placeholder="e.g. 0.8" step="0.1" oninput="balPlaneDec()" style="max-width:130px">
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Phase across bearings</span>
+            <select class="bal-sel" id="bal-phase-pat" onchange="balPlaneDec()">
+              <option value="">— Select —</option>
+              <option value="in">In-phase (within 30°)</option>
+              <option value="out">~180° out of phase</option>
+              <option value="mixed">Mixed / unclear</option>
+            </select>
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Axial 1×</span>
+            <select class="bal-sel" id="bal-axial1x" onchange="balPlaneDec()">
+              <option value="">— Select —</option>
+              <option value="low">Low (normal)</option>
+              <option value="elevated">Elevated</option>
+            </select>
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Amplitude at bearings</span>
+            <select class="bal-sel" id="bal-amp-pat" onchange="balPlaneDec()">
+              <option value="">— Select —</option>
+              <option value="equal">Roughly equal</option>
+              <option value="different">Significantly different</option>
+            </select>
+          </div>
+          <div id="bal-plane-result"></div>
+          <div class="bal-field-row" style="margin-top:4px">
+            <span class="bal-lbl">Use planes</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="bal-mode-btn active" id="bal-plane-single" onclick="balSetPlanes('single')">Single-Plane</button>
+              <button class="bal-mode-btn" id="bal-plane-two" onclick="balSetPlanes('two')">Two-Plane</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s2')">
+          <span class="bal-step-num">2</span>
+          <span class="bal-section-title">Pre-Balance Checklist</span>
+          <span class="bal-chevron" id="bal-chev-s2">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s2">
+          <div style="font-size:11px;color:var(--tx3)">All items must be confirmed before mobilizing weights.</div>
+          <div id="bal-checklist"></div>
+          <div id="bal-checklist-status"></div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s3')">
+          <span class="bal-step-num">3</span>
+          <span class="bal-section-title">Job Setup &amp; Trial Weight</span>
+          <span class="bal-chevron" id="bal-chev-s3">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s3">
+          <div class="bal-field-row">
+            <span class="bal-lbl">Asset / Equipment</span>
+            <input type="text" class="bal-inp" id="bal-asset" placeholder="Asset tag / description">
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Operating RPM</span>
+            <input type="number" class="bal-inp" id="bal-rpm" placeholder="e.g. 1780" inputmode="numeric" oninput="balCalcTrial()" style="max-width:130px">
+          </div>
+          <h3 style="margin:6px 0 2px">Plane 1</h3>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Rotor configuration</span>
+            <select class="bal-sel" id="bal-config" onchange="balCalcTrial()">
+              <option value="centered">Between-bearings — centered</option>
+              <option value="asymmetric">Between-bearings — asymmetric</option>
+              <option value="overhung">Overhung</option>
+            </select>
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Journal load P1 (lb)</span>
+            <input type="number" class="bal-inp" id="bal-jl1" placeholder="Load at bearing" step="0.5" oninput="balCalcTrial()" style="max-width:130px">
+            <button class="bal-hint-btn" onclick="balShowJLHelp()" title="What is journal load?">?</button>
+          </div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Correction radius P1 (in)</span>
+            <input type="number" class="bal-inp" id="bal-rad1" placeholder="Shaft CL to weight" step="0.25" oninput="balCalcTrial()" style="max-width:130px">
+          </div>
+          <div id="bal-trial-result-1"></div>
+          <div id="bal-plane2-setup" style="display:none">
+            <h3 style="margin:8px 0 2px">Plane 2</h3>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Journal load P2 (lb)</span>
+              <input type="number" class="bal-inp" id="bal-jl2" placeholder="Load at bearing 2" step="0.5" oninput="balCalcTrial()" style="max-width:130px">
+            </div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Correction radius P2 (in)</span>
+              <input type="number" class="bal-inp" id="bal-rad2" placeholder="Shaft CL to weight" step="0.25" oninput="balCalcTrial()" style="max-width:130px">
+            </div>
+            <div id="bal-trial-result-2"></div>
+          </div>
+          <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:12px;margin-top:4px;display:flex;flex-direction:column;gap:8px">
+            <h3 style="margin:0">Welding Rod Weight Calculator</h3>
+            <div style="font-size:11px;color:var(--tx3)">Estimate weight of a weld bead or wire tack used as a balance weight.</div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Rod / wire type</span>
+              <select class="bal-sel" id="bal-rod-type" onchange="balCalcWeld()">
+                <option value="bare">Bare MIG wire</option>
+                <option value="e6013">Stick — E6013</option>
+                <option value="e7018">Stick — E7018</option>
+                <option value="e7016">Stick — E7016</option>
+              </select>
+            </div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Wire diameter</span>
+              <select class="bal-sel" id="bal-rod-dia" onchange="balCalcWeld()">
+                <option value="0.023">0.023″ MIG</option>
+                <option value="0.030">0.030″ MIG</option>
+                <option value="0.035">0.035″ MIG</option>
+                <option value="0.045">0.045″ MIG</option>
+                <option value="0.09375">3/32″ (2.4 mm)</option>
+                <option value="0.125" selected>1/8″ (3.2 mm)</option>
+                <option value="0.15625">5/32″ (4.0 mm)</option>
+                <option value="0.1875">3/16″ (4.8 mm)</option>
+                <option value="0.25">1/4″ (6.4 mm)</option>
+              </select>
+            </div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Bead / wire length (in)</span>
+              <input type="number" class="bal-inp" id="bal-rod-len" placeholder="e.g. 3.5" step="0.25" oninput="balCalcWeld()" style="max-width:130px">
+            </div>
+            <div id="bal-weld-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s4')">
+          <span class="bal-step-num">4</span>
+          <span class="bal-section-title">Run Data Log</span>
+          <span class="bal-chevron" id="bal-chev-s4">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s4">
+          <div style="font-size:11px;color:var(--tx3)">Enter 1× amp and phase from CSI 2140 after each run. App auto-checks repeat quality and trial response.</div>
+          <div id="bal-run-log"></div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s5')">
+          <span class="bal-step-num">5</span>
+          <span class="bal-section-title">Correction Calculator</span>
+          <span class="bal-chevron" id="bal-chev-s5">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s5">
+          <div id="bal-correction-out"><div class="bal-result" style="font-size:12px;color:var(--tx3)">Enter Reference run, Trial run, and trial weight details in Step 4 to calculate correction weight and angle.</div></div>
+          <div style="background:var(--bg2);border:1px solid var(--bd);border-radius:var(--radius-sm);padding:12px;margin-top:4px;display:flex;flex-direction:column;gap:8px">
+            <h3 style="margin:0">Weight Splitting</h3>
+            <div style="font-size:11px;color:var(--tx3)">Split a large correction across two adjacent hole positions. Auto-fills from correction above.</div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Total weight (oz)</span>
+              <input type="number" class="bal-inp" id="bal-split-mass" placeholder="oz" step="0.01" oninput="balCalcSplit()" style="max-width:110px">
+            </div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Target angle (°)</span>
+              <input type="number" class="bal-inp" id="bal-split-angle" placeholder="0–360°" step="1" oninput="balCalcSplit()" style="max-width:110px">
+            </div>
+            <div class="bal-field-row">
+              <span class="bal-lbl">Split offset</span>
+              <select class="bal-sel" id="bal-split-offset" onchange="balCalcSplit()">
+                <option value="15">±15°</option>
+                <option value="22.5">±22.5°</option>
+                <option value="30" selected>±30°</option>
+                <option value="45">±45°</option>
+              </select>
+            </div>
+            <div id="bal-split-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="bal-section">
+        <div class="bal-section-hdr" onclick="balToggle('s6')">
+          <span class="bal-step-num">6</span>
+          <span class="bal-section-title">ISO Acceptance Check</span>
+          <span class="bal-chevron" id="bal-chev-s6">▾</span>
+        </div>
+        <div class="bal-section-body" id="bal-body-s6">
+          <div class="bal-field-row">
+            <span class="bal-lbl">Machine class</span>
+            <select class="bal-sel" id="bal-iso-class" onchange="balCheckISO()">
+              <option value="I">Class I — Small (&lt;15 kW)</option>
+              <option value="II" selected>Class II — Medium (15–75 kW)</option>
+              <option value="III">Class III — Large rigid</option>
+              <option value="IV">Class IV — Large flexible</option>
+            </select>
+          </div>
+          <div style="font-size:10px;color:var(--tx3)">Per ISO 10816-1. Class II covers most industrial fans and pumps.</div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Final 1× amp B1</span>
+            <input type="number" class="bal-inp" id="bal-final-amp1" placeholder="in/s or mils" step="0.001" oninput="balCheckISO()" style="max-width:130px">
+          </div>
+          <div class="bal-field-row" id="bal-iso-b2-row" style="display:none">
+            <span class="bal-lbl">Final 1× amp B2</span>
+            <input type="number" class="bal-inp" id="bal-final-amp2" placeholder="in/s or mils" step="0.001" oninput="balCheckISO()" style="max-width:130px">
+          </div>
+          <div id="bal-iso-result"></div>
+        </div>
+      </div>
+
+    </div><!-- end panel-balance -->
   </div>
 </div>
 
@@ -890,7 +1175,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '2.1.2';
+  return '3.0.0';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -2224,8 +2509,8 @@ function upM(nid2,mid2,k,v){
 
 // ── Tabs ──────────────────────────────────────────────────
 function showTab(tab){
-  const panels={history:'panel-history',components:'panel-components',chart:'panel-chart',diag:'panel-diag',ods:'panel-ods'};
-  const tabs={history:'tab-history',components:'tab-components',chart:'tab-chart',diag:'tab-diag',ods:'tab-ods'};
+  const panels={history:'panel-history',components:'panel-components',chart:'panel-chart',diag:'panel-diag',ods:'panel-ods',balance:'panel-balance'};
+  const tabs={history:'tab-history',components:'tab-components',chart:'tab-chart',diag:'tab-diag',ods:'tab-ods',balance:'tab-balance'};
   Object.values(panels).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('hidden');});
   Object.values(tabs).forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
   const panel=document.getElementById(panels[tab]);
@@ -2235,7 +2520,8 @@ function showTab(tab){
   if(tab==='chart'){runDiagnosis();requestAnimationFrame(redraw);}
   if(tab==='diag')runDiagnosis();
   if(tab==='history')renderHistory();
-if(tab==='ods'){runDiagnosis();odsStart();}
+  if(tab==='ods'){runDiagnosis();odsStart();}
+  if(tab==='balance')renderBalance();
 }
 
 // ── Canvas constants ──────────────────────────────────────
@@ -5615,6 +5901,21 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'3.0.0':{
+date:'05/15/2026',
+items:[
+'Field Balance Calculator — new ⚖ Balance tab adding a full in-situ balancing workflow as a CSI 2140 companion tool. Covers single-plane and two-plane jobs from pre-job screening through final ISO acceptance check.',
+'Plane Decision tool — enter rotor L/D ratio, phase pattern across bearings, axial 1× level, and amplitude balance. App outputs a single/two-plane recommendation with reasoning based on ControlWorx/Emerson methodology. Manual override available.',
+'Pre-Balance Checklist — 8-item checklist covering spectrum confirmation (1× dominant), bump test natural frequency clearance (>15%), soft foot, alignment, permits/LOTO, tach setup, sensor mounting consistency, and thermal stabilization. Status indicator shows how many items remain before weight mobilization.',
+'Trial Weight Calculator — implements the 56,375 formula (W = 56375 × journal_load_lb ÷ RPM² × radius_in) with rotor configuration selector: centered between-bearings, asymmetric between-bearings, and overhung. Calculates trial weight in oz and grams. Built-in ? help explains journal load for each configuration.',
+'Welding Rod Weight Calculator — estimates weight of weld bead or wire tack used as a balance weight. Supports bare MIG wire (accurate ±3%) and coated stick electrodes E6013/E7018/E7016 (shows estimated range with explicit warning to weigh on calibrated scale due to variable flux coating weight). Output feeds directly into trial weight field.',
+'Run Data Log — step-by-step entry for Reference, Reference Repeat, Trial (P1 and P2 for two-plane), Correction, Trim, and Final runs. Each run captures 1× amplitude and phase at both bearings for two-plane jobs.',
+'Auto-checks fire on data entry — Reference repeat quality (flags if outside recommended ±5% amp / ±5° phase with analyst discretion note), trial response 30% rule (flags insufficient change with instruction to double trial weight), effect vector magnitude, 5× sanity check on correction vs trial weight, and percent reduction from as-found.',
+'Correction Calculator — full complex influence coefficient vector math. Computes correction weight magnitude and angle from reference run, trial run, and trial weight inputs. Displays sensitivity (oz per amplitude unit) and auto-populates the weight splitting calculator.',
+'Weight Splitting — splits a single correction weight across two adjacent angular positions using proper vector math. Each split weight = total ÷ (2 × cos(offset)). Split offsets: ±15°, ±22.5°, ±30°, ±45°. Auto-fills from correction calculator result.',
+'ISO 10816-1 Acceptance Check — Class I through IV machine class selector with Zone A/B/C/D boundaries in the current amplitude units. Checks both bearings simultaneously for two-plane jobs.',
+],
+},
 '2.1.2':{
 date:'05/07/2026',
 items:[
@@ -7059,6 +7360,434 @@ function odsGIFLZW(indexed,palSize){
   const result=[minCode];
   for(let i=0;i<out.length;){const len=Math.min(255,out.length-i);result.push(len,...out.slice(i,i+len));i+=len;}
   result.push(0);return new Uint8Array(result);
+}
+
+// ── Balance Module v3.0 ───────────────────────────────────
+let balJob = {
+  planeType: 'single',
+  checklist: {
+    dominant1x:false, bumpTestOk:false, softFootOk:false,
+    alignOk:false, permitsOk:false, tachOk:false,
+    mountingOk:false, thermalOk:false
+  },
+  runs: {
+    ref:  {amp:'',phase:'',amp2:'',phase2:''},
+    refR: {amp:'',phase:'',amp2:'',phase2:''},
+    t1:   {amp:'',phase:'',amp2:'',phase2:'',tw:'',ta:''},
+    t2:   {amp:'',phase:'',amp2:'',phase2:'',tw:'',ta:''},
+    corr: {amp:'',phase:'',amp2:'',phase2:''},
+    trim1:{amp:'',phase:'',amp2:'',phase2:''},
+    final:{amp:'',phase:'',amp2:'',phase2:''},
+  }
+};
+
+function balToggle(id){
+  const body=document.getElementById('bal-body-'+id);
+  const chev=document.getElementById('bal-chev-'+id);
+  if(!body)return;
+  body.classList.toggle('hidden');
+  if(chev)chev.classList.toggle('collapsed');
+}
+
+function balSetPlanes(type){
+  balJob.planeType=type;
+  const bs=document.getElementById('bal-plane-single');
+  const bt=document.getElementById('bal-plane-two');
+  if(bs)bs.classList.toggle('active',type==='single');
+  if(bt)bt.classList.toggle('active',type==='two');
+  const p2=document.getElementById('bal-plane2-setup');
+  if(p2)p2.style.display=type==='two'?'':'none';
+  const ib2=document.getElementById('bal-iso-b2-row');
+  if(ib2)ib2.style.display=type==='two'?'':'none';
+  balCalcTrial();
+  balRenderRunLog();
+  balCheckISO();
+}
+
+// ── Plane decision ────────────────────────────────────────
+function balPlaneDec(){
+  const ld=parseFloat(document.getElementById('bal-ld').value);
+  const phase=document.getElementById('bal-phase-pat').value;
+  const axial=document.getElementById('bal-axial1x').value;
+  const ampPat=document.getElementById('bal-amp-pat').value;
+  const el=document.getElementById('bal-plane-result');
+  if(!el)return;
+  const reasons=[];
+  if(!isNaN(ld)){
+    if(ld<0.5)reasons.push('L/D < 0.5 → single-plane');
+    else if(ld>2.0)reasons.push('L/D > 2.0 → two-plane');
+    else reasons.push('L/D in gray zone 0.5–2.0 → default two-plane');
+  }
+  if(phase==='in')reasons.push('In-phase → static unbalance → single-plane');
+  if(phase==='out')reasons.push('180° out → couple component → two-plane');
+  if(phase==='mixed')reasons.push('Mixed phase → two-plane');
+  if(axial==='elevated')reasons.push('Elevated axial 1× → couple → two-plane');
+  if(ampPat==='different')reasons.push('Unequal amplitudes → two-plane');
+  if(!reasons.length){el.innerHTML='';return;}
+  const twoCount=reasons.filter(r=>r.includes('two-plane')).length;
+  const cls=twoCount>0?'warn':'ok';
+  const rec=twoCount>0?'Recommend: <strong>Two-Plane</strong>':'Recommend: <strong>Single-Plane</strong>';
+  el.innerHTML=`<div class="bal-result ${cls}">${rec}<br><span style="font-size:10px;opacity:.8">${reasons.join(' · ')}</span></div>`;
+}
+
+// ── Checklist ─────────────────────────────────────────────
+const BAL_CHECKS=[
+  {key:'dominant1x', label:'1× is dominant peak in spectrum (rule out looseness / misalignment)'},
+  {key:'bumpTestOk', label:'Bump test confirms operating speed is >15% from any natural frequency'},
+  {key:'softFootOk', label:'Soft foot checked and corrected'},
+  {key:'alignOk',    label:'Alignment within site tolerance (no elevated 2× or axial 1×)'},
+  {key:'permitsOk',  label:'Permits issued — safe work / hot work / LOTO coordinated'},
+  {key:'tachOk',     label:'Photo tach mounted rigidly — clean single pulse/rev verified at speed'},
+  {key:'mountingOk', label:'Accelerometer mounting location marked — same location for all runs'},
+  {key:'thermalOk',  label:'Rotor thermally stabilized (≥30 min at operating condition)'},
+];
+
+function balRenderChecklist(){
+  const el=document.getElementById('bal-checklist');
+  if(!el)return;
+  el.innerHTML=BAL_CHECKS.map(c=>`
+    <div class="bal-check-row">
+      <input type="checkbox" class="bal-check-cb" id="balck-${c.key}" ${balJob.checklist[c.key]?'checked':''}
+        onchange="balCheckToggle('${c.key}',this.checked)">
+      <label class="bal-check-lbl" for="balck-${c.key}">${c.label}</label>
+    </div>`).join('');
+  balChecklistStatus();
+}
+
+function balCheckToggle(key,val){
+  balJob.checklist[key]=val;
+  balChecklistStatus();
+}
+
+function balChecklistStatus(){
+  const el=document.getElementById('bal-checklist-status');
+  if(!el)return;
+  const done=BAL_CHECKS.filter(c=>balJob.checklist[c.key]).length;
+  const total=BAL_CHECKS.length;
+  el.innerHTML=done===total
+    ?`<div class="bal-result ok">✓ All pre-balance criteria confirmed — safe to proceed with weight mobilization.</div>`
+    :`<div class="bal-result warn">⚠ ${total-done} of ${total} items incomplete — do not mobilize weights until all are confirmed.</div>`;
+}
+
+// ── Trial Weight Calculator ───────────────────────────────
+// W_trial (oz) = 56375 × journal_load_lb / (RPM² × radius_in)
+function balCalcTrial(){
+  const rpm=parseFloat(document.getElementById('bal-rpm').value);
+  const jl1=parseFloat(document.getElementById('bal-jl1').value);
+  const r1=parseFloat(document.getElementById('bal-rad1').value);
+  const el1=document.getElementById('bal-trial-result-1');
+  if(el1){
+    if(!isNaN(rpm)&&!isNaN(jl1)&&!isNaN(r1)&&rpm>0&&jl1>0&&r1>0){
+      const tw=56375*jl1/(rpm*rpm*r1);
+      const twg=tw*28.3495;
+      el1.innerHTML=`<div class="bal-result ok"><strong>Calculated trial weight (P1):</strong> ${tw.toFixed(3)} oz &nbsp;·&nbsp; ${twg.toFixed(2)} g<br><span style="font-size:10px">Centrifugal force ≈ 10% of journal load. Verify ≥30% amp or ≥30° phase change on trial run.</span></div>`;
+    } else {
+      el1.innerHTML='';
+    }
+  }
+  if(balJob.planeType==='two'){
+    const jl2=parseFloat(document.getElementById('bal-jl2').value);
+    const r2=parseFloat(document.getElementById('bal-rad2').value);
+    const el2=document.getElementById('bal-trial-result-2');
+    if(el2){
+      if(!isNaN(rpm)&&!isNaN(jl2)&&!isNaN(r2)&&rpm>0&&jl2>0&&r2>0){
+        const tw2=56375*jl2/(rpm*rpm*r2);
+        el2.innerHTML=`<div class="bal-result ok"><strong>Calculated trial weight (P2):</strong> ${tw2.toFixed(3)} oz &nbsp;·&nbsp; ${(tw2*28.3495).toFixed(2)} g</div>`;
+      } else {
+        el2.innerHTML='';
+      }
+    }
+  }
+}
+
+// ── Welding Rod Weight Calculator ─────────────────────────
+// Steel core density: 4.533 oz/in³
+// Flux coating factors: bare=1.0, E6013≈1.28, E7018≈1.38, E7016≈1.33
+const BAL_ROD_FLUX={bare:1.0,e6013:1.28,e7018:1.38,e7016:1.33};
+function balCalcWeld(){
+  const rodType=document.getElementById('bal-rod-type').value;
+  const dia=parseFloat(document.getElementById('bal-rod-dia').value);
+  const len=parseFloat(document.getElementById('bal-rod-len').value);
+  const el=document.getElementById('bal-weld-result');
+  if(!el)return;
+  if(isNaN(dia)||isNaN(len)||len<=0){el.innerHTML='';return;}
+  const coreVol=Math.PI*(dia/2)*(dia/2)*len;
+  const coreOz=coreVol*4.533;
+  const coreG=coreOz*28.3495;
+  const flux=BAL_ROD_FLUX[rodType]||1.0;
+  const totalOz=coreOz*flux;
+  const totalG=totalOz*28.3495;
+  const isBare=rodType==='bare';
+  const note=isBare
+    ?'Bare wire — calculation accurate ±3%. Weigh on scale to confirm.'
+    :`Coated electrode — core: ${coreOz.toFixed(4)} oz (${coreG.toFixed(3)} g). Flux adds ~${Math.round((flux-1)*100)}% estimated. Actual range: ${coreOz.toFixed(3)}–${(coreOz*1.45).toFixed(3)} oz. <strong>Weigh on calibrated scale for precision.</strong>`;
+  el.innerHTML=`<div class="bal-result ${isBare?'ok':'warn'}"><strong>Estimated weight:</strong> ${totalOz.toFixed(4)} oz &nbsp;·&nbsp; ${totalG.toFixed(3)} g<br><span style="font-size:10px">${note}</span></div>`;
+}
+
+// ── Run Log ───────────────────────────────────────────────
+function balRenderRunLog(){
+  const el=document.getElementById('bal-run-log');
+  if(!el)return;
+  const is2=balJob.planeType==='two';
+
+  function runBlock(id,title,showTW){
+    const r=balJob.runs[id]||{};
+    const b2inp=is2?`
+      <div class="bal-field-row">
+        <span class="bal-lbl">1× Amp B2</span>
+        <input type="number" class="bal-inp" value="${r.amp2||''}" placeholder="amp" step="0.001"
+          oninput="balRunSet('${id}','amp2',this.value)" style="max-width:100px">
+        <span class="bal-lbl" style="min-width:60px">Phase B2 °</span>
+        <input type="number" class="bal-inp" value="${r.phase2||''}" placeholder="0–360" step="1"
+          oninput="balRunSet('${id}','phase2',this.value)" style="max-width:85px">
+      </div>`:'';
+    const twBlock=showTW?`
+      <div class="bal-field-row">
+        <span class="bal-lbl">Trial weight (oz)</span>
+        <input type="number" class="bal-inp" value="${r.tw||''}" placeholder="oz" step="0.001"
+          oninput="balRunSet('${id}','tw',this.value)" style="max-width:100px">
+        <span class="bal-lbl" style="min-width:50px">at angle °</span>
+        <input type="number" class="bal-inp" value="${r.ta||''}" placeholder="0–360°" step="1"
+          oninput="balRunSet('${id}','ta',this.value)" style="max-width:85px">
+      </div>`:'';
+    return `<div class="bal-run-block">
+      <div class="bal-run-title">${title}</div>
+      <div class="bal-field-row">
+        <span class="bal-lbl">1× Amp B1</span>
+        <input type="number" class="bal-inp" value="${r.amp||''}" placeholder="amp" step="0.001"
+          oninput="balRunSet('${id}','amp',this.value)" style="max-width:100px">
+        <span class="bal-lbl" style="min-width:60px">Phase B1 °</span>
+        <input type="number" class="bal-inp" value="${r.phase||''}" placeholder="0–360" step="1"
+          oninput="balRunSet('${id}','phase',this.value)" style="max-width:85px">
+      </div>
+      ${b2inp}${twBlock}
+      <div id="bal-run-check-${id}"></div>
+    </div>`;
+  }
+
+  let html=runBlock('ref','Reference Run (V₀) — baseline',false);
+  html+=runBlock('refR','Reference Repeat — verify within ±5% amp / ±5° phase',false);
+  html+=runBlock('t1',is2?'Trial Run — Plane 1':'Trial Run (V₁)',true);
+  if(is2)html+=runBlock('t2','Trial Run — Plane 2',true);
+  html+=runBlock('corr','Correction Run (V₂)',false);
+  html+=runBlock('trim1','Trim Run 1 (if needed)',false);
+  html+=runBlock('final','Final Verify',false);
+  el.innerHTML=html;
+  balRunChecks();
+}
+
+function balRunSet(runId,field,val){
+  if(!balJob.runs[runId])balJob.runs[runId]={};
+  balJob.runs[runId][field]=val;
+  balRunChecks();
+  balCalcCorrection();
+}
+
+function balRunChecks(){
+  balRepeatCheck('ref','refR','bal-run-check-refR');
+  balTrialChangeCheck();
+  balCorrCheck();
+}
+
+function balRepeatCheck(id1,id2,elId){
+  const el=document.getElementById(elId);
+  if(!el)return;
+  const r1=balJob.runs[id1]||{},r2=balJob.runs[id2]||{};
+  const a1=parseFloat(r1.amp),a2=parseFloat(r2.amp);
+  const p1=parseFloat(r1.phase),p2=parseFloat(r2.phase);
+  if(isNaN(a1)||isNaN(a2)||isNaN(p1)||isNaN(p2)||a1===0){el.innerHTML='';return;}
+  const ampChg=Math.abs(a1-a2)/a1*100;
+  let phChg=Math.abs(p1-p2);if(phChg>180)phChg=360-phChg;
+  const ok=ampChg<=5&&phChg<=5;
+  el.innerHTML=ok
+    ?`<div class="bal-result ok" style="font-size:11px">✓ Repeat OK — Amp ±${ampChg.toFixed(1)}% · Phase ±${phChg.toFixed(0)}°</div>`
+    :`<div class="bal-result warn" style="font-size:11px">⚡ Repeat outside recommended tolerance — Amp ±${ampChg.toFixed(1)}% · Phase ±${phChg.toFixed(0)}° (recommended ≤5% / ≤5°). Readings may be acceptable — use analyst judgment. Common causes: unstable speed, loose tach, thermal transient.</div>`;
+}
+
+function balTrialChangeCheck(){
+  const el=document.getElementById('bal-run-check-t1');
+  if(!el)return;
+  const ref=balJob.runs.ref||{},t1=balJob.runs.t1||{};
+  const rA=parseFloat(ref.amp),tA=parseFloat(t1.amp);
+  const rP=parseFloat(ref.phase),tP=parseFloat(t1.phase);
+  if(isNaN(rA)||isNaN(tA)||isNaN(rP)||isNaN(tP)||rA===0){el.innerHTML='';return;}
+  const ampChg=Math.abs(tA-rA)/rA*100;
+  let phChg=Math.abs(tP-rP);if(phChg>180)phChg=360-phChg;
+  const ok=ampChg>=30||phChg>=30;
+  const tw=parseFloat(t1.tw);
+  const effectVec=Math.sqrt(
+    Math.pow(tA*Math.cos(tP*Math.PI/180)-rA*Math.cos(rP*Math.PI/180),2)+
+    Math.pow(tA*Math.sin(tP*Math.PI/180)-rA*Math.sin(rP*Math.PI/180),2));
+  let extra='';
+  if(!isNaN(tw)&&tw>0&&effectVec>0.001){
+    const corrEst=tw*rA/effectVec;
+    extra=`<br>Effect vector: ${effectVec.toFixed(3)} · Est. correction: ${corrEst.toFixed(3)} oz (${(corrEst*28.35).toFixed(2)} g)`;
+    if(corrEst>tw*5)extra+=`<br><strong>⚠ Est. correction >5× trial weight — re-evaluate before installing.</strong>`;
+  }
+  el.innerHTML=ok
+    ?`<div class="bal-result ok" style="font-size:11px">✓ Adequate trial response — Amp ${ampChg.toFixed(0)}% · Phase ${phChg.toFixed(0)}°${extra}</div>`
+    :`<div class="bal-result fault" style="font-size:11px">⚠ Insufficient trial response — Amp ${ampChg.toFixed(0)}% · Phase ${phChg.toFixed(0)}° (need ≥30% or ≥30°) — double trial weight and re-run.</div>`;
+}
+
+function balCorrCheck(){
+  const el=document.getElementById('bal-run-check-corr');
+  if(!el)return;
+  const ref=balJob.runs.ref||{},corr=balJob.runs.corr||{};
+  const rA=parseFloat(ref.amp),cA=parseFloat(corr.amp);
+  if(isNaN(rA)||isNaN(cA)||rA===0){el.innerHTML='';return;}
+  const red=(1-cA/rA)*100;
+  el.innerHTML=`<div class="bal-result ${red>=75?'ok':'warn'}" style="font-size:11px">
+    Reduction from as-found: <strong>${red.toFixed(0)}%</strong> ${red>=75?'✓ (≥75% target met)':'(target ≥75% — trim balance recommended)'}<br>
+    Final 1× B1: ${cA.toFixed(3)} — verify ISO zone in Step 6.
+  </div>`;
+}
+
+// ── Complex number helpers ────────────────────────────────
+function _c(amp,deg){const r=deg*Math.PI/180;return{re:amp*Math.cos(r),im:amp*Math.sin(r)};}
+function _sub(a,b){return{re:a.re-b.re,im:a.im-b.im};}
+function _div(a,b){const d=b.re*b.re+b.im*b.im;if(d<1e-14)return{re:0,im:0};return{re:(a.re*b.re+a.im*b.im)/d,im:(a.im*b.re-a.re*b.im)/d};}
+function _mag(c){return Math.sqrt(c.re*c.re+c.im*c.im);}
+function _ang(c){let a=Math.atan2(c.im,c.re)*180/Math.PI;return((a%360)+360)%360;}
+function _neg(c){return{re:-c.re,im:-c.im};}
+
+// ── Correction Calculator ─────────────────────────────────
+function balCalcCorrection(){
+  const el=document.getElementById('bal-correction-out');
+  if(!el)return;
+  const ref=balJob.runs.ref||{},t1=balJob.runs.t1||{};
+  const rA=parseFloat(ref.amp),rP=parseFloat(ref.phase);
+  const tA=parseFloat(t1.amp),tP=parseFloat(t1.phase);
+  const twM=parseFloat(t1.tw),twA=parseFloat(t1.ta);
+  if(isNaN(rA)||isNaN(rP)||isNaN(tA)||isNaN(tP)||isNaN(twM)||isNaN(twA)||rA===0||twM===0){
+    el.innerHTML=`<div class="bal-result" style="font-size:12px;color:var(--tx3)">Enter Reference run amp/phase, Trial run amp/phase, and trial weight (oz + angle°) in Step 4 to calculate correction.</div>`;
+    return;
+  }
+  const O=_c(rA,rP),T1=_c(tA,tP),TW=_c(twM,twA);
+  const Effect=_sub(T1,O);
+  const effMag=_mag(Effect);
+  if(effMag<0.0001){
+    el.innerHTML=`<div class="bal-result fault">Effect vector is near zero — trial weight produced no measurable change. Increase trial weight and re-run.</div>`;
+    return;
+  }
+  // α = Effect / TW  →  Correction = -O / α = -O × TW / Effect
+  const alpha=_div(Effect,TW);
+  const Corr=_div(_neg(O),alpha);
+  const corrMass=_mag(Corr);
+  const corrAngle=_ang(Corr);
+  const corrG=corrMass*28.3495;
+  const sens=twM/effMag;
+  const sanity=corrMass/twM;
+  let ampChg=Math.abs(tA-rA)/rA*100;
+  let phChg=Math.abs(tP-rP);if(phChg>180)phChg=360-phChg;
+
+  el.innerHTML=`
+    <div class="bal-correction-box">
+      <div class="bal-corr-sub">Single-Plane Correction Weight</div>
+      <div class="bal-corr-main">${corrMass.toFixed(3)} oz &nbsp;·&nbsp; ${corrG.toFixed(2)} g</div>
+      <div class="bal-corr-sub">at <strong>${corrAngle.toFixed(1)}°</strong> from tach reference (against rotation)</div>
+    </div>
+    <div class="bal-result${sanity>5?' fault':''}" style="font-size:11px;margin-top:8px">
+      Effect vector: ${effMag.toFixed(4)} · Sensitivity: ${sens.toFixed(4)} oz/unit · Trial: Amp ${ampChg.toFixed(0)}% · Phase ${phChg.toFixed(0)}°
+      ${sanity>5?'<br><strong>⚠ Correction >5× trial weight — verify data before installing.</strong>':''}
+    </div>
+    <div style="font-size:10px;color:var(--tx3);margin-top:4px">Remove trial weight → install correction at ${corrAngle.toFixed(1)}° ±5° · Weight: ${corrMass.toFixed(3)} oz ±5% · Weigh on calibrated scale.</div>`;
+
+  // Auto-populate split fields if empty
+  const sm=document.getElementById('bal-split-mass');
+  const sa=document.getElementById('bal-split-angle');
+  if(sm&&!sm.value){sm.value=corrMass.toFixed(3);}
+  if(sa&&!sa.value){sa.value=corrAngle.toFixed(1);}
+  balCalcSplit();
+}
+
+// ── Weight Splitting ──────────────────────────────────────
+// Two equal weights at (angle±offset) produce net vector = 2×each×cos(offset) at angle
+// To achieve total mass at angle: each = total / (2 × cos(offset))
+function balCalcSplit(){
+  const el=document.getElementById('bal-split-result');
+  if(!el)return;
+  const mass=parseFloat(document.getElementById('bal-split-mass').value);
+  const angle=parseFloat(document.getElementById('bal-split-angle').value);
+  const offset=parseFloat(document.getElementById('bal-split-offset').value);
+  if(isNaN(mass)||isNaN(angle)||isNaN(offset)||mass<=0){el.innerHTML='';return;}
+  const each=mass/(2*Math.cos(offset*Math.PI/180));
+  const a1=((angle-offset)%360+360)%360;
+  const a2=((angle+offset)%360+360)%360;
+  el.innerHTML=`<div class="bal-result ok">
+    <strong>Weight 1:</strong> ${each.toFixed(3)} oz (${(each*28.35).toFixed(2)} g) at ${a1.toFixed(1)}°<br>
+    <strong>Weight 2:</strong> ${each.toFixed(3)} oz (${(each*28.35).toFixed(2)} g) at ${a2.toFixed(1)}°<br>
+    <span style="font-size:10px;opacity:.75">Net vector = ${mass.toFixed(3)} oz at ${angle.toFixed(1)}°. Install both, then verify with a run.</span>
+  </div>`;
+}
+
+// ── ISO Zone Check ────────────────────────────────────────
+// ISO 10816-1 approximate velocity zone boundaries (in/s pk, at measurement point)
+const BAL_ISO_ZONES={
+  I:  {A:0.07,B:0.11,C:0.18},
+  II: {A:0.11,B:0.18,C:0.28},
+  III:{A:0.18,B:0.28,C:0.45},
+  IV: {A:0.28,B:0.45,C:0.71},
+};
+function balCheckISO(){
+  const el=document.getElementById('bal-iso-result');
+  if(!el)return;
+  const cls=document.getElementById('bal-iso-class').value;
+  const a1=parseFloat(document.getElementById('bal-final-amp1').value);
+  const unitKey=(document.getElementById('amp-unit')||{}).value||'in/s';
+  if(isNaN(a1)||a1<=0){el.innerHTML='';return;}
+  const zones=BAL_ISO_ZONES[cls]||BAL_ISO_ZONES.II;
+  function zone(amp){
+    if(amp<=zones.A)return{z:'A',lbl:'Zone A — Acceptable (new machine)',c:'ok'};
+    if(amp<=zones.B)return{z:'B',lbl:'Zone B — Acceptable for long-term operation',c:'warn'};
+    if(amp<=zones.C)return{z:'C',lbl:'Zone C — Short-term only — plan maintenance',c:'warn'};
+    return{z:'D',lbl:'Zone D — Vibration likely causing damage — shut down',c:'fault'};
+  }
+  const z1=zone(a1);
+  let html=`<div class="bal-result ${z1.c}"><strong>Bearing 1:</strong> ${a1.toFixed(3)} ${unitKey} — ${z1.lbl}`;
+  if(balJob.planeType==='two'){
+    const a2=parseFloat(document.getElementById('bal-final-amp2').value);
+    if(!isNaN(a2)&&a2>0){const z2=zone(a2);html+=`<br><strong>Bearing 2:</strong> ${a2.toFixed(3)} ${unitKey} — ${z2.lbl}`;}
+  }
+  html+=`<br><span style="font-size:10px;opacity:.75">Class ${cls} boundaries: A≤${zones.A} · B≤${zones.B} · C≤${zones.C} ${unitKey}</span></div>`;
+  el.innerHTML=html;
+}
+
+function balShowJLHelp(){
+  const cfg=(document.getElementById('bal-config')||{}).value||'centered';
+  const msgs={
+    centered:'Centered between-bearings rotor: each bearing carries ≈ half the wheel weight.\n\nExample: 200 lb fan wheel → journal load ≈ 100 lb per bearing.',
+    asymmetric:'Asymmetric between-bearings: the bearing closer to the wheel center of gravity carries more load. Use actual journal load if available, or estimate based on CG position.',
+    overhung:'Overhung rotor: the bearing nearest the wheel typically carries 1.5–2× the wheel weight due to the cantilever moment.\n\nExample: 100 lb overhung impeller → journal load at near bearing ≈ 150–200 lb.'
+  };
+  alert('Journal Load — '+cfg+'\n\n'+(msgs[cfg]||msgs.centered));
+}
+
+function balReset(){
+  if(!confirm('Reset all balance job data?'))return;
+  balJob={
+    planeType:'single',
+    checklist:{dominant1x:false,bumpTestOk:false,softFootOk:false,alignOk:false,permitsOk:false,tachOk:false,mountingOk:false,thermalOk:false},
+    runs:{
+      ref:{amp:'',phase:'',amp2:'',phase2:''},
+      refR:{amp:'',phase:'',amp2:'',phase2:''},
+      t1:{amp:'',phase:'',amp2:'',phase2:'',tw:'',ta:''},
+      t2:{amp:'',phase:'',amp2:'',phase2:'',tw:'',ta:''},
+      corr:{amp:'',phase:'',amp2:'',phase2:''},
+      trim1:{amp:'',phase:'',amp2:'',phase2:''},
+      final:{amp:'',phase:'',amp2:'',phase2:''},
+    }
+  };
+  renderBalance();
+}
+
+function renderBalance(){
+  balRenderChecklist();
+  balRenderRunLog();
+  balPlaneDec();
+  balCalcTrial();
+  balCalcWeld();
+  balCalcCorrection();
+  balCheckISO();
 }
 
 function boot(){
