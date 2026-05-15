@@ -7540,35 +7540,51 @@ function balRenderRunLog(){
 
   function runBlock(id,title,showTW){
     const r=balJob.runs[id]||{};
-    const b2inp=`
-      <div class="bal-field-row">
-        <span class="bal-lbl">1× Amp B2</span>
-        <input type="number" class="bal-inp" value="${r.amp2||''}" placeholder="amp" step="0.001"
-          oninput="balRunSet('${id}','amp2',this.value)" style="max-width:100px">
-        <span class="bal-lbl" style="min-width:60px">Phase B2 °</span>
-        <input type="number" class="bal-inp" value="${r.phase2||''}" placeholder="0–360" step="1"
-          oninput="balRunSet('${id}','phase2',this.value)" style="max-width:85px">
-      </div>`;
     const twBlock=showTW?`
-      <div class="bal-field-row">
-        <span class="bal-lbl">Trial weight (oz)</span>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px">
+        <span style="font-size:11px;font-weight:600;color:var(--tx3);min-width:90px">Trial wt (oz)</span>
         <input type="number" class="bal-inp" value="${r.tw||''}" placeholder="oz" step="0.001"
-          oninput="balRunSet('${id}','tw',this.value)" style="max-width:100px">
-        <span class="bal-lbl" style="min-width:50px">at angle °</span>
+          oninput="balRunSet('${id}','tw',this.value)" style="max-width:90px;flex:1">
+        <span style="font-size:11px;font-weight:600;color:var(--tx3);min-width:50px">Angle °</span>
         <input type="number" class="bal-inp" value="${r.ta||''}" placeholder="0–360°" step="1"
-          oninput="balRunSet('${id}','ta',this.value)" style="max-width:85px">
+          oninput="balRunSet('${id}','ta',this.value)" style="max-width:90px;flex:1">
       </div>`:'';
     return `<div class="bal-run-block">
       <div class="bal-run-title">${title}</div>
-      <div class="bal-field-row">
-        <span class="bal-lbl">1× Amp B1</span>
-        <input type="number" class="bal-inp" value="${r.amp||''}" placeholder="amp" step="0.001"
-          oninput="balRunSet('${id}','amp',this.value)" style="max-width:100px">
-        <span class="bal-lbl" style="min-width:60px">Phase B1 °</span>
-        <input type="number" class="bal-inp" value="${r.phase||''}" placeholder="0–360" step="1"
-          oninput="balRunSet('${id}','phase',this.value)" style="max-width:85px">
-      </div>
-      ${b2inp}${twBlock}
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+          <tr>
+            <th style="text-align:left;font-size:10px;font-weight:600;color:var(--tx3);padding:0 6px 4px 0;width:36px"></th>
+            <th style="text-align:left;font-size:10px;font-weight:600;color:var(--tx3);padding:0 6px 4px 0">Amplitude (${(document.getElementById('amp-unit')||{}).value||'in/s'})</th>
+            <th style="text-align:left;font-size:10px;font-weight:600;color:var(--tx3);padding:0 0 4px 0">Phase (°)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:3px 6px 3px 0;font-size:11px;font-weight:700;color:var(--tx2);white-space:nowrap">B1</td>
+            <td style="padding:3px 6px 3px 0">
+              <input type="number" class="bal-inp" value="${r.amp||''}" placeholder="0.000" step="0.001"
+                oninput="balRunSet('${id}','amp',this.value)" style="width:100%;min-width:0">
+            </td>
+            <td style="padding:3px 0">
+              <input type="number" class="bal-inp" value="${r.phase||''}" placeholder="0–360" step="1"
+                oninput="balRunSet('${id}','phase',this.value)" style="width:100%;min-width:0">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:3px 6px 3px 0;font-size:11px;font-weight:700;color:var(--tx2);white-space:nowrap">B2</td>
+            <td style="padding:3px 6px 3px 0">
+              <input type="number" class="bal-inp" value="${r.amp2||''}" placeholder="0.000" step="0.001"
+                oninput="balRunSet('${id}','amp2',this.value)" style="width:100%;min-width:0">
+            </td>
+            <td style="padding:3px 0">
+              <input type="number" class="bal-inp" value="${r.phase2||''}" placeholder="0–360" step="1"
+                oninput="balRunSet('${id}','phase2',this.value)" style="width:100%;min-width:0">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      ${twBlock}
       <div id="bal-run-check-${id}"></div>
     </div>`;
   }
