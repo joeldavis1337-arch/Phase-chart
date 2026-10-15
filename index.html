@@ -1183,7 +1183,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '3.0.0';
+  return '3.0.1';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -5911,6 +5911,11 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'3.0.1':{
+date:'10/15/2026',
+items:[
+'Offline mode fixed — the app now caches itself so it opens with no signal once it has been loaded online. The previous offline setup was silently rejected by browsers.',
+]},
 '3.0.0':{
 date:'05/15/2026',
 items:[
@@ -8262,34 +8267,9 @@ function boot(){
   checkImportFromURL();
   // PWA Service Worker — enables offline use and Add to Home Screen
   if('serviceWorker' in navigator){
-    const swCode=`
-const CACHE='phase-chart-v2-1-1';
-const ASSETS=[self.location.href.split('?')[0],'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap'];
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>{})));
-  self.skipWaiting();
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(
-    caches.match(e.request).then(cached=>{
-      const fresh=fetch(e.request).then(res=>{
-        if(res.ok){caches.open(CACHE).then(c=>c.put(e.request,res.clone()));}
-        return res;
-      }).catch(()=>cached);
-      return cached||fresh;
-    })
-  );
-});`;
-    const blob=new Blob([swCode],{type:'application/javascript'});
-    const swURL=URL.createObjectURL(blob);
-    navigator.serviceWorker.register(swURL,{scope:'./'})
-      .then(()=>URL.revokeObjectURL(swURL))
-      .catch(()=>{});
+    // Real file (sw.js next to index.html) — browsers refuse blob: service workers.
+    navigator.serviceWorker.register('sw.js',{scope:'./'})
+      .catch(e=>console.warn('Service worker registration failed:',e));
   }
   // Auto-show What's New on first open after a version update
   const _seenVer=localStorage.getItem('phaseChart_seenVersion');
