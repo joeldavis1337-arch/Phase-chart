@@ -201,6 +201,13 @@ body.forest .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 .diag-item.warn {background:#fffbeb;border-left-color:#f59e0b}
 .diag-item.fault{background:#fef2f2;border-left-color:#ef4444}
 .diag-item.info {background:#eff6ff;border-left-color:#3b82f6}
+.diag-show{align-self:flex-start;margin-top:6px;font-size:12px;padding:5px 10px;min-height:32px}
+#hl-banner{position:absolute;top:8px;left:8px;right:8px;z-index:6;background:var(--bg2);border:1px solid var(--bd);border-left:4px solid #2563eb;border-radius:8px;box-shadow:var(--shadow-sm);padding:10px 12px;max-height:45%;overflow:auto;font-size:12px;color:var(--tx2)}
+#hl-banner[hidden]{display:none}
+#hl-banner .hl-h{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+#hl-banner .hl-t{font-weight:700;color:var(--tx);font-size:13px;line-height:1.35}
+#hl-banner ul{margin:6px 0 0;padding-left:16px;line-height:1.55;font-variant-numeric:tabular-nums}
+#hl-banner .btn{flex-shrink:0;font-size:12px;padding:4px 10px;min-height:30px}
 .iso-line{margin-bottom:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;font-size:11px;color:var(--tx2)}
 .iso-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .iso-k{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)}
@@ -656,6 +663,7 @@ body.hicon .bal-mode-btn.active{color:#000}
       <div id="node-list"></div>
     </div>
     <div class="chart-area hidden" id="panel-chart">
+      <div id="hl-banner" hidden></div>
       <div class="chart-viewport" id="chart-viewport">
         <canvas id="chart"></canvas>
       </div>
@@ -1201,7 +1209,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '3.2.0';
+  return '3.4.0';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -2215,6 +2223,13 @@ function renderSidebar(){
         </select>
       </div>
       <div class="row">
+        <span class="lbl">Bearings</span>
+        <select class="nc-sel" style="flex:1" onchange="upN(${n.id},'bearingType',this.value)">
+          <option value="auto"${(n.bearingType||'auto')==='auto'?' selected':''}>Auto from shape (${BEARING_LBL[bearingAuto(n)]})</option>
+          ${['rolling','sleeve','tilt','unknown'].map(b=>`<option value="${b}"${n.bearingType===b?' selected':''}>${BEARING_LBL[b]}</option>`).join('')}
+        </select>
+      </div>
+      <div class="row">
         <span class="lbl">RPM</span>
         <input type="text" inputmode="numeric" value="${esc(n.rpm)}" placeholder="override"
           style="flex:1;font-size:16px;background:var(--inbg);border:1px solid var(--bd2);border-radius:4px;padding:4px 7px;color:var(--tx);font-family:'DM Sans','Inter',sans-serif;min-height:32px;-webkit-appearance:none"
@@ -2551,6 +2566,7 @@ function showTab(tab){
   const tabEl=document.getElementById(tabs[tab]);
   if(panel)panel.classList.remove('hidden');
   if(tabEl)tabEl.classList.add('active');
+  if(tab!=='chart'&&_hl){_hl=null;renderHlBanner();}
   if(tab==='chart'){runDiagnosis();requestAnimationFrame(redraw);}
   if(tab==='diag')runDiagnosis();
   if(tab==='history')renderHistory();
@@ -3728,7 +3744,10 @@ function getChartDims(){
 
 function drawBubble(ctx,cx,cy,amp,phase,label,isRef,tc,measId,axDir,coupSide){
   const u=getUnit(),r=BR;
+  const _hlOn=hlActive(ctx),_hlMe=_hlOn&&_hl.ids.indexOf(measId)>-1;
+  if(_hlMe){ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+6,0,Math.PI*2);ctx.strokeStyle='#2563eb';ctx.lineWidth=3.5;ctx.globalAlpha=.9;ctx.stroke();ctx.restore();}
   ctx.save();
+  if(_hlOn&&!_hlMe)ctx.globalAlpha=0.22;
   ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
   ctx.fillStyle=tc.bub;ctx.fill();
   const sevColor=measId&&bubbleSeverity[measId]?bubbleSeverity[measId]:null;
@@ -3979,16 +3998,12 @@ function shareCard(format, action){
   const rpm=document.getElementById('global-rpm').value||'—';
   const u=getUnit();
   const date=getDocDate();
-  const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'};
-  const sevLabel={fault:'⚠ FAULT — Action Required',warn:'⚡ WARNING — Monitor Closely',ok:'✓ NORMAL — No Issues',info:'ℹ INFO'};
-  const overallSev=diagResults.some(r=>r.type==='fault')?'fault':diagResults.some(r=>r.type==='warn')?'warn':diagResults.some(r=>r.type==='ok')?'ok':'info';
-  // Sort: faults first, then warnings, then ok — so most critical always visible
-  const _scSevOrder=new Map([['fault',0],['warn',1],['ok',2]]);
-  const findings=diagResults.filter(r=>r.type!=='info').sort((a,b)=>{
-    const ra=_scSevOrder.has(a.type)?_scSevOrder.get(a.type):2;
-    const rb=_scSevOrder.has(b.type)?_scSevOrder.get(b.type):2;
-    return ra-rb;
-  }).slice(0,4);
+  const sevColor={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6',note:'#3b82f6'};
+  const sevLabel={fault:'⚠ FAULT — Action Required',warn:'⚡ WARNING — Monitor Closely',note:'ℹ NOTED — Low-Amplitude Pattern',ok:'✓ NORMAL — No Issues',info:'ℹ INFO'};
+  const overallSev=diagResults.some(r=>r.type==='fault')?'fault':diagResults.some(r=>r.type==='warn')?'warn':diagResults.some(r=>r.note)?'note':diagResults.some(r=>r.type==='ok')?'ok':'info';
+  // Sort: faults, warnings, low-amplitude notes, then normal — most critical always visible
+  const _scRank=r=>r.type==='fault'?0:r.type==='warn'?1:r.note?2:3;
+  const findings=diagResults.filter(r=>r.type!=='info'||r.note).sort((a,b)=>_scRank(a)-_scRank(b)).slice(0,4);
 
   const DPR=3;  // High res for sharing — always 3x regardless of screen
   let W,H;
@@ -4136,11 +4151,58 @@ async function shareImage(){
 }
 
 // Fallback: trigger <a download> — works on Android, Desktop, modern iOS (Files app)
+// Toolbar injected at the top of report windows (diagnosis + balance reports).
+// The installed iPhone app opens these with no browser controls, so the report needs its own way out.
+function reportBarHTML(){
+  return '<style>#rpt-bar{position:sticky;top:0;z-index:99;display:flex;gap:10px;justify-content:flex-start;align-items:center;padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;margin:-16px -16px 12px;background:#1a3a5c;font-family:Arial,sans-serif}'
+   +'#rpt-bar button{font:600 14px Arial,sans-serif;padding:9px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;-webkit-appearance:none;cursor:pointer}'
+   +'#rpt-bar button.rpt-x{background:#fff;color:#1a3a5c;border-color:#fff}'
+   /* Reports have no mobile viewport, so phones show them zoomed out (~0.4x) — scale the bar up so it stays tappable */
+   +'@media (pointer:coarse){#rpt-bar{gap:20px;padding:calc(env(safe-area-inset-top) + 18px) 24px 18px}#rpt-bar button{font-size:34px;padding:18px 30px;border-radius:12px}#rpt-msg{font-size:32px}}'
+   +'#rpt-msg{display:none;padding:14px;margin:0 0 12px;background:#fffbeb;border:1px solid #f59e0b;border-radius:6px;font:14px Arial,sans-serif;color:#92400e}'
+   +'@media print{#rpt-bar,#rpt-msg{display:none!important}}</style>'
+   +'<div id="rpt-bar"><button class="rpt-x" onclick="rptClose()">✕ Close</button><button onclick="window.print()">Print / Save PDF</button></div>'
+   +'<div id="rpt-msg">This report was opened as a separate page. Swipe it away or switch back to Phase App to continue — your chart is still there.</div>'
+   +'<script>function rptClose(){try{if(window.opener&&!window.opener.closed)window.opener.focus();}catch(e){}'
+   +'try{window.close();}catch(e){}'
+   +'setTimeout(function(){if(!window.closed){if(history.length>1){history.back();}else{document.getElementById("rpt-msg").style.display="block";}}},400);}<\/script>';
+}
+function isTouchDevice(){
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+// Phones: show the image in an in-app viewer (long-press → Save to Photos, plus a Share/Save button).
+// iOS Safari and installed web apps ignore <a download> for images, so a download link silently does nothing there.
+// Desktop: download the PNG.
 function saveImageFallback(off,title){
-  const a=document.createElement('a');
-  a.href=off.toDataURL('image/png');
-  a.download=(title||'chart').replace(/\s+/g,'_')+'.png';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  const fname=(title||'chart').replace(/\s+/g,'_')+'.png';
+  off.toBlob(blob=>{
+    if(!blob)return;
+    const url=URL.createObjectURL(blob);
+    if(isTouchDevice()){showImageViewer(url,blob,fname);return;}
+    const a=document.createElement('a');
+    a.href=url;a.download=fname;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),30000);
+  },'image/png');
+}
+function showImageViewer(url,blob,fname){
+  const old=document.getElementById('img-viewer');if(old)old.remove();
+  const file=new File([blob],fname,{type:blob.type||'image/png'});
+  const canShare=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}));
+  const v=document.createElement('div');
+  v.id='img-viewer';
+  v.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(10,14,22,.94);display:flex;flex-direction:column;align-items:center;padding:calc(env(safe-area-inset-top) + 12px) 16px calc(env(safe-area-inset-bottom) + 16px);gap:12px';
+  v.innerHTML=`<div style="width:100%;max-width:640px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="color:#e5e7eb;font-size:14px;line-height:1.4">Press and hold the image, then tap <b>Save to Photos</b>.</div>
+      <button class="btn" id="iv-close" style="flex-shrink:0">Close</button></div>
+    <div style="flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center">
+      <img id="iv-img" alt="${fname}" src="${url}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto"></div>
+    ${canShare?'<button class="btn" id="iv-share" style="width:100%;max-width:640px;justify-content:center;min-height:46px;font-size:15px">Share / Save Image…</button>':''}`;
+  document.body.appendChild(v);
+  const close=()=>{v.remove();URL.revokeObjectURL(url);};
+  v.querySelector('#iv-close').onclick=close;
+  const sb=v.querySelector('#iv-share');
+  if(sb)sb.onclick=async()=>{try{await navigator.share({files:[file]});}catch(e){}};
 }
 
 function downloadImage(){
@@ -4291,6 +4353,7 @@ async function desktopPrint(){
       ? '@media print{@page{size:auto;margin:.8cm}body{margin:0;padding:0}img{max-width:100%;max-height:90vh;width:auto;display:block;page-break-inside:avoid;page-break-after:avoid}#chart-pg{page-break-after:always;overflow:hidden}.pb{page-break-before:always;margin-top:0}h1{margin-bottom:8px}}'
       : '@media print{@page{size:portrait;margin:.8cm}body{margin:0;padding:0}img{max-width:100%;display:block;page-break-inside:avoid;page-break-after:avoid}#chart-pg{page-break-after:always;overflow:hidden}.pb{page-break-before:always;margin-top:0}h1{margin-bottom:8px}}')
     +'</style></head><body>'
+    +reportBarHTML()
     +'<div id="chart-pg"><h1>'+title+'</h1>'
     +'<img src="'+imgData+'"></div>'
     +'<div class="pb">'
@@ -4426,6 +4489,29 @@ function isoBoundsText(){
               :'Note ≤ '+b.A+' · Warning ≤ '+b.B+' '+curUnit();
 }
 const SEV_RANK={ok:0,info:0,warn:1,fault:2};
+// ── Finding evidence ("why this finding") ──────────────────
+function measNode(m){return nodes.find(n=>n.meas.some(x=>x.id===m.id));}
+function evReading(m){return m.label+'  '+fmtAmp(m.amp)+' @ '+Math.round(parseFloat(m.phase)||0)+'°  — '+ZONE_TXT[ampZone(m.amp)].split(' (')[0];}
+// Phase difference for a sensor pair, the same way the engine computes it (axial: arrow-direction corrected)
+function evPair(a,b){
+  const isAx=m=>m.pos==='AX_IB'||m.pos==='AX_OB';
+  if(isAx(a)&&isAx(b)){
+    const na=measNode(a)||{},nb=measNode(b)||{};
+    const csA=na.coupSide||'R',csB=nb.coupSide||'L';
+    const flip=resolveArrowDir(a.axDir||'out',csA)!==resolveArrowDir(b.axDir||'out',csB);
+    const d=axialPhaseDiff(a.phase,a.axDir||'out',csA,b.phase,b.axDir||'out',csB);
+    return a.label+' ↔ '+b.label+':  '+Math.round(d)+'° apart'+(flip?' (sensor arrows point opposite ways — '+b.label+' flipped 180°)':' (arrows same direction — raw phases compared)');
+  }
+  return a.label+' ↔ '+b.label+':  '+Math.round(phaseDiff(a.phase,b.phase))+'° apart';
+}
+function makeEv(sensors,pairs){
+  const uniq=[];sensors.forEach(m=>{if(m&&uniq.indexOf(m)<0)uniq.push(m);});
+  const lines=[];
+  (pairs||[]).forEach(pr=>lines.push(evPair(pr[0],pr[1])));
+  uniq.forEach(m=>lines.push(evReading(m)));
+  return {ids:uniq.map(m=>m.id),lines:lines};
+}
+function pairsOf(sensors){const out=[];for(let i=0;i+1<sensors.length;i+=2)out.push([sensors[i],sensors[i+1]]);return out;}
 let _sevCap={};
 // Cap bubble colors by the amplitude zone of the sensor pair behind them
 function capBubbles(sensors){
@@ -4440,6 +4526,7 @@ function gateFinding(r,sensors){
   const z=ampZone(amp);
   capBubbles(sensors);
   r.zone=z;r.amp=amp;r.baseType=r.type;
+  r.ev=makeEv(sensors,pairsOf(sensors));
   const t=' Highest 1× amplitude behind this finding: '+fmtAmp(amp)+' — '+ZONE_TXT[z]+'.';
   r.short='Highest 1× '+fmtAmp(amp)+' — '+ZONE_TXT[z]+'. '+({A:'Not actionable on its own — baseline.',B:'Trend it; confirm with spectrum before acting.',C:'Amplitude supports this finding.',D:'Amplitude supports this finding.'}[z]);
   if(z==='A'){
@@ -4454,10 +4541,17 @@ function gateFinding(r,sensors){
   }
   return r;
 }
+// ── Bearing type ─────────────────────────────────────────
+// Per machine: 'auto' (from shape), 'rolling', 'sleeve', 'tilt', 'unknown'.
+// Auto: Turbine / Compressor → tilting pad; everything else → rolling element.
+const BEARING_LBL={rolling:'Rolling element',sleeve:'Sleeve / journal',tilt:'Tilting pad',unknown:'Unknown'};
+function bearingAuto(n){return (n.shape==='Turbine'||n.shape==='Compressor')?'tilt':'rolling';}
+function bearingOf(n){const b=n.bearingType||'auto';return b==='auto'?bearingAuto(n):b;}
+function isFluidFilm(n){const b=bearingOf(n);return b==='sleeve'||b==='tilt';}
 // Category of an amplitude-pattern (shape) finding: what the check is reacting to
 function shapeCat(label){
   const L=label||'';
-  if(/Recirculation|Elevated Axial|Excessive Axial/.test(L))return 'axial';
+  if(/Recirculation|Elevated Axial|Excessive Axial|Thrust/.test(L))return 'axial';
   if(/Impeller Wear|Blade\/Structural Resonance|Overhung Imbalance|Gear Eccentricity|Rotor Bow|Fouling/.test(L))return 'radial';
   if(/Structural Looseness/.test(L))return null; // looseness itself — no competing cause to separate
   if(/Cavitation|Aerodynamic|Blade Damage|Backlash|Blade Rub|Fluid Whirl|Surge|Rotor Instability|Bearing Defect/.test(L))return 'erratic';
@@ -4506,20 +4600,49 @@ function addAmplitudeFindings(results){
     const top=ms.reduce(function(a,m){return parseFloat(m.amp)>parseFloat(a.amp)?m:a;});
     const z=ampZone(top.amp);
     if(z!=='C'&&z!=='D')return;
-    const over=ms.filter(function(m){const zz=ampZone(m.amp);return zz==='C'||zz==='D';})
+    const overM=ms.filter(function(m){const zz=ampZone(m.amp);return zz==='C'||zz==='D';});
+    const ampEv=makeEv(overM,[]);
+    const over=overM
                  .map(function(m){return m.label+' '+(parseFloat(m.amp)).toFixed(3);}).join(', ');
     const basis=b.iso?'ISO 20816-3 ('+isoSummary().replace('ISO 20816-3 · ','')+')':'app default thresholds for '+curUnit();
     if(z==='D'){
-      results.push({type:'fault',nodes:[node.id],amp:parseFloat(top.amp),zone:'D',short:top.label+' at '+fmtAmp(top.amp)+' — Zone D, damage likely. Stands regardless of cause.',
+      results.push({type:'fault',nodes:[node.id],ev:ampEv,amp:parseFloat(top.amp),zone:'D',short:top.label+' at '+fmtAmp(top.amp)+' — Zone D, damage likely. Stands regardless of cause.',
         label:'⚠ 1× Amplitude in Zone D — '+node.name,
         desc:'Highest 1× reading on '+node.name+' is '+top.label+' at '+fmtAmp(top.amp)+' — Zone D per '+basis+': vibration at this level is likely causing damage. Readings past the alert level: '+over+'. This stands on its own regardless of cause — see the other findings for likely causes, and correlate with spectrum before deciding on shutdown or repair.'});
     } else {
-      results.push({type:'warn',nodes:[node.id],amp:parseFloat(top.amp),zone:'C',short:top.label+' at '+fmtAmp(top.amp)+' — '+(b.iso?'Zone C, past alert level':'past alert level')+'. Stands regardless of cause.',
+      results.push({type:'warn',nodes:[node.id],ev:ampEv,amp:parseFloat(top.amp),zone:'C',short:top.label+' at '+fmtAmp(top.amp)+' — '+(b.iso?'Zone C, past alert level':'past alert level')+'. Stands regardless of cause.',
         label:'⚡ 1× Amplitude Above Alert Level — '+node.name,
         desc:'Highest 1× reading on '+node.name+' is '+top.label+' at '+fmtAmp(top.amp)+' — '+(b.iso?'Zone C per '+basis+': not suitable for long-term operation; plan remedial action at the next opportunity.':'above the '+basis+' alert level.')+' Readings past the alert level: '+over+'. This stands on its own regardless of cause — see the other findings for likely causes; if none is identified, investigate with spectrum and trend data.'});
     }
   });
 }
+// Thrust bearing check for turbines and compressors: axial approaching or exceeding radial, above the elevated level
+function pushThrust(node,maxAx,maxRad,ampThresh){
+  if(!(maxAx>ampThresh&&maxRad>0&&maxAx>=maxRad*0.8))return;
+  const b=bearingOf(node),ff=isFluidFilm(node);
+  diagResults.push({type:'warn',
+    label:'⚡ Elevated Axial — Possible Thrust Bearing Wear / Thrust Load — '+node.name,
+    desc:'Axial 1× on '+node.name+' ('+maxAx.toFixed(3)+') is approaching or exceeding radial ('+maxRad.toFixed(3)+'). On a '+node.shape.toLowerCase()+' this points to thrust load or thrust bearing condition — '+(ff?'worn or wiped thrust pads, loss of thrust clearance, or a balance piston / seal problem raising thrust load':(b==='rolling'?'a worn or loaded thrust (angular-contact) bearing, or excessive axial float':'thrust bearing wear or excessive thrust load'))+'. Check the axial position (thrust) probe trend if fitted, thrust bearing temperature, and whether axial changes with load.'});
+}
+let _hl=null;   // {ids:[...], label, lines} — on-screen chart highlight for one finding
+function showFindingOnChart(r){
+  const lay=getEffectiveLayout();
+  showTab('chart');
+  _hl={ids:r.ev.ids.slice(),label:r.label,lines:r.ev.lines.slice(),type:r.type};
+  renderHlBanner();
+  requestAnimationFrame(redraw);
+}
+function clearHighlight(){_hl=null;renderHlBanner();redraw();}
+function renderHlBanner(){
+  const el=document.getElementById('hl-banner');if(!el)return;
+  if(!_hl){el.hidden=true;el.innerHTML='';return;}
+  const col={fault:'#ef4444',warn:'#f59e0b',ok:'#22c55e',info:'#3b82f6'}[_hl.type]||'#2563eb';
+  el.style.borderLeftColor=col;
+  el.innerHTML='<div class="hl-h"><div class="hl-t">'+_hl.label+'</div><button class="btn" type="button" onclick="clearHighlight()">✕ Clear</button></div>'
+    +'<ul>'+_hl.lines.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>';
+  el.hidden=false;
+}
+function hlActive(ctx){return !!(_hl&&ctx&&ctx.canvas&&ctx.canvas.id==='chart');}
 function toggleIsoEdit(){const e=document.getElementById('iso-edit');if(e)e.hidden=!e.hidden;}
 function renderIsoLine(){
   const el=document.getElementById('iso-line');if(!el)return;
@@ -5084,7 +5207,7 @@ function runDiagnosis(){
           label:'⚠ Angular Misalignment — '+lbl,
           desc:'Axial phase angles across the coupling are ~180° out of phase (±'+TOL+'°) after correcting for sensor orientation. Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'.'},axOutS));
       } else if(axIn===axPairs.length){
-        results.push({type:'ok',
+        results.push({type:'ok',ev:makeEv(axPairs.flatMap(pp=>[pp.a,pp.b]),axPairs.map(pp=>[pp.a,pp.b])),
           label:'✓ Axial Phase Normal — '+lbl,
           desc:'Axial phase across '+lbl+' is in phase (±'+TOL+'°) after correcting for sensor orientation. No angular misalignment indicated.'});
       } else {
@@ -5131,7 +5254,7 @@ function runDiagnosis(){
           label:'⚡ Possible Radial Issue — '+lbl,
           desc:'Multiple radial phase readings across '+lbl+' show partial phase shift ('+radWarn+' of '+radPairs.length+' pairs). May indicate developing offset misalignment, soft foot, or resonance. Monitor closely.'},radWarnS));
       } else if(radIn===radPairs.length&&radPairs.length>0){
-        results.push({type:'ok',
+        results.push({type:'ok',ev:makeEv(radPairs.flatMap(pp=>[pp.a,pp.b]),radPairs.map(pp=>[pp.a,pp.b])),
           label:'✓ Radial Phase Normal — '+lbl,
           desc:'Radial phase across '+lbl+' is in phase (±'+TOL+'°). No offset misalignment indicated from phase data.'});
       }
@@ -5245,15 +5368,31 @@ function runDiagnosis(){
         const isNormal90=(pd>=55&&pd<=125);
         const isAbnormal0=(pd<25);
         const isAbnormal180=(pd>155);
+        const ff=isFluidFilm(node),bUnk=bearingOf(node)==='unknown';
         if(isAbnormal0||isAbnormal180){
-          setSev(v.id,'warn');setSev(h.id,'warn');
-          results.push(gateFinding({type:'warn',
-            label:'⚡ Abnormal V/H Phase — '+node.name+' '+loc,
-            desc:'Vertical ('+v.label+': '+Math.round(v.phase)+'°) and horizontal ('+h.label+': '+Math.round(h.phase)+'°) at '+node.name+' '+loc+' bearing are '+(pd<25?'nearly in phase':'~180° out of phase')+' ('+Math.round(pd)+'°). Expected ~90° due to sensor placement. Indicates structural looseness, soft foot, or rocking at this bearing. Check hold-down bolts and base plate at this corner.'},[v,h]));
+          const base='Vertical ('+v.label+': '+Math.round(v.phase)+'°) and horizontal ('+h.label+': '+Math.round(h.phase)+'°) at '+node.name+' '+loc+' bearing are '+(pd<25?'nearly in phase':'~180° out of phase')+' ('+Math.round(pd)+'°). ';
+          if(ff){
+            // Fluid-film bearings: oil-film stiffness differs V vs H, so a flat (elliptical/line) orbit is normal — not looseness on its own
+            results.push({type:'info',note:true,ev:makeEv([v,h],[[v,h]]),
+              label:'ℹ Flat Orbit (V/H) — '+node.name+' '+loc+' ('+BEARING_LBL[bearingOf(node)].toLowerCase()+')',
+              desc:base+'On fluid-film bearings the oil film is stiffer in one direction, so the orbit is often elliptical or nearly a straight line and V/H phase moves away from 90°. Not an indication of looseness on its own. Treat as looseness only if it comes with running-speed harmonics, a recent change from baseline, or elevated amplitude.'});
+          } else {
+            setSev(v.id,'warn');setSev(h.id,'warn');
+            results.push(gateFinding({type:'warn',
+              label:'⚡ Abnormal V/H Phase — '+node.name+' '+loc,
+              desc:base+'Expected ~90° due to sensor placement. Indicates structural looseness, soft foot, or rocking at this bearing. Check hold-down bolts and base plate at this corner.'+(bUnk?' If this machine has fluid-film bearings, a flat orbit from oil-film stiffness can also produce this — set the bearing type to check.':'')},[v,h]));
+          }
         } else if(isNormal90&&ampRatio<0.4){
-          results.push(gateFinding({type:'warn',
-            label:'⚡ Directional Resonance — '+node.name+' '+loc,
-            desc:'V/H phase at '+node.name+' '+loc+' bearing is ~90° (normal orbital motion) but amplitudes differ significantly ('+v.label+': '+(vA.toFixed(3))+', '+h.label+': '+(hA.toFixed(3))+', ratio: '+ampRatio.toFixed(2)+'). Directional amplitude imbalance with normal phase suggests resonance in one plane or anisotropic support stiffness at this bearing. Check natural frequencies and bearing support condition.'},[v,h]));
+          const base='V/H phase at '+node.name+' '+loc+' bearing is ~90° (normal orbital motion) but amplitudes differ significantly ('+v.label+': '+(vA.toFixed(3))+', '+h.label+': '+(hA.toFixed(3))+', ratio: '+ampRatio.toFixed(2)+'). ';
+          if(ff){
+            results.push({type:'info',note:true,ev:makeEv([v,h],[[v,h]]),
+              label:'ℹ Directional Amplitude — '+node.name+' '+loc+' ('+BEARING_LBL[bearingOf(node)].toLowerCase()+')',
+              desc:base+'Unequal V/H stiffness is normal on fluid-film bearings, so a directional response is expected. Investigate for resonance only if it has changed from baseline or amplitude is elevated.'});
+          } else {
+            results.push(gateFinding({type:'warn',
+              label:'⚡ Directional Resonance — '+node.name+' '+loc,
+              desc:base+'Directional amplitude imbalance with normal phase suggests resonance in one plane or anisotropic support stiffness at this bearing. Check natural frequencies and bearing support condition.'},[v,h]));
+          }
         }
         // ~90° with similar amplitudes = healthy circular orbit — no flag
       });
@@ -5295,7 +5434,7 @@ function runDiagnosis(){
     const allRad=[vNDE,vDE,hNDE,hDE].filter(Boolean);
     const anyElevated=allRad.some(m=>parseFloat(m.amp)>imbThresh);
     if(imbalanceFound&&anyElevated){
-      results.push({type:'warn',nodes:[node.id],cat:'radial',cause:'radial',
+      results.push({type:'warn',nodes:[node.id],cat:'radial',cause:'radial',ev:makeEv([vNDE,vDE,hNDE,hDE].filter(Boolean),[[vNDE,vDE],[hNDE,hDE]].filter(function(pr){return pr[0]&&pr[1];})),
         label:'⚡ Possible Imbalance — '+node.name,
         desc:'Same-plane radial phase readings at NDE and DE on '+node.name+' are in phase (±'+TOL+'°) with comparable amplitudes and elevated levels. Consistent with mass imbalance generating a uniform rotating force at both bearings. Confirm with elevated 1× radial amplitudes in spectrum data.'});
     }
@@ -5437,12 +5576,13 @@ function runDiagnosis(){
           label:'⚡ Possible Rotor Bow — '+node.name,
           desc:'Elevated radial amplitude with stable phase and low axial on '+node.name+' may indicate rotor bow — especially if amplitude was lower at startup and increased as the machine warmed up. Rotor bow produces a 1× vibration that is thermally sensitive and phase-stable once thermal equilibrium is reached. Compare cold vs hot phase readings if available.'});
       }
-      // Steam/fluid whirl: unstable phase, not load-dependent
-      if(erraticPhase&&maxRad>ampThresh&&maxAx<maxRad*0.5){
+      // Fluid (oil) whirl only exists on fluid-film bearings
+      if(erraticPhase&&maxRad>ampThresh&&maxAx<maxRad*0.5&&bearingOf(node)!=='rolling'){
         results.push({type:'warn',
           label:'⚡ Possible Fluid Whirl / Instability — '+node.name,
-          desc:'Erratic radial phase with low axial on '+node.name+' may indicate fluid whirl or rotor instability — a sub-synchronous phenomenon that can appear at 1× under certain conditions. Fluid whirl is typically speed-dependent and will change character at different operating speeds. Check bearing clearances and oil film stability.'});
+          desc:'Erratic radial phase with low axial on '+node.name+' may indicate fluid whirl or rotor instability — a sub-synchronous phenomenon that can appear at 1× under certain conditions. Fluid whirl is typically speed-dependent and will change character at different operating speeds. Check bearing clearances and oil film stability.'+(bearingOf(node)==='unknown'?' (Applies only if this machine has fluid-film bearings.)':'')});
       }
+      pushThrust(node,maxAx,maxRad,ampThresh);
     }
 
     // ── COMPRESSOR ────────────────────────────────────────────────────
@@ -5457,7 +5597,7 @@ function runDiagnosis(){
       if(erraticPhase&&maxRad>highAmp&&maxAx<maxRad*0.6){
         results.push({type:'warn',
           label:'⚡ Possible Rotor Instability — '+node.name,
-          desc:'Erratic radial phase with elevated radial amplitude on '+node.name+' suggests rotor instability — possibly aerodynamic cross-coupling, oil whirl, or labyrinth seal excitation. Compressor rotor instability is speed and load dependent. Monitor phase stability across load changes. Check bearing clearances and seal condition.'});
+          desc:'Erratic radial phase with elevated radial amplitude on '+node.name+' suggests rotor instability — possibly aerodynamic cross-coupling'+(bearingOf(node)==='rolling'?'':', oil whirl')+' or labyrinth seal excitation. Compressor rotor instability is speed and load dependent. Monitor phase stability across load changes. Check '+(bearingOf(node)==='rolling'?'bearing condition':'bearing clearances')+' and seal condition.'});
       }
       // Fouling/unbalance: high radial, stable phase, gradual onset
       if(maxRad>highAmp&&!erraticPhase&&maxAx<maxRad*0.4){
@@ -5465,6 +5605,7 @@ function runDiagnosis(){
           label:'⚡ Possible Fouling / Mass Imbalance — '+node.name,
           desc:'Elevated stable radial amplitude with low axial on '+node.name+' is consistent with blade fouling (deposit buildup causing mass imbalance) or mechanical unbalance. Compressor fouling is gradual — if amplitude has increased over time with stable phase, fouling is likely. Online or offline wash may restore balance. Confirm with historical trend data.'});
       }
+      pushThrust(node,maxAx,maxRad,ampThresh);
     }
 
     // ── BEARING (general) ─────────────────────────────────────────────
@@ -5472,10 +5613,19 @@ function runDiagnosis(){
       if(maxRad>highAmp&&erraticPhase){
         results.push({type:'warn',
           label:'⚡ Possible Bearing Defect — '+node.name,
-          desc:'Elevated amplitude with erratic phase at '+node.name+' bearing location suggests a developing bearing defect. While bearing defects typically show sub/super-synchronous frequencies, a failing bearing can also affect 1× phase stability through looseness and increased clearance. Inspect bearing condition and lubrication.'});
+          desc:isFluidFilm(node)
+            ?'Elevated amplitude with erratic phase at '+node.name+' ('+BEARING_LBL[bearingOf(node)].toLowerCase()+') suggests a developing bearing problem — wiped or damaged babbitt, excessive clearance, or an unstable oil film. Look for sub-synchronous whirl (~0.38–0.48×), 1× phase that shifts with load, and rising bearing metal temperature. Check oil supply, temperature and clearances.'
+            :'Elevated amplitude with erratic phase at '+node.name+' bearing location suggests a developing bearing defect. While bearing defects typically show non-synchronous bearing defect frequencies, a failing bearing can also affect 1× phase stability through looseness and increased clearance. Inspect bearing condition and lubrication.'+(bearingOf(node)==='unknown'?' If this is a fluid-film bearing, look instead for sub-synchronous whirl and babbitt damage.':'')});
       }
     }
-    for(var _i=_r0;_i<results.length;_i++){results[_i].nodes=[node.id];results[_i].cat=shapeCat(results[_i].label);}
+    for(var _i=_r0;_i<results.length;_i++){
+      var _rr=results[_i];_rr.nodes=[node.id];_rr.cat=shapeCat(_rr.label);
+      var _ms=node.meas.filter(function(m){return parseFloat(m.amp)>0;});
+      var _isAx=function(m){return m.pos==='AX_IB'||m.pos==='AX_OB';};
+      if(/Axial|Thrust|Recirculation|Overhung Imbalance/.test(_rr.label)){}           // axial-related: show all readings
+      else if(_rr.cat==='radial')_ms=_ms.filter(function(m){return !_isAx(m);});
+      _rr.ev=makeEv(_ms,[]);
+    }
   });
 
   // ── VERTICAL TRAIN SPECIFIC CHECKS ───────────────────────────────────
@@ -5562,6 +5712,12 @@ function renderDiagResults(results){
     const div=document.createElement('div');
     div.className='diag-item '+r.type;
     div.innerHTML=`<div class="diag-label">${r.label}</div><div class="diag-desc">${r.desc}</div>`;
+    if(r.ev&&r.ev.ids&&r.ev.ids.length){
+      const b=document.createElement('button');
+      b.className='btn diag-show';b.type='button';b.textContent='📍 Show on chart';
+      b.onclick=()=>showFindingOnChart(r);
+      div.appendChild(b);
+    }
     el.appendChild(div);
   });
   const disc=document.createElement('div');
@@ -6142,6 +6298,33 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'3.4.0':{
+date:'10/15/2026',
+items:[
+'Show on chart — every finding backed by specific readings now has a 📍 Show on chart button. It opens the Chart tab with those bubbles ringed in blue and everything else dimmed, plus a panel listing the evidence: each sensor pair and how far apart they are (with the sensor-arrow correction stated for axial pairs) and each reading with its amplitude and ISO zone. Tap ✕ Clear or leave the Chart tab to return to normal.',
+'The highlight only affects the on-screen chart — prints, share cards and image exports are unchanged.',
+]},
+'3.3.0':{
+date:'10/15/2026',
+items:[
+'Bearing type per machine — new Bearings selector under Shape: Auto (Turbine / Compressor → tilting pad, everything else → rolling element), Rolling element, Sleeve / journal, Tilting pad, or Unknown. Saves with the job.',
+'Fluid-film V/H — on sleeve and tilting-pad bearings, V/H phase far from 90° (flat orbit) and directional amplitude are now notes explaining oil-film stiffness, instead of looseness / resonance warnings. Rolling-element machines are unchanged.',
+'Oil whirl wording only on fluid-film machines — the turbine fluid-whirl check no longer runs on rolling-element machines, and compressor instability text drops oil whirl for rolling elements.',
+'Thrust bearing check for turbines and compressors — axial approaching or exceeding radial above the elevated level flags possible thrust bearing wear / thrust load, worded for the bearing type, with competing-cause notes alongside angular misalignment.',
+'Bearing shape defect text now matches the bearing type — babbitt, clearance and sub-synchronous whirl for fluid-film; non-synchronous defect frequencies for rolling elements.',
+]},
+'3.2.2':{
+date:'10/15/2026',
+items:[
+'Print reports now have a Close button — the diagnosis report and the balance report open with a bar at the top (Print / Save PDF and ✕ Close). Previously the installed iPhone app had no way back without force-closing. The bar does not print.',
+'ODS GIF save fixed on phones — opens in the image viewer: press and hold to Save to Photos (stays animated), or tap Share / Save Image.',
+]},
+'3.2.1':{
+date:'10/15/2026',
+items:[
+'Share card now includes low-amplitude notes — e.g. an angular misalignment pattern in ISO Zone A shows on the card, with a blue "NOTED — Low-Amplitude Pattern" banner instead of "Normal".',
+'Save to Photos fixed on iPhone and Android — saving a share card or chart image now opens the image in an in-app viewer: press and hold it to Save to Photos, or tap Share / Save Image. Desktop still downloads the PNG.',
+]},
 '3.2.0':{
 date:'10/15/2026',
 items:[
@@ -7558,9 +7741,11 @@ function odsGIFBuild(frames,title){
   });
   parts.push(new Uint8Array([0x3B]));
   const blob=new Blob(parts,{type:'image/gif'});
+  const gname=title.replace(/\s+/g,'_')+'_ODS.gif';
+  if(isTouchDevice()){showImageViewer(URL.createObjectURL(blob),blob,gname);return;}
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download=title.replace(/\s+/g,'_')+'_ODS.gif';
+  a.download=gname;
   document.body.appendChild(a);a.click();document.body.removeChild(a);
   setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
@@ -8276,6 +8461,7 @@ function balGenerateReport(){
 </style>
 </head>
 <body>
+${reportBarHTML()}
 
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;border-bottom:3px solid #1e3a5f;padding-bottom:12px">
   <div>
