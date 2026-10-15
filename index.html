@@ -201,6 +201,18 @@ body.forest .nc-sel{background-image:url("data:image/svg+xml,%3Csvg xmlns='http:
 .diag-item.warn {background:#fffbeb;border-left-color:#f59e0b}
 .diag-item.fault{background:#fef2f2;border-left-color:#ef4444}
 .diag-item.info {background:#eff6ff;border-left-color:#3b82f6}
+.iso-line{margin-bottom:10px;padding:8px 10px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;font-size:11px;color:var(--tx2)}
+.iso-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.iso-k{font-size:10px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--tx3)}
+.iso-v{font-weight:600;color:var(--tx);margin-top:2px}
+.iso-b{color:var(--tx3);margin-top:2px;font-variant-numeric:tabular-nums}
+.iso-btn{font-size:11px;padding:4px 10px;flex-shrink:0}
+#iso-edit{margin-top:8px;padding-top:8px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:6px}
+#iso-edit[hidden]{display:none}
+.iso-f{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.iso-f span{color:var(--tx2)}
+.iso-f select{flex:0 1 auto;max-width:62%;min-width:0}
+.iso-help{font-size:10px;color:var(--tx3);line-height:1.5}
 body.dark  .diag-item.ok   {background:#0e2018;border-left-color:#22c55e}
 body.dark  .diag-item.warn {background:#201a0a;border-left-color:#f59e0b}
 body.dark  .diag-item.fault{background:#200f0f;border-left-color:#ef4444}
@@ -680,6 +692,7 @@ body.hicon .bal-mode-btn.active{color:#000}
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#22c55e"></div>Normal — no issue indicated</div>
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)"><div style="width:10px;height:10px;border-radius:2px;background:#3b82f6"></div>Info — additional context</div>
       </div>
+      <div id="iso-line"></div>
       <div id="diag-results"></div>
     </div>
 
@@ -894,15 +907,20 @@ body.hicon .bal-mode-btn.active{color:#000}
         </div>
         <div class="bal-section-body" id="bal-body-s6">
           <div class="bal-field-row">
-            <span class="bal-lbl">Machine class</span>
-            <select class="bal-sel" id="bal-iso-class" onchange="balCheckISO()">
-              <option value="I">Class I — Small (&lt;15 kW)</option>
-              <option value="II" selected>Class II — Medium (15–75 kW)</option>
-              <option value="III">Class III — Large rigid</option>
-              <option value="IV">Class IV — Large flexible</option>
+            <span class="bal-lbl">Machine group</span>
+            <select class="bal-sel" id="bal-iso-group" onchange="balCheckISO()">
+              <option value="1">Group 1 — over 300 kW</option>
+              <option value="2" selected>Group 2 — 15 to 300 kW</option>
             </select>
           </div>
-          <div style="font-size:10px;color:var(--tx3)">Per ISO 10816-1. Class II covers most industrial fans and pumps.</div>
+          <div class="bal-field-row">
+            <span class="bal-lbl">Foundation</span>
+            <select class="bal-sel" id="bal-iso-found" onchange="balCheckISO()">
+              <option value="rigid" selected>Rigid</option>
+              <option value="flex">Flexible</option>
+            </select>
+          </div>
+          <div style="font-size:10px;color:var(--tx3)">Per ISO 20816-3 (machines over 15 kW, above 120 rpm). Uses the Peak/RMS setting from the Diagnosis tab.</div>
           <div class="bal-field-row">
             <span class="bal-lbl">Final 1× amp B1</span>
             <input type="number" class="bal-inp" id="bal-final-amp1" placeholder="in/s or mils" step="0.001" oninput="balCheckISO()" style="max-width:130px">
@@ -1183,7 +1201,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '3.0.1';
+  return '3.2.0';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -2210,6 +2228,11 @@ function renderSidebar(){
         </div>
       </div>
       <div class="ax-dir-hint">${(n.coupSide||'R')==='R'?'Coupling is on the right side of this component':'Coupling is on the left side of this component'}</div>
+      <div class="ref-row" style="margin-top:6px">
+        <input type="checkbox" id="unst-${n.id}" ${n.phaseUnstable?'checked':''} onchange="upN(${n.id},'phaseUnstable',this.checked)">
+        <label for="unst-${n.id}" style="cursor:pointer">Phase unstable on analyzer</label>
+      </div>
+      <div class="ax-dir-hint">Tick if 1× phase wandered between readings on the 2140. Enables the cavitation, rub, surge, looseness and other unstable-phase checks for this machine.</div>
       <h3 style="margin-top:4px">Notes</h3>
       <textarea rows="2" placeholder="Job number, observations, technician..." style="width:100%;font-size:14px;background:var(--inbg);border:1px solid var(--bd2);border-radius:6px;padding:6px 8px;color:var(--tx);font-family:'DM Sans','Inter',sans-serif;resize:vertical;min-height:48px"
         onchange="upN(${n.id},'notes',this.value)">${esc(n.notes||'')}</textarea>
@@ -2408,6 +2431,7 @@ function applyTemplate(tpl){
   // Reset foot/base data and switch to Horizontal layout
   footBaseData={};
   bsData=null;bsMode='single';
+  isoCfg=isoDefaultCfg();
   const layoutSel=document.getElementById('layout');
   if(layoutSel&&(layoutSel.value==='FB'||layoutSel.value==='BS')) layoutSel.value='H';
   closeTpl();
@@ -3934,6 +3958,20 @@ function getExportDataURL(){
 function openShareCard(){document.getElementById('sc-modal').classList.add('show');}
 function closeSCModal(){document.getElementById('sc-modal').classList.remove('show');}
 
+// Wrap text into at most maxLines lines; ellipsize the last line if it doesn't all fit
+function scWrap(ctx,text,x,y,maxW,lh,maxLines){
+  const words=(text||'').replace(/<[^>]+>/g,'').split(' ');const lines=[];let line='';
+  for(let i=0;i<words.length;i++){
+    const test=line?line+' '+words[i]:words[i];
+    if(ctx.measureText(test).width<maxW){line=test;continue;}
+    lines.push(line);line=words[i];
+    if(lines.length===maxLines){line=null;break;}
+  }
+  if(line!==null&&line)lines.push(line);
+  const truncated=lines.length===maxLines&&line===null;
+  if(truncated){let l=lines[maxLines-1];while(l.length&&ctx.measureText(l+'…').width>maxW)l=l.slice(0,-1);lines[maxLines-1]=l.replace(/\s+\S*$/,'')+'…';}
+  lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lh));
+}
 function shareCard(format, action){
   closeSCModal();
   runDiagnosis();
@@ -3998,9 +4036,7 @@ function shareCard(format, action){
         ctx.fillText(label,32,fy);
         ctx.fillStyle='#555';ctx.font='10px Roboto,sans-serif';
         // Wrap desc
-        const words=r.desc.split(' ');let line='';let ly=fy+14;
-        words.forEach(w=>{const test=line?line+' '+w:w;if(ctx.measureText(test).width<maxW-4){line=test;}else{ctx.fillText(line,32,ly);line=w;ly+=13;}});
-        if(line)ctx.fillText(line,32,ly);
+        scWrap(ctx,r.short||r.desc,32,fy+14,maxW-4,13,3);
         fy+=72;
       });
     }
@@ -4037,9 +4073,7 @@ function shareCard(format, action){
       let label=r.label;if(ctx.measureText(label).width>rw-10)label=label.substring(0,38)+'...';
       ctx.fillText(label,rx+8,fy);
       ctx.fillStyle='#555';ctx.font='9px Roboto,sans-serif';
-      const words=r.desc.split(' ');let line='';let ly=fy+13;
-      words.forEach(w=>{const test=line?line+' '+w:w;if(ctx.measureText(test).width<rw-12){line=test;}else{if(ly<fy+36){ctx.fillText(line,rx+8,ly);line=w;ly+=11;}}});
-      if(line&&ly<fy+38)ctx.fillText(line,rx+8,ly);
+      scWrap(ctx,r.short||r.desc,rx+8,fy+13,rw-12,11,3);
       fy+=52;
     });
     ctx.fillStyle='#f0eeea';ctx.fillRect(0,H-28,W,28);
@@ -4149,6 +4183,8 @@ async function desktopPrint(){
     const rb=_printSevOrder.has(b.type)?_printSevOrder.get(b.type):3;
     return ra-rb;
   });
+  {const _lay=getEffectiveLayout();
+   if(_lay!=='BS'&&_lay!=='FB'&&_lay!=='FS')diagRows+=`<div style="font-size:10px;color:#555;margin-bottom:8px">Amplitude zones: ${isoSummary()} (${isoBoundsText()})</div>`;}
   _sortedDiag.forEach(r=>{
     const s=typeStyles[r.type]||typeStyles.info;
     diagRows+=`<div style="padding:10px 14px;border-radius:6px;margin-bottom:8px;background:${s.bg};border-left:4px solid ${s.border}">
@@ -4342,6 +4378,172 @@ function isOutOfPhase(d,tol){return d>=(180-tol);}
 
 let bubbleSeverity={};
 let diagResults=[];
+
+// ── ISO 20816-3 amplitude zones ──────────────────────────
+// Casing velocity zone boundaries, mm/s RMS (ISO 20816-3:2022 — values unchanged from 10816-3:2009).
+// Group 1: over 300 kW (or electrical machines, shaft height ≥ 315 mm). Group 2: 15–300 kW.
+// Zones only cap the severity of phase-pattern findings. Phase logic is unaffected.
+const ISO20816_3={
+  '1':{rigid:[2.3,4.5,7.1],flex:[3.5,7.1,11.0]},
+  '2':{rigid:[1.4,2.8,4.5],flex:[2.3,4.5,7.1]},
+};
+let isoCfg={group:'auto',found:'rigid'};   // per job — saved with autosave/history/share links
+function isoDefaultCfg(){return {group:'auto',found:'rigid'};}
+function getAmpDetect(){try{return localStorage.getItem('phaseChart_ampDetect')||'pk';}catch(e){return 'pk';}}
+function setAmpDetect(v){try{localStorage.setItem('phaseChart_ampDetect',v);}catch(e){} runDiagnosis();balCheckISO();autosave();}
+function setIsoCfg(k,v){isoCfg[k]=v;runDiagnosis();autosave();}
+function isoAutoGroup(){return nodes.some(n=>n.shape==='Compressor'||n.shape==='Turbine')?'1':'2';}
+function isoGroup(){return isoCfg.group==='auto'?isoAutoGroup():isoCfg.group;}
+function curUnit(){return (document.getElementById('amp-unit')||{}).value||'in/s';}
+// Zone boundaries {A,B,C} (upper limits of A, B, C) in current units, or null if units aren't velocity
+function isoBoundsFor(group,found){
+  const u=curUnit();
+  const row=(ISO20816_3[group]||ISO20816_3['2'])[found==='flex'?'flex':'rigid'];
+  const k0=getAmpDetect()==='pk'?Math.SQRT2:1;
+  const k=u==='in/s'?k0/25.4:u==='mm/s'?k0:null;
+  if(k===null)return null;
+  // Round to the precision readings are entered/shown at, so a reading equal to the displayed limit lands in the lower zone
+  const dp=u==='in/s'?3:2,r=x=>Math.round(x*Math.pow(10,dp))/Math.pow(10,dp);
+  return {A:r(row[0]*k),B:r(row[1]*k),C:r(row[2]*k),iso:true};
+}
+// Non-velocity units fall back to the app's existing alert / high thresholds
+function ampBounds(){
+  const b=isoBoundsFor(isoGroup(),isoCfg.found); if(b)return b;
+  const u=curUnit();
+  return {A:{'mils':0.15,'G':0.1,'µm':20}[u]||0.08, B:{'mils':3.0,'G':0.3,'µm':75}[u]||0.25, C:Infinity, iso:false};
+}
+function ampZone(amp){const b=ampBounds(),a=parseFloat(amp)||0;return a<=b.A?'A':a<=b.B?'B':a<=b.C?'C':'D';}
+function fmtAmp(a){const b=ampBounds();return (parseFloat(a)||0).toFixed(3)+' '+curUnit()+(b.iso?' '+(getAmpDetect()==='pk'?'pk':'RMS'):'');}
+const ZONE_TXT={A:'Zone A (new-machine level)',B:'Zone B (acceptable long-term)',C:'Zone C (short-term only)',D:'Zone D (damage likely)'};
+function isoSummary(){
+  const b=ampBounds();
+  if(!b.iso)return 'App default thresholds — ISO 20816-3 zones are velocity-based and don\'t apply to '+curUnit();
+  return 'ISO 20816-3 · Group '+isoGroup()+(isoCfg.group==='auto'?' (auto)':'')+' · '+(isoCfg.found==='flex'?'Flexible':'Rigid')+' foundation · '+(getAmpDetect()==='pk'?'Peak':'RMS');
+}
+function isoBoundsText(){
+  const b=ampBounds(),f=x=>x.toFixed(curUnit()==='in/s'?3:2);
+  return b.iso?'A ≤ '+f(b.A)+' · B ≤ '+f(b.B)+' · C ≤ '+f(b.C)+' '+curUnit()+' '+(getAmpDetect()==='pk'?'pk':'RMS')
+              :'Note ≤ '+b.A+' · Warning ≤ '+b.B+' '+curUnit();
+}
+const SEV_RANK={ok:0,info:0,warn:1,fault:2};
+let _sevCap={};
+// Cap bubble colors by the amplitude zone of the sensor pair behind them
+function capBubbles(sensors){
+  const amp=Math.max(0,...sensors.map(m=>parseFloat(m.amp)||0));
+  const z=ampZone(amp),cap=z==='A'?'ok':z==='B'?'warn':'fault';
+  sensors.forEach(m=>{if(_sevCap[m.id]===undefined||SEV_RANK[cap]>SEV_RANK[_sevCap[m.id]])_sevCap[m.id]=cap;});
+}
+// Gate a phase-pattern finding by the highest amplitude among the sensors behind it.
+// Zone A → note (info), Zone B → no higher than Warning, Zone C/D → as found.
+function gateFinding(r,sensors){
+  const amp=Math.max(0,...sensors.map(m=>parseFloat(m.amp)||0));
+  const z=ampZone(amp);
+  capBubbles(sensors);
+  r.zone=z;r.amp=amp;r.baseType=r.type;
+  const t=' Highest 1× amplitude behind this finding: '+fmtAmp(amp)+' — '+ZONE_TXT[z]+'.';
+  r.short='Highest 1× '+fmtAmp(amp)+' — '+ZONE_TXT[z]+'. '+({A:'Not actionable on its own — baseline.',B:'Trend it; confirm with spectrum before acting.',C:'Amplitude supports this finding.',D:'Amplitude supports this finding.'}[z]);
+  if(z==='A'){
+    r.type='info';r.note=true;
+    r.label=r.label.replace(/^[⚠⚡]\s*/,'ℹ ')+' (low amplitude)';
+    r.desc+=t+' The phase pattern is present, but amplitude is at new-machine levels — not actionable on its own. Record as a baseline and re-check if amplitude rises.';
+  } else if(z==='B'){
+    if(r.type==='fault'){r.type='warn';r.label=r.label.replace(/^⚠/,'⚡');}
+    r.desc+=t+' Amplitude is acceptable for long-term operation — trend it and confirm with spectrum before acting.';
+  } else {
+    r.desc+=t+' Amplitude level supports this finding.';
+  }
+  return r;
+}
+// Category of an amplitude-pattern (shape) finding: what the check is reacting to
+function shapeCat(label){
+  const L=label||'';
+  if(/Recirculation|Elevated Axial|Excessive Axial/.test(L))return 'axial';
+  if(/Impeller Wear|Blade\/Structural Resonance|Overhung Imbalance|Gear Eccentricity|Rotor Bow|Fouling/.test(L))return 'radial';
+  if(/Structural Looseness/.test(L))return null; // looseness itself — no competing cause to separate
+  if(/Cavitation|Aerodynamic|Blade Damage|Backlash|Blade Rub|Fluid Whirl|Surge|Rotor Instability|Bearing Defect/.test(L))return 'erratic';
+  return null;
+}
+// Which kind of amplitude a phase-confirmed cause can explain
+function causeCat(label){
+  const L=label||'';
+  if(/Combined Misalignment/.test(L))return 'both';
+  if(/Angular Misalignment|Axial Phase Reversal/.test(L))return 'axial';
+  if(/Offset \(Parallel\) Misalignment/.test(L))return 'radial';
+  if(/Bent Shaft \/ Soft Foot|Abnormal V\/H/.test(L))return 'erratic';
+  return null;
+}
+const CAT_TEST={
+  axial:'Misalignment holds steady with load and stays ~180° across the coupling, often with elevated 2×. A bent shaft shows axial ~180° end to end on one machine and remains when run uncoupled. Flow- or thrust-driven axial changes with operating point — re-measure at a different flow or load if allowed.',
+  radial:'Mass imbalance is steady with load and in phase NDE/DE. Hydraulic or aerodynamic effects change with flow. Rotor bow differs cold vs hot. Resonance peaks at one speed — confirm with a bump test. Gear eccentricity shows sidebands around gear mesh. Offset misalignment is ~180° radial across the coupling.',
+  erratic:'Looseness or soft foot shows running-speed harmonics and changes when hold-down bolts are loosened one at a time. Compare against the spectrum signature of this finding before acting.'
+};
+function firstSentence(d){const t=(d||'').replace(/<[^>]+>/g,'');const i=t.indexOf('. ');return i>0?t.slice(0,i+1):t;}
+function cleanLabel(l){return (l||'').replace(/^[⚠⚡ℹ✓]\s*/,'');}
+function addCompetingCauses(results){
+  results.forEach(function(r){
+    if(!r.cat||!r.nodes)return;
+    const others=results.filter(function(c){
+      if(c===r||!c.cause||c.note||(c.type!=='warn'&&c.type!=='fault'))return false;
+      if(!(c.cause===r.cat||(c.cause==='both'&&r.cat!=='erratic')))return false;
+      return (c.nodes||[]).some(function(id){return r.nodes.indexOf(id)>-1;});
+    });
+    if(!others.length)return;
+    const names=others.map(function(c){return cleanLabel(c.label);}).join('; ');
+    r.short=(r.short||firstSentence(r.desc))+' Also consistent with: '+names+'.';
+    r.desc+=' <b>Also consistent with:</b> '+names+'. To separate them: '+CAT_TEST[r.cat];
+  });
+}
+function addAmplitudeFindings(results){
+  const b=ampBounds();
+  nodes.forEach(function(node){
+    const ms=node.meas.filter(function(m){return parseFloat(m.amp)>0;});
+    if(!ms.length)return;
+    // bubble floor by each reading's own zone
+    ms.forEach(function(m){
+      const z=ampZone(m.amp),fl=z==='D'?'fault':z==='C'?'warn':null;
+      if(fl&&SEV_RANK[fl]>SEV_RANK[bubbleSeverity[m.id]||'ok'])bubbleSeverity[m.id]=fl;
+    });
+    const top=ms.reduce(function(a,m){return parseFloat(m.amp)>parseFloat(a.amp)?m:a;});
+    const z=ampZone(top.amp);
+    if(z!=='C'&&z!=='D')return;
+    const over=ms.filter(function(m){const zz=ampZone(m.amp);return zz==='C'||zz==='D';})
+                 .map(function(m){return m.label+' '+(parseFloat(m.amp)).toFixed(3);}).join(', ');
+    const basis=b.iso?'ISO 20816-3 ('+isoSummary().replace('ISO 20816-3 · ','')+')':'app default thresholds for '+curUnit();
+    if(z==='D'){
+      results.push({type:'fault',nodes:[node.id],amp:parseFloat(top.amp),zone:'D',short:top.label+' at '+fmtAmp(top.amp)+' — Zone D, damage likely. Stands regardless of cause.',
+        label:'⚠ 1× Amplitude in Zone D — '+node.name,
+        desc:'Highest 1× reading on '+node.name+' is '+top.label+' at '+fmtAmp(top.amp)+' — Zone D per '+basis+': vibration at this level is likely causing damage. Readings past the alert level: '+over+'. This stands on its own regardless of cause — see the other findings for likely causes, and correlate with spectrum before deciding on shutdown or repair.'});
+    } else {
+      results.push({type:'warn',nodes:[node.id],amp:parseFloat(top.amp),zone:'C',short:top.label+' at '+fmtAmp(top.amp)+' — '+(b.iso?'Zone C, past alert level':'past alert level')+'. Stands regardless of cause.',
+        label:'⚡ 1× Amplitude Above Alert Level — '+node.name,
+        desc:'Highest 1× reading on '+node.name+' is '+top.label+' at '+fmtAmp(top.amp)+' — '+(b.iso?'Zone C per '+basis+': not suitable for long-term operation; plan remedial action at the next opportunity.':'above the '+basis+' alert level.')+' Readings past the alert level: '+over+'. This stands on its own regardless of cause — see the other findings for likely causes; if none is identified, investigate with spectrum and trend data.'});
+    }
+  });
+}
+function toggleIsoEdit(){const e=document.getElementById('iso-edit');if(e)e.hidden=!e.hidden;}
+function renderIsoLine(){
+  const el=document.getElementById('iso-line');if(!el)return;
+  const lay=getEffectiveLayout();
+  if(lay==='BS'||lay==='FB'||lay==='FS'){el.innerHTML='';return;}
+  const open=document.getElementById('iso-edit')&&!document.getElementById('iso-edit').hidden;
+  const g=isoCfg.group,f=isoCfg.found,d=getAmpDetect(),auto=isoAutoGroup();
+  el.innerHTML=`<div class="iso-line">
+    <div class="iso-row"><div><div class="iso-k">Amplitude zones</div><div class="iso-v">${isoSummary()}</div><div class="iso-b">${isoBoundsText()}</div></div>
+    <button class="btn iso-btn" onclick="toggleIsoEdit()">Change</button></div>
+    <div id="iso-edit" ${open?'':'hidden'}>
+      <label class="iso-f"><span>Machine group</span><select class="bal-sel" onchange="setIsoCfg('group',this.value)">
+        <option value="auto"${g==='auto'?' selected':''}>Auto from shape (Group ${auto})</option>
+        <option value="1"${g==='1'?' selected':''}>Group 1 — over 300 kW</option>
+        <option value="2"${g==='2'?' selected':''}>Group 2 — 15 to 300 kW</option></select></label>
+      <label class="iso-f"><span>Foundation</span><select class="bal-sel" onchange="setIsoCfg('found',this.value)">
+        <option value="rigid"${f!=='flex'?' selected':''}>Rigid</option>
+        <option value="flex"${f==='flex'?' selected':''}>Flexible</option></select></label>
+      <label class="iso-f"><span>Amplitude detection</span><select class="bal-sel" onchange="setAmpDetect(this.value)">
+        <option value="pk"${d==='pk'?' selected':''}>Peak</option>
+        <option value="rms"${d==='rms'?' selected':''}>RMS</option></select></label>
+      <div class="iso-help">Group and foundation save with this job. Detection applies to every job on this device. ISO 20816-3 covers machines over 15 kW running above 120 rpm. Phase-pattern findings: Zone A → note, Zone B → Warning at most, Zone C/D → as found. Any reading in Zone C adds an alert Warning, Zone D a Fault, whatever the cause. Phase logic is unchanged.</div>
+    </div></div>`;
+}
 
 // ── Annotations ───────────────────────────────────────────────
 let annotations=[];  // [{id,x,y,text,size,color}]
@@ -4732,6 +4934,7 @@ function autosave(){
       bsMode,
       fsData:fsData?JSON.parse(JSON.stringify(fsData)):null,
       annotations:JSON.parse(JSON.stringify(annotations)),
+      isoCfg:JSON.parse(JSON.stringify(isoCfg)),
       layout:layoutVal,
       mode:modeVal,
       unit:document.getElementById('amp-unit')?.value||'in/s',
@@ -4763,6 +4966,7 @@ function restoreAutosave(){
     if(state.bsMode)bsMode=state.bsMode;
     if(state.fsData)fsData=state.fsData;
     if(state.annotations)annotations=state.annotations;
+    isoCfg=state.isoCfg||isoDefaultCfg();
     // Restore mode first, then layout
     const modeSel=document.getElementById('mode');
     if(modeSel&&state.mode)modeSel.value=state.mode;
@@ -4787,6 +4991,7 @@ function restoreAutosave(){
 
 function runDiagnosis(){
   bubbleSeverity={};
+  _sevCap={};
   diagResults=[];
   const results=diagResults;
   const TOL=30;
@@ -4812,6 +5017,7 @@ function runDiagnosis(){
   for(let i=0;i<nodes.length-1;i++){
     const A=nodes[i],B=nodes[i+1];
     const lbl=A.name+' → '+B.name;
+    const _c0=results.length;
 
     // All measurements with any data entered
     const hasVal=(m)=>parseFloat(m.amp)>0||Math.round(parseFloat(m.phase)||0)!==0;
@@ -4852,36 +5058,39 @@ function runDiagnosis(){
     }
 
     let axOut=0,axIn=0;
+    const axOutS=[],axOddS=[];
     axPairs.forEach(({a,b,primary})=>{
       // Compare using arrow direction only — if both arrows point the same
       // way, compare raw phases directly. Only flip if arrows are opposite.
       // Inboard/Outboard labels are NOT used in this comparison.
       const d=axialPhaseDiff(a.phase, a.axDir||'out', A.coupSide||'R', b.phase, b.axDir||'out', B.coupSide||'L');
+      if(primary)capBubbles([a,b]);
       if(isOutOfPhase(d,TOL)){
-        axOut++;
+        axOut++;axOutS.push(a,b);
         // Only color bubbles red for valid same-position pairs
         if(primary){setSev(a.id,'fault');setSev(b.id,'fault');}
       } else if(isInPhase(d,TOL)){
         axIn++;
         if(primary){setSev(a.id,'ok');setSev(b.id,'ok');}
       } else {
+        axOddS.push(a,b);
         if(primary){setSev(a.id,'warn');setSev(b.id,'warn');}
       }
     });
 
     if(axPairs.length>0){
       if(axOut>0){
-        results.push({type:'fault',
+        results.push(gateFinding({type:'fault',
           label:'⚠ Angular Misalignment — '+lbl,
-          desc:'Axial phase angles across the coupling are ~180° out of phase (±'+TOL+'°) after correcting for sensor orientation. Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'. Elevated axial amplitudes confirm this fault.'});
+          desc:'Axial phase angles across the coupling are ~180° out of phase (±'+TOL+'°) after correcting for sensor orientation. Classic indicator of angular misalignment. Check coupling gap and angular alignment at '+lbl+'.'},axOutS));
       } else if(axIn===axPairs.length){
         results.push({type:'ok',
           label:'✓ Axial Phase Normal — '+lbl,
           desc:'Axial phase across '+lbl+' is in phase (±'+TOL+'°) after correcting for sensor orientation. No angular misalignment indicated.'});
       } else {
-        results.push({type:'warn',
+        results.push(gateFinding({type:'warn',
           label:'⚡ Axial Phase Marginal — '+lbl,
-          desc:'Axial phase across '+lbl+' is neither fully in phase nor 180° out after correcting for sensor orientation. Monitor for developing angular misalignment. Could also indicate coupling wear or thermal growth.'});
+          desc:'Axial phase across '+lbl+' is neither fully in phase nor 180° out after correcting for sensor orientation. Monitor for developing angular misalignment. Could also indicate coupling wear or thermal growth.'},axOddS));
       }
     }
 
@@ -4901,24 +5110,26 @@ function runDiagnosis(){
     });
 
     let radOut=0,radIn=0,radWarn=0;
+    const radOutS=[],radWarnS=[];
     radPairs.forEach(({a,b})=>{
       const d=phaseDiff(a.phase,b.phase);
-      if(isOutOfPhase(d,TOL)){radOut++;setSev(a.id,'fault');setSev(b.id,'fault');}
+      capBubbles([a,b]);
+      if(isOutOfPhase(d,TOL)){radOut++;radOutS.push(a,b);setSev(a.id,'fault');setSev(b.id,'fault');}
       else if(isInPhase(d,TOL)){radIn++;if(!bubbleSeverity[a.id])setSev(a.id,'ok');if(!bubbleSeverity[b.id])setSev(b.id,'ok');}
-      else{radWarn++;if(!bubbleSeverity[a.id]||bubbleSeverity[a.id]==='ok')setSev(a.id,'warn');if(!bubbleSeverity[b.id]||bubbleSeverity[b.id]==='ok')setSev(b.id,'warn');}
+      else{radWarn++;radWarnS.push(a,b);if(!bubbleSeverity[a.id]||bubbleSeverity[a.id]==='ok')setSev(a.id,'warn');if(!bubbleSeverity[b.id]||bubbleSeverity[b.id]==='ok')setSev(b.id,'warn');}
     });
 
     if(radPairs.length>0){
       if(radOut>0&&radOut>=radIn){
-        results.push({type:'fault',
+        results.push(gateFinding({type:'fault',
           label:'⚠ Offset (Parallel) Misalignment — '+lbl,
-          desc:'Radial phase angles across '+lbl+' coupling are ~180° out of phase (±'+TOL+'°). Strong indicator of offset/parallel misalignment. Verify with 1× amplitude and spectrum data.'});
+          desc:'Radial phase angles across '+lbl+' coupling are ~180° out of phase (±'+TOL+'°). Strong indicator of offset/parallel misalignment. Verify with spectrum data.'},radOutS));
       } else if(radWarn>0&&radOut===0&&radWarn>=radPairs.length/2){
         // Only flag if MAJORITY of radial pairs are in the warn zone
         // A single pair with a slightly off reading shouldn't flag the whole train
-        results.push({type:'warn',
+        results.push(gateFinding({type:'warn',
           label:'⚡ Possible Radial Issue — '+lbl,
-          desc:'Multiple radial phase readings across '+lbl+' show partial phase shift ('+radWarn+' of '+radPairs.length+' pairs). May indicate developing offset misalignment, soft foot, or resonance. Monitor closely.'});
+          desc:'Multiple radial phase readings across '+lbl+' show partial phase shift ('+radWarn+' of '+radPairs.length+' pairs). May indicate developing offset misalignment, soft foot, or resonance. Monitor closely.'},radWarnS));
       } else if(radIn===radPairs.length&&radPairs.length>0){
         results.push({type:'ok',
           label:'✓ Radial Phase Normal — '+lbl,
@@ -4928,9 +5139,9 @@ function runDiagnosis(){
 
     // ── COMBINED MISALIGNMENT ───────────────────────────────────────
     if(axOut>0&&radOut>0){
-      results.push({type:'fault',
+      results.push(gateFinding({type:'fault',
         label:'⚠ Combined Misalignment — '+lbl,
-        desc:'Both axial AND radial phase indicate misalignment across '+lbl+'. Combined angular and offset misalignment accelerates coupling and bearing failure. Realignment required.'});
+        desc:'Both axial AND radial phase indicate misalignment across '+lbl+'. Combined angular and offset misalignment accelerates coupling and bearing failure.'},axOutS.concat(radOutS)));
     }
 
     // ── BENT SHAFT / SOFT FOOT — 180° between bearing locations same machine ─
@@ -4951,9 +5162,9 @@ function runDiagnosis(){
         const d=phaseDiff(vNDE.phase,vDE.phase);
         if(isOutOfPhase(d,TOL)&&!flagged){
           setSev(vNDE.id,'warn');setSev(vDE.id,'warn');
-          results.push({type:'warn',
+          results.push(gateFinding({type:'warn',
             label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
-            desc:'Vertical phase at NDE ('+vNDE.label+': '+Math.round(vNDE.phase)+'°) and DE ('+vDE.label+': '+Math.round(vDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Classic signature of soft foot (machine rocking on base), bent shaft, or structural looseness. Loosen one foot bolt at a time — if vibration changes, that is the problem foot.'});
+            desc:'Vertical phase at NDE ('+vNDE.label+': '+Math.round(vNDE.phase)+'°) and DE ('+vDE.label+': '+Math.round(vDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Classic signature of soft foot (machine rocking on base), bent shaft, or structural looseness. Loosen one foot bolt at a time — if vibration changes, that is the problem foot.'},[vNDE,vDE]));
           flagged=true;bentFlagged.add(node.id);
         }
       }
@@ -4963,9 +5174,9 @@ function runDiagnosis(){
         const d=phaseDiff(hNDE.phase,hDE.phase);
         if(isOutOfPhase(d,TOL)){
           setSev(hNDE.id,'warn');setSev(hDE.id,'warn');
-          results.push({type:'warn',
+          results.push(gateFinding({type:'warn',
             label:'⚡ Possible Bent Shaft / Soft Foot / Structural — '+node.name,
-            desc:'Horizontal phase at NDE ('+hNDE.label+': '+Math.round(hNDE.phase)+'°) and DE ('+hDE.label+': '+Math.round(hDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Possible soft foot, bent shaft, or rocking in horizontal plane. Check hold-down bolts and base integrity.'});
+            desc:'Horizontal phase at NDE ('+hNDE.label+': '+Math.round(hNDE.phase)+'°) and DE ('+hDE.label+': '+Math.round(hDE.phase)+'°) on '+node.name+' are ~180° out of phase (diff: '+Math.round(d)+'°). Possible soft foot, bent shaft, or rocking in horizontal plane. Check hold-down bolts and base integrity.'},[hNDE,hDE]));
           bentFlagged.add(node.id);
         }
       }
@@ -4997,15 +5208,15 @@ function runDiagnosis(){
               // is explained by the misalignment — not a bent shaft. Skip entirely.
               if(angMisalignFlagged) return;
               setSev(obm.id,'fault');setSev(ibm.id,'fault');
-              results.push({type:'fault',
+              results.push(gateFinding({type:'fault',
                 label:'⚠ Axial Phase Reversal — '+node.name,
-                desc:'Outboard axial ('+obm.label+': '+obm.phase+'°, arrow: '+obDirLabel+') and inboard axial ('+ibm.label+': '+ibm.phase+'°, arrow: '+ibDirLabel+') on '+node.name+' are ~180° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). On a healthy shaft both axial points should be in phase. This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition immediately.'});
+                desc:'Outboard axial ('+obm.label+': '+obm.phase+'°, arrow: '+obDirLabel+') and inboard axial ('+ibm.label+': '+ibm.phase+'°, arrow: '+ibDirLabel+') on '+node.name+' are ~180° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). On a healthy shaft both axial points should be in phase. This indicates the shaft is flexing axially between bearing locations — consistent with a bent or bowed shaft, severe internal looseness, or a failing bearing allowing axial rocking. Inspect shaft straightness and bearing condition.'},[obm,ibm]));
             } else if(d>60&&d<120){
               if(!angMisalignFlagged){
                 setSev(obm.id,'warn');setSev(ibm.id,'warn');
-                results.push({type:'warn',
+                results.push(gateFinding({type:'warn',
                   label:'⚡ Unusual Axial Phase Relationship — '+node.name,
-                  desc:'Outboard ('+obm.label+': '+obDirLabel+') and inboard ('+ibm.label+': '+ibDirLabel+') axial readings on '+node.name+' are ~90° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'});
+                  desc:'Outboard ('+obm.label+': '+obDirLabel+') and inboard ('+ibm.label+': '+ibDirLabel+') axial readings on '+node.name+' are ~90° out of phase after accounting for sensor arrow direction (diff: '+Math.round(d)+'°). Axial readings at different locations on the same shaft should be in phase. This may indicate early-stage shaft bow, bearing wear, or axial resonance.'},[obm,ibm]));
               }
             }
           });
@@ -5036,17 +5247,22 @@ function runDiagnosis(){
         const isAbnormal180=(pd>155);
         if(isAbnormal0||isAbnormal180){
           setSev(v.id,'warn');setSev(h.id,'warn');
-          results.push({type:'warn',
+          results.push(gateFinding({type:'warn',
             label:'⚡ Abnormal V/H Phase — '+node.name+' '+loc,
-            desc:'Vertical ('+v.label+': '+Math.round(v.phase)+'°) and horizontal ('+h.label+': '+Math.round(h.phase)+'°) at '+node.name+' '+loc+' bearing are '+(pd<25?'nearly in phase':'~180° out of phase')+' ('+Math.round(pd)+'°). Expected ~90° due to sensor placement. Indicates structural looseness, soft foot, or rocking at this bearing. Check hold-down bolts and base plate at this corner.'});
+            desc:'Vertical ('+v.label+': '+Math.round(v.phase)+'°) and horizontal ('+h.label+': '+Math.round(h.phase)+'°) at '+node.name+' '+loc+' bearing are '+(pd<25?'nearly in phase':'~180° out of phase')+' ('+Math.round(pd)+'°). Expected ~90° due to sensor placement. Indicates structural looseness, soft foot, or rocking at this bearing. Check hold-down bolts and base plate at this corner.'},[v,h]));
         } else if(isNormal90&&ampRatio<0.4){
-          results.push({type:'warn',
+          results.push(gateFinding({type:'warn',
             label:'⚡ Directional Resonance — '+node.name+' '+loc,
-            desc:'V/H phase at '+node.name+' '+loc+' bearing is ~90° (normal orbital motion) but amplitudes differ significantly ('+v.label+': '+(vA.toFixed(3))+', '+h.label+': '+(hA.toFixed(3))+', ratio: '+ampRatio.toFixed(2)+'). Directional amplitude imbalance with normal phase suggests resonance in one plane or anisotropic support stiffness at this bearing. Check natural frequencies and bearing support condition.'});
+            desc:'V/H phase at '+node.name+' '+loc+' bearing is ~90° (normal orbital motion) but amplitudes differ significantly ('+v.label+': '+(vA.toFixed(3))+', '+h.label+': '+(hA.toFixed(3))+', ratio: '+ampRatio.toFixed(2)+'). Directional amplitude imbalance with normal phase suggests resonance in one plane or anisotropic support stiffness at this bearing. Check natural frequencies and bearing support condition.'},[v,h]));
         }
         // ~90° with similar amplitudes = healthy circular orbit — no flag
       });
     });
+    for(let _i=_c0;_i<results.length;_i++){
+      const r=results[_i],L=r.label||'';
+      r.nodes=L.indexOf(' → ')>-1?[A.id,B.id]:(L.indexOf('— '+A.name)>-1?[A.id]:[B.id]);
+      r.cause=causeCat(L);
+    }
   }
 
   // ── IMBALANCE — position-code based same-bearing and bearing-to-bearing checks ──
@@ -5059,8 +5275,7 @@ function runDiagnosis(){
     const vDE =node.meas.find(m=>m.pos==='VERT_DE' &&parseFloat(m.amp)>0);
     const hNDE=node.meas.find(m=>m.pos==='HORIZ_NDE'&&parseFloat(m.amp)>0);
     const hDE =node.meas.find(m=>m.pos==='HORIZ_DE' &&parseFloat(m.amp)>0);
-    const uKey=document.getElementById('amp-unit').value;
-    const imbThresh={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
+    const imbThresh=ampBounds().B;   // ISO Zone B/C (app default for non-velocity units)
 
     let imbalanceFound=false;
 
@@ -5080,7 +5295,7 @@ function runDiagnosis(){
     const allRad=[vNDE,vDE,hNDE,hDE].filter(Boolean);
     const anyElevated=allRad.some(m=>parseFloat(m.amp)>imbThresh);
     if(imbalanceFound&&anyElevated){
-      results.push({type:'warn',
+      results.push({type:'warn',nodes:[node.id],cat:'radial',cause:'radial',
         label:'⚡ Possible Imbalance — '+node.name,
         desc:'Same-plane radial phase readings at NDE and DE on '+node.name+' are in phase (±'+TOL+'°) with comparable amplitudes and elevated levels. Consistent with mass imbalance generating a uniform rotating force at both bearings. Confirm with elevated 1× radial amplitudes in spectrum data.'});
     }
@@ -5091,9 +5306,10 @@ function runDiagnosis(){
   nodes.forEach(function(node){
     var shape=node.shape;
     var hasVal=function(m){return parseFloat(m.amp)>0||Math.round(parseFloat(m.phase)||0)!==0;};
-    var uKey=document.getElementById('amp-unit').value;
-    var ampThresh={'mils':0.15,'in/s':0.08,'mm/s':2.0,'G':0.1,'µm':20}[uKey]||0.08;
-    var highAmp={'mils':3.0,'in/s':0.25,'mm/s':6.0,'G':0.3,'µm':75}[uKey]||0.25;
+    // Elevated = above ISO Zone A/B, High = above Zone B/C (app defaults for non-velocity units)
+    var _zb=ampBounds();
+    var ampThresh=_zb.A;
+    var highAmp=_zb.B;
 
     var vM=node.meas.filter(function(m){return (m.pos==='VERT_NDE'||m.pos==='VERT_DE')&&parseFloat(m.amp)>0;});
     var hM=node.meas.filter(function(m){return (m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE')&&parseFloat(m.amp)>0;});
@@ -5104,12 +5320,10 @@ function runDiagnosis(){
     var maxAx=axAll.length?Math.max.apply(null,axAll.map(function(m){return parseFloat(m.amp);})):0;
     var maxRad=Math.max(maxV,maxH);
 
-    // Phase consistency check — are readings stable or erratic?
-    var vPhases=vM.map(function(m){return Math.round(parseFloat(m.phase)||0);});
-    var hPhases=hM.map(function(m){return Math.round(parseFloat(m.phase)||0);});
-    var phaseSpreadV=vPhases.length>1?phaseDiff(vPhases[0],vPhases[vPhases.length-1]):0;
-    var phaseSpreadH=hPhases.length>1?phaseDiff(hPhases[0],hPhases[hPhases.length-1]):0;
-    var erraticPhase=(phaseSpreadV>45||phaseSpreadH>45);
+    // Phase instability is observed on the analyzer (phase wandering between readings).
+    // A phase difference between bearings is NOT instability — e.g. couple imbalance puts NDE/DE 180° apart.
+    var erraticPhase=!!node.phaseUnstable;
+    var _r0=results.length;
 
     // ── PUMP ──────────────────────────────────────────────────────────
     if(shape==='Pump'){
@@ -5261,6 +5475,7 @@ function runDiagnosis(){
           desc:'Elevated amplitude with erratic phase at '+node.name+' bearing location suggests a developing bearing defect. While bearing defects typically show sub/super-synchronous frequencies, a failing bearing can also affect 1× phase stability through looseness and increased clearance. Inspect bearing condition and lubrication.'});
       }
     }
+    for(var _i=_r0;_i<results.length;_i++){results[_i].nodes=[node.id];results[_i].cat=shapeCat(results[_i].label);}
   });
 
   // ── VERTICAL TRAIN SPECIFIC CHECKS ───────────────────────────────────
@@ -5274,19 +5489,32 @@ function runDiagnosis(){
     nodes.forEach(function(node){
       var ax=node.meas.filter(function(m){return (m.pos==='AX_IB'||m.pos==='AX_OB')&&parseFloat(m.amp)>0;});
       var rad=node.meas.filter(function(m){return (m.pos==='VERT_NDE'||m.pos==='VERT_DE'||m.pos==='HORIZ_NDE'||m.pos==='HORIZ_DE')&&parseFloat(m.amp)>0;});
-      if(ax.length>0&&rad.length>0&&!angularAlreadyFlagged){
-        var uKey=document.getElementById('amp-unit').value;
-        var thresh={'mils':2.0,'in/s':0.15,'mm/s':4.0,'G':0.2,'µm':50}[uKey]||0.15;
+      if(ax.length>0&&rad.length>0){
+        var thresh=ampBounds().B;
         var maxAx=Math.max.apply(null,ax.map(function(m){return parseFloat(m.amp);}));
         var maxRad=Math.max.apply(null,rad.map(function(m){return parseFloat(m.amp);}));
         if(maxAx>thresh&&maxAx>maxRad*1.5){
-          results.push({type:'warn',
+          results.push({type:'warn',nodes:[node.id],cat:'axial',
             label:'⚡ Elevated Axial Relative to Radial — '+node.name+' (Vertical Train)',
             desc:'On a vertically mounted machine, axial amplitude significantly exceeding radial (axial: '+maxAx.toFixed(3)+', radial: '+maxRad.toFixed(3)+') suggests mass imbalance (gravity-excited), looseness in the axial direction, or a worn thrust bearing. This pattern is more significant on vertical machines than horizontal.'});
         }
       }
     });
   }
+
+  // Cap phase-derived bubble colors by amplitude zone
+  Object.keys(_sevCap).forEach(function(id){
+    var s=bubbleSeverity[id];
+    if(s&&SEV_RANK[s]>SEV_RANK[_sevCap[id]])bubbleSeverity[id]=_sevCap[id];
+  });
+
+  // ── AMPLITUDE — cause-independent, never suppressed ───────────────
+  // Any reading past Zone B/C gets its own finding regardless of phase pattern or shape:
+  // Zone C → Warning (alert), Zone D → Fault (danger). Bubbles get at least that color.
+  addAmplitudeFindings(results);
+
+  // ── COMPETING CAUSES — keep both, add a field test to separate them ──
+  addCompetingCauses(results);
 
   // Any axial or radial bubble with data but no severity = healthy = green
   nodes.forEach(function(node){
@@ -5298,7 +5526,7 @@ function runDiagnosis(){
     });
   });
 
-  if(results.filter(function(r){return r.type!=='info';}).length===0){
+  if(results.filter(function(r){return r.type!=='info'||r.note;}).length===0){
     results.push({type:'info',
       label:'Enter measurement data to begin',
       desc:'Input amplitude and phase values for your measurement points at 1× running speed. Axial readings across the coupling are most important for misalignment diagnosis.'});
@@ -5319,6 +5547,7 @@ function checkHaptic(results){
 }
 
 function renderDiagResults(results){
+  renderIsoLine();
   const el=document.getElementById('diag-results');
   if(!el)return;
   el.innerHTML='';
@@ -5664,7 +5893,7 @@ function getSeverityBadge(){
   // Compute overall severity from current diagResults
   if(diagResults.some(r=>r.type==='fault')) return 'fault';
   if(diagResults.some(r=>r.type==='warn'))  return 'warn';
-  if(diagResults.some(r=>r.type==='ok'))    return 'ok';
+  if(diagResults.some(r=>r.type==='ok'||r.note)) return 'ok';
   return 'info';
 }
 function confirmClearValues(){
@@ -5728,6 +5957,7 @@ function saveToHistory(){
     severity:getSeverityBadge(),
     nodes:JSON.parse(JSON.stringify(nodes)),
     annotations:JSON.parse(JSON.stringify(annotations)),
+    isoCfg:JSON.parse(JSON.stringify(isoCfg)),
     footBaseData:JSON.parse(JSON.stringify(footBaseData)),
     bsData:bsData?JSON.parse(JSON.stringify(bsData)):null,
     bsMode:bsMode,
@@ -5793,6 +6023,7 @@ function loadFromHistory(id){
       bsData=entry.bsData?JSON.parse(JSON.stringify(entry.bsData)):null;
       bsMode=entry.bsMode||'single';
       fsData=entry.fsData?JSON.parse(JSON.stringify(entry.fsData)):null;
+      isoCfg=entry.isoCfg?JSON.parse(JSON.stringify(entry.isoCfg)):isoDefaultCfg();
       renderSidebar();
       runDiagnosis();
       showTab('components');
@@ -5911,6 +6142,24 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'3.2.0':{
+date:'10/15/2026',
+items:[
+'Amplitude alarm finding — any 1× reading past ISO Zone B/C now gets its own finding per machine, whatever the phase pattern or shape: Zone C → Warning (alert, plan remedial action), Zone D → Fault (damage likely). Bubbles in Zone C/D are colored at least to match. Flow-, load- or resonance-driven amplitude can no longer go unreported.',
+'Shape-specific checks (pump, fan, overhung fan, gearbox, turbine, compressor, bearing), imbalance, and vertical-train axial now use the job\'s ISO 20816-3 zones — "elevated" = above Zone A/B, "high" = above Zone B/C — instead of fixed 0.08 / 0.25 in/s.',
+'Competing causes shown, not suppressed — when a phase-confirmed cause (misalignment, imbalance, soft foot, axial reversal) can explain the same amplitude as a shape finding, both stay and the shape finding lists the field test to separate them. The vertical-train axial check is no longer hidden when angular misalignment is flagged.',
+'Phase unstable on analyzer — new checkbox per machine. Cavitation, aerodynamic imbalance, blade damage, gear backlash, blade rub, fluid whirl, surge, rotor instability and bearing-defect checks only run when it is ticked. Previously the app treated a phase difference between bearings as instability, which could flag couple imbalance as blade rub or surge.',
+]},
+'3.1.0':{
+date:'10/15/2026',
+items:[
+'Amplitude-aware severity — phase-pattern findings (angular, offset, combined misalignment; V/H; bent shaft / soft foot; axial reversal) are now capped by the 1× amplitude behind them, using ISO 20816-3 zones. Zone A findings become notes, Zone B findings are capped at Warning, Zone C/D findings show as found.',
+'"Elevated axial amplitudes confirm this fault" removed — each finding now states the actual highest amplitude and its ISO zone.',
+'Amplitude zones line on the Diagnosis tab — machine group is set automatically from the component shapes (Compressor/Turbine → Group 1, otherwise Group 2), rigid foundation by default. Tap Change to adjust; the setting saves with the job.',
+'Peak / RMS setting — defaults to Peak to match CSI 2140 data. Applies to every job on the device.',
+'Balance tab ISO acceptance now uses ISO 20816-3 Group / Foundation. Fixes the previous ISO 10816-1 table, which was shifted one zone and understated severity. Report badges: PASS (Zone A), ACCEPTABLE (B), MONITOR (C), FAIL (D).',
+'Non-velocity units (mils, G, µm) keep the app\'s existing thresholds — ISO 20816-3 velocity zones don\'t apply to them.',
+]},
 '3.0.1':{
 date:'10/15/2026',
 items:[
@@ -7750,21 +7999,19 @@ function balCalcSplit(){
 }
 
 // ── ISO Zone Check ────────────────────────────────────────
-// ISO 10816-1 approximate velocity zone boundaries (in/s pk, at measurement point)
-const BAL_ISO_ZONES={
-  I:  {A:0.07,B:0.11,C:0.18},
-  II: {A:0.11,B:0.18,C:0.28},
-  III:{A:0.18,B:0.28,C:0.45},
-  IV: {A:0.28,B:0.45,C:0.71},
-};
+// ISO 20816-3 zone boundaries — shared table with the Diagnosis tab (ISO20816_3)
+function balIsoGroup(){return (document.getElementById('bal-iso-group')||{}).value||'2';}
+function balIsoFound(){return (document.getElementById('bal-iso-found')||{}).value||'rigid';}
+function balIsoLabel(){return 'Group '+balIsoGroup()+' · '+(balIsoFound()==='flex'?'Flexible':'Rigid')+' · '+(getAmpDetect()==='pk'?'Peak':'RMS');}
 function balCheckISO(){
   const el=document.getElementById('bal-iso-result');
   if(!el)return;
-  const cls=document.getElementById('bal-iso-class').value;
-  const a1=parseFloat(document.getElementById('bal-final-amp1').value);
-  const unitKey=(document.getElementById('amp-unit')||{}).value||'in/s';
+  const a1=parseFloat((document.getElementById('bal-final-amp1')||{}).value);
+  const unitKey=curUnit();
   if(isNaN(a1)||a1<=0){el.innerHTML='';return;}
-  const zones=BAL_ISO_ZONES[cls]||BAL_ISO_ZONES.II;
+  const zones=isoBoundsFor(balIsoGroup(),balIsoFound());
+  if(!zones){el.innerHTML=`<div class="bal-result warn">ISO 20816-3 zones are velocity-based. Switch units to in/s or mm/s to run the acceptance check.</div>`;return;}
+  const f3=x=>x.toFixed(3);
   function zone(amp){
     if(amp<=zones.A)return{z:'A',lbl:'Zone A — Acceptable (new machine)',c:'ok'};
     if(amp<=zones.B)return{z:'B',lbl:'Zone B — Acceptable for long-term operation',c:'warn'};
@@ -7777,7 +8024,7 @@ function balCheckISO(){
     const a2=parseFloat(document.getElementById('bal-final-amp2').value);
     if(!isNaN(a2)&&a2>0){const z2=zone(a2);html+=`<br><strong>Bearing 2:</strong> ${a2.toFixed(3)} ${unitKey} — ${z2.lbl}`;}
   }
-  html+=`<br><span style="font-size:10px;opacity:.75">Class ${cls} boundaries: A≤${zones.A} · B≤${zones.B} · C≤${zones.C} ${unitKey}</span></div>`;
+  html+=`<br><span style="font-size:10px;opacity:.75">ISO 20816-3 ${balIsoLabel()}: A≤${f3(zones.A)} · B≤${f3(zones.B)} · C≤${f3(zones.C)} ${unitKey} ${getAmpDetect()==='pk'?'pk':'RMS'}</span></div>`;
   el.innerHTML=html;
 }
 
@@ -7858,7 +8105,8 @@ function loadBalanceDemo(){
   sv('bal-rod-len','5.5');
 
   // Step 6 — ISO acceptance
-  ss('bal-iso-class','III');
+  ss('bal-iso-group','1');
+  ss('bal-iso-found','rigid');
   sv('bal-final-amp1','0.068');
 
   // Trigger all computed outputs
@@ -7877,12 +8125,12 @@ function balGenerateReport(){
   const rad1=document.getElementById('bal-rad1').value||'—';
   const jl2=document.getElementById('bal-jl2').value||'';
   const rad2=document.getElementById('bal-rad2').value||'';
-  const isoClass=document.getElementById('bal-iso-class').value||'II';
+  const isoClass=balIsoLabel();
   const techName=getTechName()||'';
   const docDate=getDocDate();
   const unitKey=(document.getElementById('amp-unit')||{}).value||'in/s';
   const is2=balJob.planeType==='two';
-  const zones=BAL_ISO_ZONES[isoClass]||BAL_ISO_ZONES.II;
+  const zones=isoBoundsFor(balIsoGroup(),balIsoFound())||{A:NaN,B:NaN,C:NaN};
 
   // ── Helper: format run row ────────────────────────────────
   function fv(v,dec){const n=parseFloat(v);return isNaN(n)?'—':n.toFixed(dec===undefined?3:dec);}
@@ -8057,7 +8305,7 @@ function balGenerateReport(){
   ${is2?`<div class="meta-item"><span class="meta-key">Journal Load — P2</span><span class="meta-val">${jl2||'—'} lb</span></div>
   <div class="meta-item"><span class="meta-key">Correction Radius — P2</span><span class="meta-val">${rad2||'—'} in</span></div>`:''}
   <div class="meta-item"><span class="meta-key">Calculated Trial Weight</span><span class="meta-val">${twCalc} oz</span></div>
-  <div class="meta-item"><span class="meta-key">ISO Machine Class</span><span class="meta-val">Class ${isoClass} — Zone A ≤ ${zones.A} ${unitKey}</span></div>
+  <div class="meta-item"><span class="meta-key">ISO 20816-3</span><span class="meta-val">${isoClass} — Zone A ≤ ${zones.A.toFixed(3)} ${unitKey}</span></div>
 </div>
 
 <!-- SECTION 2: Pre-Balance Checklist -->
@@ -8108,7 +8356,7 @@ function balGenerateReport(){
 ${splitMass&&!isNaN(splitMass)?`<div style="font-size:11px;margin-bottom:8px"><strong>Weight split:</strong> ${splitHTML}</div>`:''}
 
 <!-- SECTION 5: ISO Acceptance -->
-<h2>5 — ISO 10816-1 Acceptance — Class ${isoClass}</h2>
+<h2>5 — ISO 20816-3 Acceptance — ${isoClass}</h2>
 <table>
   <thead><tr><th>Bearing</th><th>Final 1× (${unitKey})</th><th>ISO Zone</th><th>Status</th></tr></thead>
   <tbody>
@@ -8116,13 +8364,13 @@ ${splitMass&&!isNaN(splitMass)?`<div style="font-size:11px;margin-bottom:8px"><s
       <td>Bearing 1</td>
       <td>${isNaN(fa1)?'—':fa1.toFixed(3)}</td>
       <td style="color:${z1.c}">${z1.z}</td>
-      <td>${isNaN(fa1)?'—':`<span class="badge ${fa1<=zones.A?'badge-ok':fa1<=zones.C?'badge-warn':'badge-fault'}">${fa1<=zones.A?'PASS':fa1<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
+      <td>${isNaN(fa1)?'—':`<span class="badge ${fa1<=zones.B?'badge-ok':fa1<=zones.C?'badge-warn':'badge-fault'}">${fa1<=zones.A?'PASS':fa1<=zones.B?'ACCEPTABLE':fa1<=zones.C?'MONITOR':'FAIL'}</span>`}</td>
     </tr>
     ${z2&&!isNaN(fa2)&&fa2>0?`<tr>
       <td>Bearing 2</td>
       <td>${fa2.toFixed(3)}</td>
       <td style="color:${z2.c}">${z2.z}</td>
-      <td><span class="badge ${fa2<=zones.A?'badge-ok':fa2<=zones.C?'badge-warn':'badge-fault'}">${fa2<=zones.A?'PASS':fa2<=zones.C?'MONITOR':'FAIL'}</span></td>
+      <td><span class="badge ${fa2<=zones.B?'badge-ok':fa2<=zones.C?'badge-warn':'badge-fault'}">${fa2<=zones.A?'PASS':fa2<=zones.B?'ACCEPTABLE':fa2<=zones.C?'MONITOR':'FAIL'}</span></td>
     </tr>`:''}
   </tbody>
 </table>

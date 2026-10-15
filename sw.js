@@ -1,7 +1,7 @@
 // Phase App service worker — offline support.
 // Paths are relative, so this works at the Netlify root and under /Phase-chart/ on GitHub Pages.
 // Bump CACHE when releasing so old caches are cleared.
-const CACHE = 'phase-app-v3.0.1';
+const CACHE = 'phase-app-v3.2.0';
 const CORE = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
