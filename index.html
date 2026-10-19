@@ -1253,7 +1253,7 @@ function syncTech(el){
   redraw();
 }
 function getDocVersion(){
-  return '3.7.0';
+  return '3.7.1';
 }
 
 // ── Theme ─────────────────────────────────────────────────
@@ -6595,6 +6595,11 @@ function doConfirm(){
 
 // ── Changelog ────────────────────────────────────────────
 const CHANGELOG={
+'3.7.1':{
+date:'10/15/2026',
+items:[
+'Faster updates — the app now checks the server for a new version every time it opens with signal, instead of possibly showing a cached copy for a few minutes after a release.',
+]},
 '3.7.0':{
 date:'10/15/2026',
 items:[
@@ -9061,7 +9066,7 @@ function boot(){
   // PWA Service Worker — enables offline use and Add to Home Screen
   if('serviceWorker' in navigator){
     // Real file (sw.js next to index.html) — browsers refuse blob: service workers.
-    navigator.serviceWorker.register('sw.js',{scope:'./'})
+    navigator.serviceWorker.register('sw.js',{scope:'./',updateViaCache:'none'})
       .catch(e=>console.warn('Service worker registration failed:',e));
   }
   // Auto-show What's New on first open after a version update

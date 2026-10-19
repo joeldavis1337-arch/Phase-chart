@@ -1,7 +1,7 @@
 // Phase App service worker — offline support.
 // Paths are relative, so this works at the Netlify root and under /Phase-chart/ on GitHub Pages.
 // Bump CACHE when releasing so old caches are cleared.
-const CACHE = 'phase-app-v3.7.0';
+const CACHE = 'phase-app-v3.7.1';
 const CORE = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
@@ -24,7 +24,9 @@ self.addEventListener('fetch', e => {
   // cached copy when offline. ignoreSearch keeps shared-chart links (?…) working offline.
   if (req.mode === 'navigate') {
     e.respondWith(
-      fetch(req).then(res => {
+      // cache:'no-cache' revalidates with the server so a new release shows on the next open,
+      // instead of waiting out the browser/CDN cache (GitHub Pages caches pages for up to 10 minutes)
+      fetch(req, { cache: 'no-cache' }).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put('index.html', copy)); }
         return res;
       }).catch(() => caches.match('index.html').then(r => r || caches.match(req, { ignoreSearch: true })))
