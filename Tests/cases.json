@@ -1,0 +1,1718 @@
+[
+ {
+  "id": "MP982-1105C",
+  "source": "Field job 03/18/2026 (report from v1.2.2)",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.047,
+      1,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.06,
+      -1
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.02,
+      48
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.044,
+      16
+     ],
+     [
+      "AX_OB",
+      "A1",
+      0.015,
+      4,
+      {
+       "axDir": "in"
+      }
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.014,
+      -179,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H3",
+      0.067,
+      12
+     ],
+     [
+      "HORIZ_DE",
+      "H4",
+      0.069,
+      0
+     ],
+     [
+      "VERT_NDE",
+      "V3",
+      0.053,
+      -8
+     ],
+     [
+      "VERT_DE",
+      "V4",
+      0.031,
+      -1
+     ],
+     [
+      "AX_OB",
+      "A3",
+      0.012,
+      0,
+      {
+       "axDir": "out"
+      }
+     ],
+     [
+      "AX_IB",
+      "A4",
+      0.005,
+      9,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "absent": [
+    "Angular Misalignment",
+    "Amplitude"
+   ],
+   "notes": "A2 arrow points left, A4 arrow points right: physically opposite, so A4 is flipped. -179 vs 9+180 = 8 deg apart -> in phase. v1.2.2 called this angular misalignment. All 12 readings are ISO 20816-3 Group 2 rigid Zone A (<=0.078 in/s pk), so V/H patterns are notes.",
+   "present": [
+    "Abnormal V/H"
+   ],
+   "maxSeverityOf": {
+    "Abnormal V/H": "info"
+   }
+  }
+ },
+ {
+  "id": "SYN-ANG-LOW",
+  "source": "Synthetic: axial 180 deg across coupling, sub-threshold amplitude",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.02,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.02,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Angular Misalignment"
+   ],
+   "maxSeverityOf": {
+    "Angular Misalignment": "info"
+   },
+   "bannedText": [
+    "Elevated axial amplitudes confirm"
+   ],
+   "notes": "Both arrows 'outboard' (physically opposite), raw 0/0 -> 180 after flip. Amplitudes 0.02 in/s are well under the 0.08 alert threshold.",
+   "bubbles": {
+    "A2": "ok",
+    "A3": "ok"
+   }
+  }
+ },
+ {
+  "id": "SYN-ANG-HIGH",
+  "source": "Synthetic: axial 180 deg across coupling, elevated amplitude",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.12,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.1,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.32,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.12,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.1,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.3,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Angular Misalignment",
+    "1× Amplitude in Zone D — Driver"
+   ],
+   "maxSeverityOf": {
+    "Angular Misalignment": "fault"
+   },
+   "minSeverityOf": {
+    "Angular Misalignment": "fault"
+   },
+   "descContains": {
+    "Recirculation": "Also consistent with:</b> Angular Misalignment"
+   }
+  }
+ },
+ {
+  "id": "SYN-OFFSET",
+  "source": "Synthetic: radial 180 deg across coupling",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.2,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.3,
+      20
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.18,
+      100
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.28,
+      110
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      -160
+     ],
+     [
+      "HORIZ_NDE",
+      "H4",
+      0.2,
+      -150
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.28,
+      -70
+     ],
+     [
+      "VERT_NDE",
+      "V4",
+      0.18,
+      -60
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Offset (Parallel) Misalignment",
+    "1× Amplitude in Zone D — Driver"
+   ],
+   "descContains": {
+    "Possible Imbalance — Driver": "Offset (Parallel) Misalignment"
+   }
+  }
+ },
+ {
+  "id": "SYN-IMB",
+  "source": "Synthetic: in-phase NDE/DE, ~90 V/H, elevated",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.35,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.32,
+      15
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.3,
+      100
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.28,
+      104
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "HORIZ_NDE",
+      "H4",
+      0.08,
+      25
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09,
+      110
+     ],
+     [
+      "VERT_NDE",
+      "V4",
+      0.07,
+      112
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Possible Imbalance — Driver"
+   ],
+   "absent": [
+    "Abnormal V/H"
+   ]
+  }
+ },
+ {
+  "id": "SYN-SOFTFOOT",
+  "source": "Synthetic: vertical NDE vs DE 180 deg on driver",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.15,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.14,
+      15
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.22,
+      95
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.2,
+      -80
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "HORIZ_NDE",
+      "H4",
+      0.08,
+      25
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09,
+      110
+     ],
+     [
+      "VERT_NDE",
+      "V4",
+      0.07,
+      112
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Soft Foot"
+   ]
+  }
+ },
+ {
+  "id": "ZONE-A-EDGE",
+  "source": "Axial 180 deg at exactly the G2 rigid A/B boundary (0.078 pk) -> note",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.078,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.078,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Angular Misalignment"
+   ],
+   "maxSeverityOf": {
+    "Angular Misalignment": "info"
+   }
+  }
+ },
+ {
+  "id": "ZONE-B-EDGE",
+  "source": "Axial 180 deg just over A/B (0.080 pk) -> warning",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.08,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.08,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Angular Misalignment"
+   ],
+   "minSeverityOf": {
+    "Angular Misalignment": "warn"
+   },
+   "maxSeverityOf": {
+    "Angular Misalignment": "warn"
+   },
+   "bubbles": {
+    "A2": "warn",
+    "A3": "warn"
+   }
+  }
+ },
+ {
+  "id": "ZONE-C",
+  "source": "Axial 180 deg at 0.20 pk (Zone C) -> fault",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Angular Misalignment"
+   ],
+   "minSeverityOf": {
+    "Angular Misalignment": "fault"
+   },
+   "bubbles": {
+    "A2": "fault",
+    "A3": "fault"
+   }
+  }
+ },
+ {
+  "id": "AUTO-GROUP1",
+  "source": "Compressor shape -> Group 1 auto; 0.20 pk is Zone B there -> warning",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Compressor",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "minSeverityOf": {
+    "Angular Misalignment": "warn"
+   },
+   "maxSeverityOf": {
+    "Angular Misalignment": "warn"
+   }
+  }
+ },
+ {
+  "id": "OVERRIDE-FLEX",
+  "source": "Pump, user sets flexible foundation; 0.20 pk is Zone B (G2 flex) -> warning",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.2,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "maxSeverityOf": {
+    "Angular Misalignment": "warn"
+   },
+   "minSeverityOf": {
+    "Angular Misalignment": "warn"
+   }
+  },
+  "iso": {
+   "group": "auto",
+   "found": "flex"
+  }
+ },
+ {
+  "id": "RMS-DETECT",
+  "source": "RMS detection: 0.12 in/s RMS is Zone C (G2 rigid B/C 0.110 RMS) -> fault",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      0.12,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.12,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "minSeverityOf": {
+    "Angular Misalignment": "fault"
+   }
+  },
+  "detect": "rms"
+ },
+ {
+  "id": "MILS-FALLBACK",
+  "source": "mils units fall back to app thresholds; 2.0 mils -> warning",
+  "unit": "mils",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      90
+     ],
+     [
+      "AX_IB",
+      "A2",
+      2.0,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.05,
+      5
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.04,
+      95
+     ],
+     [
+      "AX_IB",
+      "A3",
+      2.0,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "minSeverityOf": {
+    "Angular Misalignment": "warn"
+   },
+   "maxSeverityOf": {
+    "Angular Misalignment": "warn"
+   }
+  }
+ },
+ {
+  "id": "COUPLE-IMB",
+  "source": "Turbine with NDE/DE 180 deg apart (couple imbalance), phase stable: must not be called rub/whirl",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      5
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.04,
+      90
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      95
+     ]
+    ]
+   },
+   {
+    "name": "Turbine",
+    "shape": "Turbine",
+    "coupSide": "L",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      10
+     ],
+     [
+      "HORIZ_NDE",
+      "H4",
+      0.28,
+      -170
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.26,
+      100
+     ],
+     [
+      "VERT_NDE",
+      "V4",
+      0.25,
+      -80
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "absent": [
+    "Blade Rub",
+    "Fluid Whirl"
+   ],
+   "present": [
+    "1× Amplitude Above Alert Level — Turbine"
+   ],
+   "notes": "Turbine shape -> auto Group 1; 0.30 in/s pk is Zone C (0.251-0.395) for Group 1 rigid."
+  }
+ },
+ {
+  "id": "UNSTABLE-TICK",
+  "source": "Same turbine, tech ticks Phase unstable on analyzer: rub check runs",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_NDE",
+      "H1",
+      0.05,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      5
+     ],
+     [
+      "VERT_NDE",
+      "V1",
+      0.04,
+      90
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.04,
+      95
+     ]
+    ]
+   },
+   {
+    "name": "Turbine",
+    "shape": "Turbine",
+    "coupSide": "L",
+    "phaseUnstable": true,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      10
+     ],
+     [
+      "HORIZ_NDE",
+      "H4",
+      0.28,
+      -170
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.26,
+      100
+     ],
+     [
+      "VERT_NDE",
+      "V4",
+      0.25,
+      -80
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Blade Rub"
+   ]
+  }
+ },
+ {
+  "id": "AMP-C-ONLY",
+  "source": "Zone C amplitude, healthy phase (in phase across coupling, ~90 V/H): alert warning only",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.2,
+      0,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.12,
+      90
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Coupling",
+    "coupSide": "L",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      10
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09,
+      100
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "1× Amplitude Above Alert Level — Driver"
+   ],
+   "maxSeverityOf": {
+    "Above Alert Level": "warn"
+   },
+   "absent": [
+    "Driven (",
+    "Above Alert Level — Driven"
+   ],
+   "bubbles": {
+    "H2": "warn",
+    "H3": "ok"
+   }
+  }
+ },
+ {
+  "id": "FF-VH-AUTO",
+  "source": "Compressor (auto tilting pad), V/H 10 deg apart: flat orbit note, not looseness",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Compressor",
+    "coupSide": "L",
+    "bearingType": "auto",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09000000000000001,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Flat Orbit (V/H) — Driven DE"
+   ],
+   "absent": [
+    "Abnormal V/H — Driven"
+   ],
+   "maxSeverityOf": {
+    "Flat Orbit": "info"
+   }
+  }
+ },
+ {
+  "id": "RE-VH-PUMP",
+  "source": "Pump (auto rolling), same V/H at Zone B: abnormal V/H warning stays",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "bearingType": "auto",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09000000000000001,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Abnormal V/H Phase — Driven DE"
+   ],
+   "minSeverityOf": {
+    "Abnormal V/H Phase — Driven": "warn"
+   },
+   "absent": [
+    "Flat Orbit"
+   ]
+  }
+ },
+ {
+  "id": "SLEEVE-OVERRIDE",
+  "source": "Pump overridden to sleeve bearings: flat orbit note",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "bearingType": "sleeve",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09000000000000001,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Flat Orbit (V/H) — Driven DE (sleeve / journal)"
+   ],
+   "absent": [
+    "Abnormal V/H — Driven"
+   ]
+  }
+ },
+ {
+  "id": "UNKNOWN-VH",
+  "source": "Pump with Unknown bearings: warning kept, with fluid-film caveat",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Pump",
+    "coupSide": "L",
+    "bearingType": "unknown",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.1,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.09000000000000001,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "descContains": {
+    "Abnormal V/H Phase — Driven": "set the bearing type"
+   }
+  }
+ },
+ {
+  "id": "WHIRL-RE",
+  "source": "Turbine overridden to rolling element, phase unstable: no fluid whirl",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Turbine",
+    "coupSide": "L",
+    "bearingType": "rolling",
+    "phaseUnstable": true,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.27,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "absent": [
+    "Fluid Whirl"
+   ],
+   "present": [
+    "Blade Rub"
+   ]
+  }
+ },
+ {
+  "id": "WHIRL-FF",
+  "source": "Turbine auto (tilting pad), phase unstable: fluid whirl checked",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Turbine",
+    "coupSide": "L",
+    "bearingType": "auto",
+    "phaseUnstable": true,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.27,
+      30
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Fluid Whirl"
+   ]
+  }
+ },
+ {
+  "id": "THRUST-TURB",
+  "source": "Turbine axial 0.30 vs radial 0.30: thrust bearing check",
+  "unit": "in/s",
+  "layout": "H",
+  "nodes": [
+   {
+    "name": "Driver",
+    "shape": "Motor",
+    "coupSide": "R",
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H2",
+      0.05,
+      10,
+      {
+       "ref": true
+      }
+     ],
+     [
+      "VERT_DE",
+      "V2",
+      0.045,
+      100
+     ]
+    ]
+   },
+   {
+    "name": "Driven",
+    "shape": "Turbine",
+    "coupSide": "L",
+    "bearingType": "auto",
+    "phaseUnstable": false,
+    "meas": [
+     [
+      "HORIZ_DE",
+      "H3",
+      0.3,
+      20
+     ],
+     [
+      "VERT_DE",
+      "V3",
+      0.27,
+      30
+     ],
+     [
+      "AX_IB",
+      "A3",
+      0.3,
+      0,
+      {
+       "axDir": "out"
+      }
+     ]
+    ]
+   }
+  ],
+  "expect": {
+   "present": [
+    "Thrust Bearing Wear"
+   ],
+   "descContains": {
+    "Thrust Bearing Wear": "thrust pads"
+   }
+  }
+ }
+]
